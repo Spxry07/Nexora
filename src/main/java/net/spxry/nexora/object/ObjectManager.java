@@ -2,12 +2,12 @@ package net.spxry.nexora.object;
 
 import net.spxry.nexora.Nexora;
 import net.spxry.nexora.storage.ObjectStore;
+import net.spxry.nexora.util.ResourceFiles;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import java.io.File;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -41,9 +41,7 @@ public final class ObjectManager {
 
     public void reload() {
         idPattern = Pattern.compile(plugin.getConfig().getString("ids.pattern", "[a-zA-Z0-9_-]{1,32}"));
-        var file = new File(plugin.getDataFolder(), DEMOS_FILE);
-        if (!file.exists()) plugin.saveResource(DEMOS_FILE, false);
-        demos = YamlConfiguration.loadConfiguration(file);
+        demos = ResourceFiles.versioned(plugin, DEMOS_FILE);
     }
 
     public Collection<NexoraObject> all() { return objects.values(); }

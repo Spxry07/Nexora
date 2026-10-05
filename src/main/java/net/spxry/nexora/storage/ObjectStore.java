@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -48,7 +49,7 @@ public final class ObjectStore {
     }
 
     public void save(String kind, String id, Map<String, Object> data) {
-        io.execute(() -> {
+        submit(() -> {
             var yaml = files.computeIfAbsent(kind, k -> YamlConfiguration.loadConfiguration(file(k)));
             yaml.set(id, null);
             yaml.createSection(id, data);
@@ -57,7 +58,7 @@ public final class ObjectStore {
     }
 
     public void delete(String kind, String id) {
-        io.execute(() -> {
+        submit(() -> {
             var yaml = files.computeIfAbsent(kind, k -> YamlConfiguration.loadConfiguration(file(k)));
             yaml.set(id, null);
             write(kind, yaml);
@@ -71,6 +72,14 @@ public final class ObjectStore {
         } catch (InterruptedException e) {
             io.shutdownNow();
             Thread.currentThread().interrupt();
+        }
+    }
+
+    private void submit(Runnable task) {
+        if (io.isShutdown()) return;
+        try {
+            io.execute(task);
+        } catch (RejectedExecutionException ignored) {
         }
     }
 

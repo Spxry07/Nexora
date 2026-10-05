@@ -43,6 +43,11 @@ public final class Hologram extends NexoraObject {
     private static final String LAYOUT_RING = "RING";
     private static final String LAYOUT_HELIX = "HELIX";
     private static final String LAYOUT_ROW = "ROW";
+    private static final String LAYOUT_WHEEL = "WHEEL";
+    private static final String LAYOUT_SPHERE = "SPHERE";
+    private static final String LAYOUT_TORNADO = "TORNADO";
+    private static final double GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+    private static final double TORNADO_MIN_RADIUS = 0.15;
 
     private static final class LineState {
         final HoloLine line;
@@ -255,8 +260,14 @@ public final class Hologram extends NexoraObject {
         if (waveHeight > 0) y += waveHeight * Math.sin(Math.TAU * waveSpeed * seconds + Math.TAU * index / Math.max(1, count));
         double turn = Math.toRadians(layoutSpeed * seconds);
         return switch (layout) {
-            case LAYOUT_RING -> circle(cx, y + line.offsetY, cz, Math.TAU * index / Math.max(1, count) + turn);
-            case LAYOUT_HELIX -> circle(cx, y + (count - 1 - index) * lineSpacing + line.offsetY, cz, Math.toRadians(helixStep) * index + turn);
+            case LAYOUT_RING -> circle(cx, y + line.offsetY, cz, layoutRadius, Math.TAU * index / Math.max(1, count) + turn);
+            case LAYOUT_WHEEL -> wheel(cx, y + line.offsetY, cz, Math.TAU * index / Math.max(1, count) + turn);
+            case LAYOUT_SPHERE -> sphere(cx, y + line.offsetY, cz, index, count, turn);
+            case LAYOUT_TORNADO -> {
+                double level = count <= 1 ? 1 : (count - 1 - index) / (double) (count - 1);
+                yield circle(cx, y + (count - 1 - index) * lineSpacing + line.offsetY, cz, layoutRadius * Math.max(TORNADO_MIN_RADIUS, level), Math.toRadians(helixStep) * index + turn);
+            }
+            case LAYOUT_HELIX -> circle(cx, y + (count - 1 - index) * lineSpacing + line.offsetY, cz, layoutRadius, Math.toRadians(helixStep) * index + turn);
             case LAYOUT_ROW -> {
                 double yawRad = Math.toRadians(baseYaw);
                 double along = (index - (count - 1) / 2.0) * lineSpacing;
@@ -266,9 +277,23 @@ public final class Hologram extends NexoraObject {
         };
     }
 
-    private double[] circle(double cx, double y, double cz, double angle) {
+    private double[] wheel(double cx, double cy, double cz, double angle) {
+        double yawRad = Math.toRadians(baseYaw);
+        double side = layoutRadius * Math.cos(angle);
+        return new double[]{cx - Math.cos(yawRad) * side, cy + layoutRadius * Math.sin(angle), cz - Math.sin(yawRad) * side, baseYaw};
+    }
+
+    private double[] sphere(double cx, double cy, double cz, int index, int count, double turn) {
+        double unitY = 1 - 2 * (index + 0.5) / Math.max(1, count);
+        double ring = Math.sqrt(Math.max(0, 1 - unitY * unitY));
+        double theta = GOLDEN_ANGLE * index + turn;
+        double dx = Math.cos(theta) * ring, dz = Math.sin(theta) * ring;
+        return new double[]{cx + layoutRadius * dx, cy + layoutRadius * unitY, cz + layoutRadius * dz, Math.toDegrees(Math.atan2(-dx, dz))};
+    }
+
+    private double[] circle(double cx, double y, double cz, double radius, double angle) {
         double dx = Math.cos(angle), dz = Math.sin(angle);
-        return new double[]{cx + layoutRadius * dx, y, cz + layoutRadius * dz, Math.toDegrees(Math.atan2(-dx, dz))};
+        return new double[]{cx + radius * dx, y, cz + radius * dz, Math.toDegrees(Math.atan2(-dx, dz))};
     }
 
     private void update(LineState state, FileConfiguration config, boolean transforming, float spin, float sway, float pulse, List<Packet<?>> packets) {

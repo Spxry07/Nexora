@@ -70,6 +70,7 @@ public final class Nexora extends JavaPlugin {
         if (tracker != null) tracker.stopAll();
         if (objects != null) objects.shutdown();
         if (store != null) store.shutdown();
+        instance = null;
     }
 
     public void reloadAll() {

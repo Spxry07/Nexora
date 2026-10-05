@@ -1,9 +1,8 @@
 package net.spxry.nexora.edit;
 
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
+import net.spxry.nexora.util.ResourceFiles;
 import org.bukkit.plugin.Plugin;
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -34,9 +33,7 @@ public final class Schema {
     }
 
     public void reload() {
-        var file = new File(plugin.getDataFolder(), "editor.yml");
-        if (!file.exists()) plugin.saveResource("editor.yml", false);
-        var yaml = YamlConfiguration.loadConfiguration(file);
+        var yaml = ResourceFiles.merged(plugin, "editor.yml");
         var kinds = yaml.getConfigurationSection("kinds");
         Map<String, Map<String, Prop>> newProps = new LinkedHashMap<>();
         Map<String, List<Section>> newSections = new LinkedHashMap<>();

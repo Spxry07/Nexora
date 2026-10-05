@@ -175,7 +175,7 @@ public final class WebServer {
     }
 
     public synchronized void start() {
-        if (server != null || !plugin.getConfig().getBoolean("web.enabled", true)) return;
+        if (server != null || !plugin.isEnabled() || !plugin.getConfig().getBoolean("web.enabled", true)) return;
         var bytes = loadPage();
         if (bytes == null) {
             plugin.getLogger().log(Level.WARNING, text("web-page-missing", Map.of()));
