@@ -1,6 +1,7 @@
 package net.spxry.nexora.object;
 
 import com.destroystokyo.paper.profile.ProfileProperty;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
@@ -10,9 +11,11 @@ import net.spxry.nexora.nms.Packets;
 import net.spxry.nexora.util.ColorUtil;
 import net.spxry.nexora.util.ItemCodec;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mannequin;
@@ -20,9 +23,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.EulerAngle;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +46,7 @@ public final class Npc extends NexoraObject {
     private static final double PARTICLE_HEIGHT = 1.0;
     private static final double UNIT_SCALE = 1.0;
     private static final float NO_PITCH = 0F;
+    private static final double DEFAULT_SPEED = 1.0;
     private static final String TEAM_PREFIX = "nx";
     private static final String TEXTURES = "textures";
     private static final Pattern TEXTURE_HASH = Pattern.compile("texture/([0-9a-fA-F]{32,})");
@@ -72,6 +79,10 @@ public final class Npc extends NexoraObject {
     private String actions = "";
     private String clickType = "";
     private int cooldown;
+    private boolean animationEnabled;
+    private double animationSpeed = DEFAULT_SPEED;
+    private String animation = "";
+    private boolean small;
 
     private volatile LivingEntity template;
     private volatile Entity handle;
@@ -81,6 +92,14 @@ public final class Npc extends NexoraObject {
     private volatile Location base;
     private Pose basePose = Pose.STANDING;
     private boolean sneaking;
+    private volatile Keyframes keyframes;
+    private volatile float bodyOffset;
+    private volatile float headOffset;
+    private volatile float headPitch;
+    private volatile ItemStack skinHead;
+    private long rotationKey;
+    private final float[] limbs = new float[Keyframes.SIZE];
+    private final float[] appliedPose = new float[Keyframes.SIZE];
 
     public Npc(Nexora plugin, String id, Location anchor) {
         super(plugin, id, anchor);
@@ -111,6 +130,10 @@ public final class Npc extends NexoraObject {
         map.put("actions", Binding.text(n -> n.actions, (n, v) -> n.actions = v));
         map.put("click-type", Binding.text(n -> n.clickType, (n, v) -> n.clickType = v));
         map.put("cooldown", Binding.integer(n -> n.cooldown, (n, v) -> n.cooldown = v));
+        map.put("animation-enabled", Binding.bool(n -> n.animationEnabled, (n, v) -> n.animationEnabled = v));
+        map.put("animation-speed", Binding.number(n -> n.animationSpeed, (n, v) -> n.animationSpeed = v));
+        map.put("animation", Binding.text(n -> n.animation, (n, v) -> n.animation = v));
+        map.put("small", Binding.bool(n -> n.small, (n, v) -> n.small = v));
         return map;
     }
 
@@ -156,6 +179,12 @@ public final class Npc extends NexoraObject {
         currentYaw = anchor.getYaw();
         sneaking = false;
         looking.clear();
+        var parsed = animationEnabled ? Keyframes.parse(animation) : Keyframes.EMPTY;
+        keyframes = parsed.isEmpty() ? null : parsed;
+        skinHead = living instanceof ArmorStand ? headItem() : null;
+        Arrays.fill(appliedPose, Float.NaN);
+        animate(living);
+        rotationKey = rotationKey(currentYaw);
         setPosition(anchor.getX(), anchor.getY(), anchor.getZ());
         var spawn = spawnPackets();
         Packets.clearDirty(h);
@@ -174,6 +203,12 @@ public final class Npc extends NexoraObject {
         if (scale != UNIT_SCALE) {
             var attribute = entity.getAttribute(Attribute.SCALE);
             if (attribute != null) attribute.setBaseValue(scale);
+        }
+        if (entity instanceof ArmorStand stand) {
+            stand.setArms(true);
+            stand.setBasePlate(false);
+            stand.setSmall(small);
+            stand.setGravity(false);
         }
         if (entity instanceof Mannequin mannequin) {
             mannequin.setProfile(profile());
@@ -196,6 +231,64 @@ public final class Npc extends NexoraObject {
         return Mannequin.defaultProfile();
     }
 
+    private ItemStack headItem() {
+        if (skinValue.isBlank() && skinName.isBlank()) return null;
+        var item = new ItemStack(Material.PLAYER_HEAD);
+        item.setData(DataComponentTypes.PROFILE, profile());
+        return item;
+    }
+
+    private Map<EquipmentSlot, ItemStack> visibleEquipment() {
+        var head = skinHead;
+        var current = equipment.get(EquipmentSlot.HEAD);
+        if (head == null || (current != null && !current.getType().isAir())) return Map.copyOf(equipment);
+        Map<EquipmentSlot, ItemStack> merged = new EnumMap<>(EquipmentSlot.class);
+        merged.putAll(equipment);
+        merged.put(EquipmentSlot.HEAD, head);
+        return merged;
+    }
+
+    private void animate(LivingEntity entity) {
+        var frames = keyframes;
+        bodyOffset = NO_PITCH;
+        headOffset = NO_PITCH;
+        headPitch = NO_PITCH;
+        if (frames == null) return;
+        frames.sample(ticks * animationSpeed, limbs);
+        if (entity instanceof ArmorStand stand) {
+            applyPose(stand);
+            return;
+        }
+        bodyOffset = limbs[Keyframes.at(Keyframes.BODY, Keyframes.YAW)];
+        headOffset = limbs[Keyframes.at(Keyframes.HEAD, Keyframes.YAW)];
+        headPitch = limbs[Keyframes.at(Keyframes.HEAD, Keyframes.PITCH)];
+    }
+
+    private void applyPose(ArmorStand stand) {
+        for (int limb = 0; limb < Keyframes.LIMBS; limb++) {
+            int at = Keyframes.at(limb, Keyframes.PITCH);
+            if (limbs[at] == appliedPose[at] && limbs[at + 1] == appliedPose[at + 1] && limbs[at + 2] == appliedPose[at + 2]) continue;
+            System.arraycopy(limbs, at, appliedPose, at, Keyframes.AXES);
+            var angle = new EulerAngle(Math.toRadians(limbs[at]), Math.toRadians(limbs[at + 1]), Math.toRadians(limbs[at + 2]));
+            switch (limb) {
+                case Keyframes.HEAD -> stand.setHeadPose(angle);
+                case Keyframes.BODY -> stand.setBodyPose(angle);
+                case Keyframes.LEFT_ARM -> stand.setLeftArmPose(angle);
+                case Keyframes.RIGHT_ARM -> stand.setRightArmPose(angle);
+                case Keyframes.LEFT_LEG -> stand.setLeftLegPose(angle);
+                default -> stand.setRightLegPose(angle);
+            }
+        }
+    }
+
+    private float bodyYaw(float yaw) { return yaw + bodyOffset; }
+
+    private float headYaw(float yaw) { return yaw + bodyOffset + headOffset; }
+
+    private long rotationKey(float yaw) {
+        return (long) Packets.angleKey(bodyYaw(yaw), headPitch) << Integer.SIZE | Packets.angleKey(headYaw(yaw), NO_PITCH);
+    }
+
     private Pose parsePose() {
         try {
             return Pose.valueOf(pose.toUpperCase(Locale.ROOT));
@@ -214,10 +307,11 @@ public final class Npc extends NexoraObject {
         var h = handle;
         var yaw = currentYaw;
         List<Packet<?>> list = new ArrayList<>();
-        list.add(Packets.spawn(h, x(), y(), z(), yaw, NO_PITCH));
+        list.add(Packets.spawn(h, x(), y(), z(), bodyYaw(yaw), headPitch));
         list.add(Packets.fullData(h));
-        list.add(Packets.head(h, yaw));
-        if (!equipment.isEmpty()) list.add(Packets.equipment(entityId, Map.copyOf(equipment)));
+        list.add(Packets.head(h, headYaw(yaw)));
+        var items = visibleEquipment();
+        if (!items.isEmpty()) list.add(Packets.equipment(entityId, items));
         if (scale != UNIT_SCALE) list.add(Packets.attributes(h));
         list.add(Packets.teamCreate(teamName(), template.getUniqueId().toString(), glowColor));
         return list;
@@ -231,23 +325,23 @@ public final class Npc extends NexoraObject {
         if (entity == null || h == null) return;
         List<Packet<?>> everyone = new ArrayList<>();
         List<Packet<?>> rotation = new ArrayList<>();
-        boolean moved = false;
-        boolean rotated = false;
+        animate(entity);
         double seconds = ticks / (double) TICKS_PER_SECOND;
         float yaw = currentYaw;
         var point = pathPoint(seconds);
         if (point != null) {
             yaw = (float) point[3];
             setPosition(point[0], point[1], point[2]);
-            everyone.add(Packets.teleport(entityId, point[0], point[1], point[2], yaw, NO_PITCH));
-            everyone.add(Packets.head(h, yaw));
-            moved = true;
-        } else if (spinSpeed != 0) {
-            yaw = base.getYaw() + (float) (spinSpeed * seconds);
-            if (yaw != currentYaw) {
-                rotation.add(Packets.rotation(entityId, yaw, NO_PITCH));
-                rotation.add(Packets.head(h, yaw));
-                rotated = true;
+            everyone.add(Packets.teleport(entityId, point[0], point[1], point[2], bodyYaw(yaw), headPitch));
+            everyone.add(Packets.head(h, headYaw(yaw)));
+            rotationKey = rotationKey(yaw);
+        } else {
+            if (spinSpeed != 0) yaw = base.getYaw() + (float) (spinSpeed * seconds);
+            long key = rotationKey(yaw);
+            if (key != rotationKey) {
+                rotation.add(Packets.rotation(entityId, bodyYaw(yaw), headPitch));
+                rotation.add(Packets.head(h, headYaw(yaw)));
+                rotationKey = key;
             }
         }
         currentYaw = yaw;
@@ -292,8 +386,8 @@ public final class Npc extends NexoraObject {
         var h = handle;
         if (h == null) return List.of();
         List<Packet<?>> list = new ArrayList<>();
-        list.add(Packets.teleport(entityId, x(), y(), z(), currentYaw, NO_PITCH));
-        list.add(Packets.head(h, currentYaw));
+        list.add(Packets.teleport(entityId, x(), y(), z(), bodyYaw(currentYaw), headPitch));
+        list.add(Packets.head(h, headYaw(currentYaw)));
         var data = Packets.fullData(h);
         if (data != null) list.add(data);
         return list;
@@ -301,8 +395,8 @@ public final class Npc extends NexoraObject {
 
     private void release(Player viewer, Entity h) {
         if (looking.remove(viewer.getUniqueId()) == null) return;
-        Packets.send(viewer, Packets.rotation(entityId, currentYaw, NO_PITCH));
-        Packets.send(viewer, Packets.head(h, currentYaw));
+        Packets.send(viewer, Packets.rotation(entityId, bodyYaw(currentYaw), headPitch));
+        Packets.send(viewer, Packets.head(h, headYaw(currentYaw)));
     }
 
     @Override

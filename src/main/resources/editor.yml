@@ -1,3 +1,4 @@
+file-version: 3
 kinds:
   hologram:
     sections:
@@ -79,7 +80,7 @@ kinds:
         properties: [effect, effect-speed, color-a, color-b, scroll-width]
       transform:
         title: "&#6293F0&lᴛʀᴀɴꜱꜰᴏʀᴍ"
-        properties: [scale, offset-y, billboard, item-transform]
+        properties: [scale, offset-x, offset-y, offset-z, rot-x, rot-y, rot-z, billboard, item-transform]
       style:
         title: "&#6293F0&lꜱᴛʏʟᴇ"
         properties: [background-default, background, shadow, see-through, alignment, line-width, opacity]
@@ -97,13 +98,18 @@ kinds:
       effect:
         label: "&fᴇꜰꜰᴇᴄᴛ"
         type: choice
-        options: {NONE: "None", TYPEWRITER: "Typewriter", RAINBOW: "Rainbow", WAVE: "Gradient Wave", SCROLL: "Scroll", BLINK: "Blink"}
+        options: {NONE: "None", SOLID: "Solid color (A)", FLICKER: "Flicker (A/B)", FADE: "Fade (A↔B)", TYPEWRITER: "Typewriter", RAINBOW: "Rainbow", WAVE: "Gradient Wave", SCROLL: "Scroll", BLINK: "Blink"}
       effect-speed: {label: "&fᴇꜰꜰᴇᴄᴛ ꜱᴘᴇᴇᴅ (ticks/step)", type: integer, min: 1, max: 100, step: 1}
       color-a: {label: "&fᴄᴏʟᴏʀ ᴀ", type: color}
       color-b: {label: "&fᴄᴏʟᴏʀ ʙ", type: color}
       scroll-width: {label: "&fꜱᴄʀᴏʟʟ ᴡɪᴅᴛʜ", type: integer, min: 4, max: 64, step: 1}
       scale: {label: "&fꜱᴄᴀʟᴇ", type: number, min: 0.1, max: 10, step: 0.05}
       offset-y: {label: "&fʏ ᴏꜰꜰꜱᴇᴛ", type: number, min: -5, max: 5, step: 0.05}
+      offset-x: {label: "&fx ᴏꜰꜰꜱᴇᴛ", type: number, min: -10, max: 10, step: 0.05}
+      offset-z: {label: "&fᴢ ᴏꜰꜰꜱᴇᴛ", type: number, min: -10, max: 10, step: 0.05}
+      rot-x: {label: "&fᴛɪʟᴛ x (°, -90 = ꜰʟᴀᴛ ᴏɴ ɢʀᴏᴜɴᴅ)", type: number, min: -180, max: 180, step: 5}
+      rot-y: {label: "&fᴛᴜʀɴ ʏ (°)", type: number, min: -180, max: 180, step: 5}
+      rot-z: {label: "&fʀᴏʟʟ ᴢ (°)", type: number, min: -180, max: 180, step: 5}
       billboard:
         label: "&fʙɪʟʟʙᴏᴀʀᴅ"
         type: choice
@@ -143,6 +149,9 @@ kinds:
       animations:
         title: "&#6293F0&lᴀɴɪᴍᴀᴛɪᴏɴꜱ"
         properties: [swing-interval, sneak-interval, hurt-interval]
+      animation:
+        title: "&#6293F0&lᴋᴇʏꜰʀᴀᴍᴇ ᴀɴɪᴍᴀᴛɪᴏɴ"
+        properties: [animation-enabled, animation-speed, animation, small]
       interaction:
         title: "&#6293F0&lɪɴᴛᴇʀᴀᴄᴛɪᴏɴ"
         properties: [actions, click-type, cooldown]
@@ -183,7 +192,7 @@ kinds:
           PIG: "Pig"
           CHICKEN: "Chicken"
           HORSE: "Horse"
-          ARMOR_STAND: "Armor Stand"
+          ARMOR_STAND: "Poseable (armor stand)"
       name: {label: "&fɴᴀᴍᴇ", type: text, max: 256}
       name-visible: {label: "&fꜱʜᴏᴡ ɴᴀᴍᴇ", type: bool}
       description: {label: "&fᴅᴇꜱᴄʀɪᴘᴛɪᴏɴ (player type)", type: text, max: 256}
@@ -230,6 +239,10 @@ kinds:
         type: choice
         options: {ANY: "Any", RIGHT: "Right click", LEFT: "Left click"}
       cooldown: {label: "&fᴄᴏᴏʟᴅᴏᴡɴ (ticks)", type: integer, min: 0, max: 12000, step: 1}
+      animation-enabled: {label: "&fᴘʟᴀʏ ᴀɴɪᴍᴀᴛɪᴏɴ", type: bool}
+      animation-speed: {label: "&fᴀɴɪᴍᴀᴛɪᴏɴ ꜱᴘᴇᴇᴅ", type: number, min: 0.1, max: 5, step: 0.1}
+      animation: {label: "&fᴋᴇʏꜰʀᴀᴍᴇꜱ (ticks head=x,y,z body= larm= rarm= lleg= rleg=)", type: multiline, max: 8192}
+      small: {label: "&fꜱᴍᴀʟʟ (ᴀʀᴍᴏʀ ꜱᴛᴀɴᴅ)", type: bool}
       particle: *particles
       particle-count: *particle-count
       particle-radius: *particle-radius

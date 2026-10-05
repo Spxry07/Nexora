@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public final class TextEffects {
-    private enum Effect { NONE, TYPEWRITER, RAINBOW, WAVE, SCROLL, BLINK }
+    private enum Effect { NONE, SOLID, FLICKER, FADE, TYPEWRITER, RAINBOW, WAVE, SCROLL, BLINK }
 
     private enum Kind { CODE, CHAR, BREAK }
 
@@ -41,6 +41,15 @@ public final class TextEffects {
     private static final int GREEN_SHIFT = 8;
     private static final int BLINK_PHASES = 2;
     private static final int HUE_SECTORS = 6;
+    private static final double HALF = 0.5;
+    private static final long HASH_GAMMA = 0x9E3779B97F4A7C15L;
+    private static final long HASH_MIX_A = 0xBF58476D1CE4E5B9L;
+    private static final long HASH_MIX_B = 0x94D049BB133111EBL;
+    private static final int HASH_SHIFT_A = 30;
+    private static final int HASH_SHIFT_B = 27;
+    private static final int HASH_SHIFT_C = 31;
+    private static final int UNIT_SHIFT = 11;
+    private static final double UNIT_SCALE = 0x1.0p-53;
     private static final String PLACEHOLDER_OPEN = "{";
     private static final String ONLINE = "{online}";
     private static final String MAX = "{max}";
@@ -54,8 +63,9 @@ public final class TextEffects {
     static boolean dynamic(FileConfiguration config, HoloLine line) {
         if (!HoloLine.TEXT.equalsIgnoreCase(line.type)) return false;
         var separator = config.getString("animation.frame-separator", "");
-        return effectOf(line.effect) != Effect.NONE
-            || !separator.isEmpty() && line.text.contains(separator)
+        var effect = effectOf(line.effect);
+        return effect != Effect.NONE && effect != Effect.SOLID
+            ||!separator.isEmpty() && line.text.contains(separator)
             || line.text.contains(PLACEHOLDER_OPEN);
     }
 
@@ -79,6 +89,9 @@ public final class TextEffects {
         long step = ticks / speed;
         return switch (effectOf(line.effect)) {
             case NONE -> text;
+            case SOLID -> flat(text, argb(line.colorA) & RGB_MASK);
+            case FLICKER -> flat(text, flickerColor(config, line, step));
+            case FADE -> flat(text, fadeColor(config, line, step));
             case TYPEWRITER -> typewriter(config, text, frames.length > 1 ? (ticks % interval) / speed : step);
             case RAINBOW -> rainbow(config, text, step);
             case WAVE -> wave(config, line, text, step);
@@ -124,6 +137,37 @@ public final class TextEffects {
                 return fallback;
             }
         });
+    }
+
+    private static String flat(String text, int rgb) {
+        var kept = new ArrayList<Token>();
+        for (var token : tokenize(text)) {
+            if (token.kind() != Kind.CODE || !isColorCode(token.text())) kept.add(token);
+        }
+        return colored(kept, (i, total) -> rgb);
+    }
+
+    private static int flickerColor(FileConfiguration config, HoloLine line, long step) {
+        boolean alternate = unitHash(step, System.identityHashCode(line)) < config.getDouble("effects.flicker-chance");
+        return argb(alternate ? line.colorB : line.colorA) & RGB_MASK;
+    }
+
+    private static int fadeColor(FileConfiguration config, HoloLine line, long step) {
+        double phase = HALF + HALF * Math.sin(step * config.getDouble("effects.fade-step") * Math.TAU);
+        return mix(argb(line.colorA) & RGB_MASK, argb(line.colorB) & RGB_MASK, phase);
+    }
+
+    private static double unitHash(long step, int identity) {
+        long h = step * HASH_GAMMA + identity;
+        h = (h ^ (h >>> HASH_SHIFT_A)) * HASH_MIX_A;
+        h = (h ^ (h >>> HASH_SHIFT_B)) * HASH_MIX_B;
+        h ^= h >>> HASH_SHIFT_C;
+        return (h >>> UNIT_SHIFT) * UNIT_SCALE;
+    }
+
+    private static boolean isColorCode(String code) {
+        char c = Character.toLowerCase(code.charAt(1));
+        return c == HEX_MARK || COLOR_CODES.indexOf(c) >= 0;
     }
 
     private static String typewriter(FileConfiguration config, String text, long step) {

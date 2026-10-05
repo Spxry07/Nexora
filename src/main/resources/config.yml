@@ -28,6 +28,8 @@ effects:
   wave-step: 0.25
   wave-spread: 0.35
   scroll-gap: "     "
+  flicker-chance: 0.35
+  fade-step: 0.08
 
 placeholders:
   time-format: "HH:mm:ss"
@@ -85,7 +87,7 @@ web:
     head: "https://mc-heads.net/avatar/{id}/{size}"
     body: "https://mc-heads.net/body/{id}/{size}"
     viewer: "https://cdn.jsdelivr.net/npm/skinview3d@3.1.0/bundles/skinview3d.bundle.js"
-    font: "https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap"
+    font: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&display=swap"
     font-files-host: "https://fonts.gstatic.com"
 
 storage:
@@ -127,6 +129,11 @@ defaults:
     scroll-width: 16
     scale: 1
     offset-y: 0
+    offset-x: 0
+    offset-z: 0
+    rot-x: 0
+    rot-y: 0
+    rot-z: 0
     billboard: "CENTER"
     background-default: true
     background: "#40000000"
@@ -156,6 +163,10 @@ defaults:
     actions: "[message] &fHello &#6293F0{player}&f!"
     click-type: "ANY"
     cooldown: 20
+    animation-enabled: false
+    animation-speed: 1
+    animation: "10 rarm=-110,0,25\n8 rarm=-150,0,45\n8 rarm=-110,0,25\n8 rarm=-150,0,45\n12 rarm=-15,0,10"
+    small: false
     swing-interval: 0
     sneak-interval: 0
     hurt-interval: 0

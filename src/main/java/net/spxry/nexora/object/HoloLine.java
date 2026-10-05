@@ -24,7 +24,12 @@ public final class HoloLine {
     String colorB = "#FFFFFF";
     int scrollWidth = 16;
     double scale = 1;
+    double offsetX;
     double offsetY;
+    double offsetZ;
+    double rotX;
+    double rotY;
+    double rotZ;
     String billboard = "CENTER";
     String itemTransform = "FIXED";
     boolean backgroundDefault = true;
@@ -53,7 +58,12 @@ public final class HoloLine {
         map.put("color-b", Binding.text(l -> l.colorB, (l, v) -> l.colorB = v));
         map.put("scroll-width", Binding.integer(l -> l.scrollWidth, (l, v) -> l.scrollWidth = v));
         map.put("scale", Binding.number(l -> l.scale, (l, v) -> l.scale = v));
+        map.put("offset-x", Binding.number(l -> l.offsetX, (l, v) -> l.offsetX = v));
         map.put("offset-y", Binding.number(l -> l.offsetY, (l, v) -> l.offsetY = v));
+        map.put("offset-z", Binding.number(l -> l.offsetZ, (l, v) -> l.offsetZ = v));
+        map.put("rot-x", Binding.number(l -> l.rotX, (l, v) -> l.rotX = v));
+        map.put("rot-y", Binding.number(l -> l.rotY, (l, v) -> l.rotY = v));
+        map.put("rot-z", Binding.number(l -> l.rotZ, (l, v) -> l.rotZ = v));
         map.put("billboard", Binding.text(l -> l.billboard, (l, v) -> l.billboard = v));
         map.put("item-transform", Binding.text(l -> l.itemTransform, (l, v) -> l.itemTransform = v));
         map.put("background-default", Binding.bool(l -> l.backgroundDefault, (l, v) -> l.backgroundDefault = v));

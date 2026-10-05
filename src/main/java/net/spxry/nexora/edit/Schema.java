@@ -33,7 +33,7 @@ public final class Schema {
     }
 
     public void reload() {
-        var yaml = ResourceFiles.merged(plugin, "editor.yml");
+        var yaml = ResourceFiles.versioned(plugin, "editor.yml");
         var kinds = yaml.getConfigurationSection("kinds");
         Map<String, Map<String, Prop>> newProps = new LinkedHashMap<>();
         Map<String, List<Section>> newSections = new LinkedHashMap<>();

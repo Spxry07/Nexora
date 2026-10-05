@@ -1,4 +1,4 @@
-file-version: 2
+file-version: 3
 id-prefix: "demo-"
 skin-property: "textures"
 objects:
@@ -289,3 +289,37 @@ objects:
       particle-radius: 1.8
       particle-interval: 6
       actions: "[sound] entity.iron_golem.hurt\n[message] &#FF3B3B&lᴛɪᴛᴀɴ &7» &fAny entity type, any scale."
+  puppet:
+    kind: npc
+    offset: {forward: 6, right: -1.8, up: 0, yaw: 180}
+    copy-skin: true
+    props:
+      entity-type: "ARMOR_STAND"
+      name: "&#FF66CC&lᴘᴜᴘᴘᴇᴛ"
+      name-visible: true
+      look-at: false
+      glow: true
+      glow-color: "light_purple"
+      animation-enabled: true
+      animation-speed: 1
+      animation: "6 head=0,0,0 body=0,0,0 larm=-30,0,-20 rarm=-30,0,20 lleg=-10,0,0 rleg=10,0,0\n6 head=-10,20,0 body=0,15,0 larm=-150,0,-30 rarm=-20,0,60 lleg=15,0,0 rleg=-15,0,0\n6 head=0,0,0 body=0,0,0 larm=-30,0,-20 rarm=-30,0,20 lleg=-10,0,0 rleg=10,0,0\n6 head=-10,-20,0 body=0,-15,0 larm=-20,0,-60 rarm=-150,0,30 lleg=15,0,0 rleg=-15,0,0"
+      particle: "NOTE"
+      particle-count: 1
+      particle-radius: 0.6
+      particle-interval: 8
+    equipment:
+      CHEST: "LEATHER_CHESTPLATE"
+      LEGS: "LEATHER_LEGGINGS"
+      FEET: "LEATHER_BOOTS"
+  floor-sign:
+    kind: hologram
+    offset: {forward: 3.5, right: 1.2, up: 0.05, yaw: 180}
+    props:
+      line-spacing: 0.05
+      particle: "GLOW"
+      particle-count: 1
+      particle-radius: 0.8
+      particle-interval: 10
+    lines:
+      - {type: "TEXT", text: "&lᴡᴇʟᴄᴏᴍᴇ", effect: "FLICKER", effect-speed: 2, color-a: "#40CEFC", color-b: "#B266FF", scale: 1.6, billboard: "FIXED", rot-x: -90, background-default: false, background: "#00000000", offset-z: 0.9}
+      - {type: "TEXT", text: "ɴᴇᴏɴ ꜰʟᴏᴏʀ ᴛᴇxᴛ", effect: "FADE", effect-speed: 1, color-a: "#6293F0", color-b: "#FFFFFF", billboard: "FIXED", rot-x: -90, background-default: false, background: "#00000000", offset-z: 0.3}

@@ -256,6 +256,18 @@ public final class Hologram extends NexoraObject {
     }
 
     private double[] place(HoloLine line, int index, double stackOffset, int count, double cx, double cy, double cz, double seconds) {
+        var position = layoutPlace(line, index, stackOffset, count, cx, cy, cz, seconds);
+        if (line.offsetX != 0 || line.offsetZ != 0) {
+            double yawRad = Math.toRadians(baseYaw);
+            double sin = Math.sin(yawRad);
+            double cos = Math.cos(yawRad);
+            position[0] += -cos * line.offsetX - sin * line.offsetZ;
+            position[2] += -sin * line.offsetX + cos * line.offsetZ;
+        }
+        return position;
+    }
+
+    private double[] layoutPlace(HoloLine line, int index, double stackOffset, int count, double cx, double cy, double cz, double seconds) {
         double y = cy;
         if (waveHeight > 0) y += waveHeight * Math.sin(Math.TAU * waveSpeed * seconds + Math.TAU * index / Math.max(1, count));
         double turn = Math.toRadians(layoutSpeed * seconds);
@@ -298,7 +310,7 @@ public final class Hologram extends NexoraObject {
 
     private void update(LineState state, FileConfiguration config, boolean transforming, float spin, float sway, float pulse, List<Packet<?>> packets) {
         var handle = state.handle;
-        if (transforming) state.display.setTransformation(transformation(state.block, (float) state.line.scale * pulse, spin, sway));
+        if (transforming) state.display.setTransformation(transformation(state.block, state.line, (float) state.line.scale * pulse, spin, sway));
         if (state.dynamic && state.display instanceof TextDisplay text) {
             var rendered = TextEffects.render(config, state.line, ticks);
             if (!rendered.equals(state.rendered)) {
@@ -339,7 +351,7 @@ public final class Hologram extends NexoraObject {
             default -> textDisplay(world, location, line, rendered);
         };
         display.setBillboard(parse(Display.Billboard.class, line.billboard, Display.Billboard.CENTER));
-        display.setTransformation(transformation(HoloLine.BLOCK.equals(type), (float) line.scale, 0f, 0f));
+        display.setTransformation(transformation(HoloLine.BLOCK.equals(type), line, (float) line.scale, 0f, 0f));
         display.setInterpolationDuration(interval);
         display.setTeleportDuration(Math.min(interval, MAX_TELEPORT_DURATION));
         display.setViewRange(range);
@@ -393,8 +405,11 @@ public final class Hologram extends NexoraObject {
         return (block ? material.isBlock() : material.isItem()) ? material : fallback;
     }
 
-    private static Transformation transformation(boolean block, float scale, float spin, float sway) {
-        var rotation = new Quaternionf().rotationY(spin).rotateZ(sway);
+    private static Transformation transformation(boolean block, HoloLine line, float scale, float spin, float sway) {
+        var rotation = new Quaternionf().rotationY(spin).rotateZ(sway)
+            .rotateY((float) Math.toRadians(line.rotY))
+            .rotateX((float) Math.toRadians(line.rotX))
+            .rotateZ((float) Math.toRadians(line.rotZ));
         var size = new Vector3f(scale, scale, scale);
         var translation = block ? new Vector3f(BLOCK_CENTER, BLOCK_CENTER, BLOCK_CENTER).mul(size).rotate(rotation) : new Vector3f();
         return new Transformation(translation, rotation, size, new Quaternionf());
