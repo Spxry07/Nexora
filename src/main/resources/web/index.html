@@ -6,19 +6,22 @@
 <meta name="referrer" content="no-referrer">
 <title>Nexora Editor</title>
 <style>
-:root{--bg:#10131a;--panel:#1d222e;--panel2:#262c3b;--lo:#0a0c11;--hi:#4b5469;--text:#e9edf7;--muted:#97a1b8;--accent:#6293F0;--accent2:#8fb2ff;--danger:#ff5555;--ok:#55ff8a;--btn:#3d4558;--btn-hi:#7a86a3;--btn-lo:#171b25;--btn-hover:#4f5b78;--field:#0a0d13;--font:"Pixelify Sans","Courier New",ui-monospace,monospace;color-scheme:dark}
+:root{--bg:#10131a;--panel:#1d222e;--panel2:#262c3b;--lo:#0a0c11;--hi:#4b5469;--text:#eef2fb;--muted:#aab4ca;--accent:#6293F0;--accent2:#9dbaff;--danger:#ff5555;--ok:#55ff8a;--btn:#3d4558;--btn-hi:#7a86a3;--btn-lo:#171b25;--btn-hover:#4f5b78;--field:#0a0d13;--inspw:410px;--font:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;--pix:"Pixelify Sans","Courier New",ui-monospace,monospace;color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px/1.4 var(--font);overflow:hidden}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14.5px/1.45 var(--font);overflow:hidden;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit;border-radius:0}
+input[type=number],.val{font-variant-numeric:tabular-nums}
+.brand,.card>h2,.itab,dialog h3,.sub{font-family:var(--pix);letter-spacing:.02em}
 button{cursor:pointer}
 [hidden]{display:none!important}
 .tex{image-rendering:pixelated;display:block}
 .muted{color:var(--muted)}
 .grow{flex:1}
-#app{display:grid;grid-template-columns:268px minmax(0,1fr) 410px;height:100vh;height:100dvh}
+#app{display:grid;grid-template-columns:268px minmax(0,1fr) var(--inspw);height:100vh;height:100dvh}
+#app.wide{--inspw:min(700px,54vw)}
 #side{background:var(--panel);border-right:2px solid var(--lo);display:flex;flex-direction:column;min-height:0;min-width:0}
 .side-head{padding:12px 12px 6px;display:flex;align-items:center;justify-content:space-between}
-.brand{font-weight:600;letter-spacing:.06em;color:var(--accent);font-size:20px;text-shadow:2px 2px 0 #000a}
+.brand{font-weight:700;letter-spacing:.02em;color:var(--accent);font-size:20px;text-shadow:2px 2px 0 #000a}
 .search-row{display:flex;gap:6px;padding:4px 12px 8px}
 .search-row input{flex:1;min-width:0}
 .chips{display:flex;gap:6px;padding:0 12px 8px;flex-wrap:wrap}
@@ -82,7 +85,7 @@ input[type=color]{width:38px;height:32px;padding:0;border:2px solid var(--lo);ba
 .itab:hover{color:#fff}
 #inspBody{flex:1;overflow:auto;padding:12px;min-height:0}
 .card{background:var(--panel2);border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);margin-bottom:12px}
-.card>h2{margin:0;padding:6px 10px;font-size:14px;font-weight:600;color:var(--accent);letter-spacing:.04em;background:#00000030;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card>h2{margin:0;padding:6px 10px;font-size:15px;font-weight:700;color:var(--accent);letter-spacing:.02em;background:#00000030;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .card .body{padding:10px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 12px}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
@@ -148,7 +151,7 @@ input[type=color]{width:38px;height:32px;padding:0;border:2px solid var(--lo);ba
 @keyframes kpulse{50%{transform:scale(1.25)}}
 @keyframes ksway{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(16deg)}}
 @keyframes kwave{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
-.sub{margin:10px 0 6px;font-size:12px;color:var(--accent);letter-spacing:.05em}
+.sub{margin:10px 0 6px;font-size:13px;color:var(--accent);letter-spacing:.02em}
 .note{font-size:12px;color:var(--muted);margin:8px 0 0}
 .line{border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);margin-bottom:8px;background:var(--btn-lo)}
 .line-head{display:flex;gap:4px;align-items:center;padding:4px 6px}
@@ -173,7 +176,41 @@ input[type=color]{width:38px;height:32px;padding:0;border:2px solid var(--lo);ba
 .stage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
 .stack{display:flex;flex-direction:column;align-items:center;gap:var(--gap,6px);position:relative;max-width:100%}
 .pv-line{position:relative;max-width:100%}
-.box{padding:2px 5px;font-family:var(--font);white-space:pre-wrap;word-break:break-word;line-height:1.25}
+.box{padding:2px 5px;font-family:var(--pix);white-space:pre-wrap;word-break:break-word;line-height:1.25}
+.nvwrap{display:flex;gap:8px;align-items:stretch;margin-bottom:12px}
+.nv{position:relative;flex:1;min-width:0;height:var(--nvh,340px);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);background:radial-gradient(circle at 50% 38%,#2a3555,#0b0e14 78%);overflow:hidden;touch-action:none}
+.nv.tall{--nvh:420px}
+.nv canvas{position:absolute;left:0;top:0;display:block}
+.nv .ov{pointer-events:none}
+.nv .fb{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.nv .cap{position:absolute;left:6px;bottom:4px;font-size:12px;color:var(--muted);pointer-events:none;text-shadow:1px 1px 0 #000}
+.badges{display:flex;flex-direction:column;gap:6px;width:60px;flex:none}
+.badge{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10.5px;color:var(--muted);background:var(--field);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);padding:3px 1px;text-align:center;line-height:1.1}
+.badge img{width:28px;height:28px}
+.scene3{position:relative;height:300px;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);background:#0a0d14;overflow:hidden;touch-action:none}
+.scene3 canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block;cursor:grab}
+.tl{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px}
+.fr{flex:none;min-width:58px;background:var(--btn-lo);border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);padding:3px 8px;text-align:center;color:var(--muted);line-height:1.2}
+.fr b{display:block;color:var(--text);font-weight:600}
+.fr.on{background:#2f4f99;color:#fff;border-color:var(--accent2) #1b2c57 #1b2c57 var(--accent2)}
+.fr.cur{outline:2px solid var(--ok);outline-offset:-2px}
+.limbrow{background:var(--btn-lo);border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);padding:6px 8px 8px;margin-bottom:6px}
+.limbrow.on{border-color:var(--accent2) #1b2c57 #1b2c57 var(--accent2);background:#1f2a47}
+.limbrow .lh{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:2px}
+.limbrow .lh button.nm{background:none;border:0;padding:0;font-weight:600;color:var(--text)}
+.axes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.axis{display:flex;flex-direction:column;gap:0;min-width:0}
+.axis .ah{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.axis .ah input{width:100%;min-width:0;padding:1px 4px}
+.tbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.tbar input[type=range]{flex:1;min-width:120px}
+.warn{color:var(--danger)}
+.okc{color:var(--ok)}
+.hintbox{background:#2a2410;border:2px solid #7a6420;padding:8px 10px;margin-bottom:12px;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hintbox.good{background:#10281a;border-color:#2f7a4a}
+.hintbox span{flex:1;min-width:180px}
+.modechips{display:flex;gap:6px;flex-wrap:wrap}
+.modechips .chip{padding:3px 12px;font-size:13.5px}
 .box .r{min-height:1.25em}
 .box img{width:100%;height:100%}
 .tile{border:2px solid #4c5d82;background:#27324a;display:grid;place-items:center;color:#cfd8ee}
@@ -200,7 +237,7 @@ dialog .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;align
 #gate h2{color:var(--accent);margin:0 0 8px}
 @media (max-width:1180px){
 #app{grid-template-columns:268px minmax(0,1fr)}
-#insp{position:fixed;top:0;right:0;bottom:0;width:min(410px,100vw);z-index:50;transform:translateX(104%);transition:transform .18s;box-shadow:-8px 0 24px #0008}
+#insp{position:fixed;top:0;right:0;bottom:0;width:min(var(--inspw),100vw);z-index:50;transform:translateX(104%);transition:transform .18s;box-shadow:-8px 0 24px #0008}
 #insp.open{transform:none}
 #inspToggle{display:inline-block}
 }
@@ -209,6 +246,7 @@ dialog .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;align
 #side{position:fixed;top:0;bottom:0;left:0;width:min(86vw,320px);transform:translateX(-104%);transition:transform .18s;z-index:60}
 #side.open{transform:none}
 #scrim.on{display:block;position:fixed;inset:0;background:#000a;z-index:55}
+#app.wide{--inspw:410px}
 #insp{top:auto;left:0;right:0;width:auto;height:64vh;border-left:0;border-top:2px solid var(--hi);transform:translateY(104%);box-shadow:0 -8px 24px #0008}
 #insp.open{transform:none}
 #menuBtn{display:inline-block}
@@ -281,7 +319,6 @@ dialog .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;align
 
 const $ = s => document.querySelector(s);
 const TOKEN_KEY = 'nexora.token';
-const TICK_MS = 50;
 const SAVE_MS = 400;
 const ME_MS = 3000;
 const ENSURE_MS = 200;
@@ -316,14 +353,52 @@ const SHAPE_MS = 60;
 const SHAPE_SPIN = 0.0016;
 const STEVE = 'MHF_Steve';
 const ACCENT = '#6293F0';
-const FONT_CANVAS = '"Pixelify Sans","Courier New",monospace';
+const FONT_CANVAS = "'Inter',system-ui,'Segoe UI',sans-serif";
+const FONT_PIX = '"Pixelify Sans","Courier New",monospace';
+const TAU = Math.PI * 2;
+const DEG = Math.PI / 180;
+const LIMBS = ['head', 'body', 'larm', 'rarm', 'lleg', 'rleg'];
+const LIMB_LABEL = {head: 'Head', body: 'Body', larm: 'Left arm', rarm: 'Right arm', lleg: 'Left leg', rleg: 'Right leg'};
+const LIMB_PART = {head: 'head', body: 'body', larm: 'leftArm', rarm: 'rightArm', lleg: 'leftLeg', rleg: 'rightLeg'};
+const LIMB_PICK = {head: [5, 5], body: [4.8, 6], larm: [3.4, 6], rarm: [3.4, 6], lleg: [3.4, 6], rleg: [3.4, 6]};
+const POSE_DEFAULT = {head: [0, 0, 0], body: [0, 0, 0], larm: [-10, 0, -10], rarm: [-15, 0, 10], lleg: [-1, 0, -1], rleg: [1, 0, 1]};
+const POSE_SIGN_X = 1;
+const POSE_SIGN_Y = -1;
+const POSE_SIGN_Z = -1;
+const ANGLE_LIM = 180;
+const DRAG_DEG_PER_PX = 0.7;
+const ANIM_MAX_FRAMES = 256;
+const ANIM_TICK_MIN = 1;
+const ANIM_TICK_MAX = 1200;
+const ANIM_TICK_DEF = 10;
+const ANIM_TEXT_MAX = 8192;
+const TICKS_PER_MS = 0.02;
+const AXES = ['X', 'Y', 'Z'];
+const VIEW_FOV = 0.8;
+const NEAR = 0.05;
+const TEX_K = 3;
+const TEX_FONT = 8 * TEX_K;
+const TEX_LINE = 9 * TEX_K;
+const TEX_PAD = TEX_K;
+const TEX_MAX_W = 1800;
+const BLOCK_PER_TEXPX = 0.025 / TEX_K;
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+const TORNADO_MIN_RADIUS = 0.15;
+const DEFAULT_LINE_WIDTH = 200;
+const GRID_HALF = 6;
+const SCENE_MIN_DIST = 1.5;
+const SCENE_MAX_DIST = 60;
+const SCENE_ORBIT_K = 0.008;
+const SCENE_ZOOM_K = 0.0012;
+const FLICKER_CHANCE_DEF = 0.35;
+const FADE_STEP_DEF = 0.08;
+const LOOK_MODES = [['NONE', 'Normal'], ['SOLID', 'One color'], ['FLICKER', 'Flicker'], ['FADE', 'Fade'], ['RAINBOW', 'Rainbow'], ['WAVE', 'Wave']];
+const MODE_B = new Set(['FLICKER', 'FADE', 'WAVE']);
+const MODE_A = new Set(['SOLID', 'FLICKER', 'FADE', 'WAVE']);
+const POSE_NAME = 'ARMOR_STAND';
 const COLORS = {'0':'#000000','1':'#0000AA','2':'#00AA00','3':'#00AAAA','4':'#AA0000','5':'#AA00AA','6':'#FFAA00','7':'#AAAAAA','8':'#555555','9':'#5555FF','a':'#55FF55','b':'#55FFFF','c':'#FF5555','d':'#FF55FF','e':'#FFFF55','f':'#FFFFFF'};
 const GLOW_HEX = {white:'#FFFFFF',gray:'#AAAAAA',dark_gray:'#555555',black:'#000000',red:'#FF5555',dark_red:'#AA0000',gold:'#FFAA00',yellow:'#FFFF55',green:'#55FF55',dark_green:'#00AA00',aqua:'#55FFFF',dark_aqua:'#00AAAA',blue:'#5555FF',dark_blue:'#0000AA',light_purple:'#FF55FF',dark_purple:'#AA00AA'};
 const RESET = {c:'#FFFFFF',b:false,i:false,u:false,s:false,k:false};
-const PX_BLOCK = 70;
-const FONT_PX = 14;
-const WIDTH_PX = 1.75;
-const OFFSET_PX = 40;
 const SAMPLE_PLAYER = 'Steve';
 const ENTITY_TEX = {IRON_GOLEM:'iron_block', SNOW_GOLEM:'snowball', ARMOR_STAND:'armor_stand'};
 const EQUIP_ORDER = ['HEAD','CHEST','LEGS','FEET','HAND','OFF_HAND'];
@@ -364,7 +439,7 @@ const GEN = {
   fig8: r => Array.from({length: MAX_GEN_POINTS}, (_, i) => { const a = i / MAX_GEN_POINTS * Math.PI * 2; return [Math.sin(a) * r, Math.sin(2 * a) * r / 2]; })
 };
 const TABS = {
-  npc: [['quick','Quick'],['movement','Movement'],['appearance','Appearance'],['advanced','Advanced']],
+  npc: [['quick','Quick'],['animate','Animate'],['movement','Movement'],['appearance','Appearance'],['advanced','Advanced']],
   hologram: [['quick','Quick'],['movement','Movement'],['appearance','Appearance'],['advanced','Advanced'],['lines','Lines']]
 };
 const NPC_APPEARANCE = [
@@ -389,9 +464,10 @@ try {
 }
 if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 
-const S = {schema: null, cfg: null, assets: {}, objects: [], filter: 'all', search: '', cur: null, props: {}, lines: [], pm: {}, path: [], undo: [], tab: 'quick', pending: false, pathPending: false, me: null, mats: null, drawing: false, ui: {radius: 5, shape: null}, skin: null};
+const S = {schema: null, cfg: null, assets: {}, objects: [], filter: 'all', search: '', cur: null, props: {}, lines: [], pm: {}, path: [], undo: [], tab: 'quick', pending: false, pathPending: false, me: null, mats: null, drawing: false, ui: {radius: 5, shape: null}, skin: null, anim: null, scene: null, wide: false};
 let uid = 0;
 let T0 = performance.now();
+let fontEpoch = 0;
 
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
@@ -508,7 +584,11 @@ function loadFont() {
   const l = document.createElement('link');
   l.rel = 'stylesheet';
   l.href = u;
-  l.onload = () => { if (document.fonts && document.fonts.load) document.fonts.load('14px "Pixelify Sans"').then(redraw, () => {}); };
+  l.onload = () => {
+    if (!document.fonts || !document.fonts.load) return;
+    const done = () => { fontEpoch++; redraw(); };
+    Promise.all([document.fonts.load('500 24px "Pixelify Sans"'), document.fonts.load('700 24px "Pixelify Sans"'), document.fonts.load('14px Inter')]).then(done, done);
+  };
   document.head.append(l);
 }
 
@@ -636,10 +716,33 @@ function placeholders(text) {
   return text.replace(/\{(online|max|time|date|player)\}/g, (m, k) => ({online: ph.online, max: ph.max, time: fmtDate(ph.timeFormat, now), date: fmtDate(ph.dateFormat, now), player: SAMPLE_PLAYER})[k]);
 }
 
-function applyEffect(chars, line, tick) {
+function unitHash(step, ident) {
+  let h = Math.imul(step | 0, 0x9E3779B1) ^ Math.imul((ident | 0) + 1, 0x85EBCA6B);
+  h = Math.imul(h ^ (h >>> 16), 0x85EBCA6B);
+  h = Math.imul(h ^ (h >>> 13), 0xC2B2AE35);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+
+function fxNum(fx, key, def) {
+  const v = Number(fx && fx[key]);
+  return Number.isFinite(v) && fx[key] !== '' && fx[key] != null ? v : def;
+}
+
+function recolor(chars, rgb) {
+  return chars.map(c => ({ch: c.ch, st: Object.assign({}, c.st, {c: rgb})}));
+}
+
+function applyEffect(chars, line, tick, ident) {
   const fx = S.cfg.effects;
   const step = Math.floor(tick / Math.max(1, Number(line['effect-speed']) || 1));
   switch (line.effect) {
+    case 'SOLID':
+      return recolor(chars, parseColor(line['color-a'], '#FFFFFF').rgb);
+    case 'FLICKER':
+      return recolor(chars, parseColor(unitHash(step, ident || 0) < fxNum(fx, 'flickerChance', FLICKER_CHANCE_DEF) ? line['color-b'] : line['color-a'], '#FFFFFF').rgb);
+    case 'FADE':
+      return recolor(chars, mix(line['color-a'], line['color-b'], 0.5 + 0.5 * Math.sin(step * fxNum(fx, 'fadeStep', FADE_STEP_DEF) * TAU)));
     case 'TYPEWRITER': {
       const total = chars.filter(c => c.ch !== '\n').length;
       const n = step % (total + fx.typewriterHold);
@@ -695,85 +798,544 @@ function charsToRows(chars) {
   return rows;
 }
 
-function renderText(text, line, tick) {
+function textChars(text, line, tick, ident) {
   let frame = String(text || '');
   const sep = S.cfg.frameSeparator;
   if (sep && frame.includes(sep)) {
     const frames = frame.split(sep);
-    frame = frames[Math.floor(tick / Math.max(1, Number(line['frame-interval']) || 1)) % frames.length];
+    frame = frames[Math.floor(tick / Math.max(1, Number(line['frame-interval']) || 1)) % frames.length].trim();
   }
-  return charsToRows(applyEffect(parseText(placeholders(frame)), line, tick));
+  return applyEffect(parseText(placeholders(frame)), line, tick, ident);
 }
 
-function isAnimated(l) {
-  if (l.type !== 'TEXT') return false;
-  const sep = S.cfg.frameSeparator;
-  const text = String(l.text || '');
-  return (sep && text.includes(sep)) || l.effect !== 'NONE' || /\{(time|online|max|date)\}|&k/i.test(text);
+function renderText(text, line, tick) {
+  return charsToRows(textChars(text, line, tick, 0));
 }
 
-function lineNode(l) {
-  const root = el('div', {class: 'pv-line'});
-  const scale = Math.max(0.1, Number(l.scale) || 1);
-  const offset = Number(l['offset-y']) || 0;
-  if (offset) { root.style.position = 'relative'; root.style.top = (-offset * OFFSET_PX) + 'px'; }
-  const box = el('div', {class: 'box'});
-  if (l.type === 'TEXT') {
-    box.style.fontSize = (FONT_PX * scale) + 'px';
-    box.style.textAlign = String(l.alignment || 'CENTER').toLowerCase();
-    box.style.maxWidth = ((Number(l['line-width']) || 200) * WIDTH_PX * scale) + 'px';
-    box.style.background = l['background-default'] === 'true' ? 'rgba(0,0,0,.25)' : rgba(parseColor(l.background, '#000000'));
-    box.style.opacity = String(Math.max(30, Math.min(255, Number(l.opacity) || 255)) / 255);
-    if (l.shadow === 'true') box.style.textShadow = '1px 1px 0 rgba(0,0,0,.65)';
-  } else {
-    const size = Math.round(40 * scale);
+function mMul(a, b) {
+  const o = new Array(9);
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) o[r * 3 + c] = a[r * 3] * b[c] + a[r * 3 + 1] * b[3 + c] + a[r * 3 + 2] * b[6 + c];
+  return o;
+}
+function mRx(a) { const c = Math.cos(a), s = Math.sin(a); return [1, 0, 0, 0, c, -s, 0, s, c]; }
+function mRy(a) { const c = Math.cos(a), s = Math.sin(a); return [c, 0, s, 0, 1, 0, -s, 0, c]; }
+function mRz(a) { const c = Math.cos(a), s = Math.sin(a); return [c, -s, 0, s, c, 0, 0, 0, 1]; }
+function mVec(m, v) { return [m[0] * v[0] + m[1] * v[1] + m[2] * v[2], m[3] * v[0] + m[4] * v[1] + m[5] * v[2], m[6] * v[0] + m[7] * v[1] + m[8] * v[2]]; }
+function vAdd(a, b) { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+function vSub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+function vDot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+function vCross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+function vNorm(a) { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }
+
+function holoParams() {
+  const p = S.props;
+  return {
+    layout: String(p.layout || 'STACK').toUpperCase(),
+    radius: num(p['layout-radius']),
+    layoutSpeed: num(p['layout-speed']),
+    helix: num(p['helix-step']),
+    spacing: num(p['line-spacing']) || 0.3,
+    waveH: num(p['wave-height']),
+    waveS: num(p['wave-speed']),
+    spin: num(p['spin-speed']),
+    bobH: num(p['bob-height']),
+    bobS: num(p['bob-speed']),
+    orbitR: num(p['orbit-radius']),
+    orbitS: num(p['orbit-speed']),
+    pulseA: num(p['pulse-amount']),
+    pulseS: num(p['pulse-speed']),
+    swayA: num(p['sway-angle']),
+    swayS: num(p['sway-speed']),
+    yaw: S.cur ? num(S.cur.yaw) : 0
+  };
+}
+
+function lineParams(l) {
+  return {
+    scale: Math.max(0.01, Number(l.scale) || 1),
+    offX: num(l['offset-x']),
+    offY: num(l['offset-y']),
+    offZ: num(l['offset-z']),
+    rx: num(l['rot-x']) * DEG,
+    ry: num(l['rot-y']) * DEG,
+    rz: num(l['rot-z']) * DEG,
+    bb: String(l.billboard || 'CENTER').toUpperCase()
+  };
+}
+
+function holoCenter(h, secs) {
+  const a = TAU * h.orbitS * secs;
+  const y = h.bobH > 0 ? h.bobH * Math.sin(TAU * h.bobS * secs) : 0;
+  return h.orbitR > 0 ? [h.orbitR * Math.cos(a), y, h.orbitR * Math.sin(a)] : [0, y, 0];
+}
+
+function holoPlace(h, lp, i, n, c, secs) {
+  const yawRad = h.yaw * DEG;
+  const cnt = Math.max(1, n);
+  let y = c[1];
+  if (h.waveH > 0) y += h.waveH * Math.sin(TAU * h.waveS * secs + TAU * i / cnt);
+  const turn = h.layoutSpeed * DEG * secs;
+  const circle = (yy, r, a) => {
+    const dx = Math.cos(a), dz = Math.sin(a);
+    return [c[0] + r * dx, yy, c[2] + r * dz, Math.atan2(-dx, dz) / DEG];
+  };
+  let p;
+  switch (h.layout) {
+    case 'RING':
+      p = circle(y + lp.offY, h.radius, TAU * i / cnt + turn);
+      break;
+    case 'WHEEL': {
+      const a = TAU * i / cnt + turn;
+      const side = h.radius * Math.cos(a);
+      p = [c[0] - Math.cos(yawRad) * side, y + lp.offY + h.radius * Math.sin(a), c[2] - Math.sin(yawRad) * side, h.yaw];
+      break;
+    }
+    case 'SPHERE': {
+      const uy = 1 - 2 * (i + 0.5) / cnt;
+      const ring = Math.sqrt(Math.max(0, 1 - uy * uy));
+      const th = GOLDEN_ANGLE * i + turn;
+      const dx = Math.cos(th) * ring, dz = Math.sin(th) * ring;
+      p = [c[0] + h.radius * dx, y + lp.offY + h.radius * uy, c[2] + h.radius * dz, Math.atan2(-dx, dz) / DEG];
+      break;
+    }
+    case 'TORNADO': {
+      const level = n <= 1 ? 1 : (n - 1 - i) / (n - 1);
+      p = circle(y + (n - 1 - i) * h.spacing + lp.offY, h.radius * Math.max(TORNADO_MIN_RADIUS, level), h.helix * DEG * i + turn);
+      break;
+    }
+    case 'HELIX':
+      p = circle(y + (n - 1 - i) * h.spacing + lp.offY, h.radius, h.helix * DEG * i + turn);
+      break;
+    case 'ROW': {
+      const along = (i - (n - 1) / 2) * h.spacing;
+      p = [c[0] - Math.cos(yawRad) * along, y + lp.offY, c[2] - Math.sin(yawRad) * along, h.yaw];
+      break;
+    }
+    default:
+      p = [c[0], y + (n - 1 - i) * h.spacing + lp.offY, c[2], h.yaw];
+  }
+  if (lp.offX || lp.offZ) {
+    const s = Math.sin(yawRad), co = Math.cos(yawRad);
+    p[0] += -co * lp.offX - s * lp.offZ;
+    p[2] += -s * lp.offX + co * lp.offZ;
+  }
+  return p;
+}
+
+const measureCtx = document.createElement('canvas').getContext('2d');
+const charWidths = new Map();
+function charFont(st) { return (st.i ? 'italic ' : '') + (st.b ? '700' : '500') + ' ' + TEX_FONT + 'px ' + FONT_PIX; }
+function charW(ch, st) {
+  const font = charFont(st);
+  const key = fontEpoch + font + ch;
+  let w = charWidths.get(key);
+  if (w == null) {
+    measureCtx.font = font;
+    w = measureCtx.measureText(ch).width;
+    charWidths.set(key, w);
+  }
+  return w;
+}
+
+function layoutChars(chars, maxW) {
+  const rows = [];
+  let cur = [], curW = 0, sp = -1;
+  for (const c of chars) {
+    if (c.ch === '\n') { rows.push(cur); cur = []; curW = 0; sp = -1; continue; }
+    const w = charW(c.ch, c.st);
+    if (curW + w > maxW && cur.length) {
+      if (sp >= 0) {
+        const rest = cur.splice(sp + 1);
+        rows.push(cur);
+        cur = rest;
+        curW = rest.reduce((a, x) => a + x.w, 0);
+      } else {
+        rows.push(cur);
+        cur = [];
+        curW = 0;
+      }
+      sp = -1;
+    }
+    cur.push({ch: c.ch, st: c.st, w});
+    curW += w;
+    if (c.ch === ' ') sp = cur.length - 1;
+  }
+  rows.push(cur);
+  return rows;
+}
+
+function rowWidth(r) {
+  let e = r.length;
+  while (e > 0 && r[e - 1].ch === ' ') e--;
+  let w = 0;
+  for (let i = 0; i < e; i++) w += r[i].w;
+  return w;
+}
+
+function textSig(chars, l) {
+  let s = fontEpoch + '|' + [l['line-width'], l.alignment, l.background, l['background-default'], l.opacity, l.shadow].join(',') + '|';
+  for (const c of chars) s += c.ch + c.st.c + (c.st.b ? 'b' : '') + (c.st.i ? 'i' : '') + (c.st.u ? 'u' : '') + (c.st.s ? 's' : '') + (c.st.k ? Math.random() : '');
+  return s;
+}
+
+function buildTextTex(chars, l) {
+  const maxW = Math.max(8, (Number(l['line-width']) || DEFAULT_LINE_WIDTH) * TEX_K);
+  const rows = layoutChars(chars, maxW);
+  const widths = rows.map(rowWidth);
+  const textW = Math.max(1, Math.ceil(Math.max(0, ...widths)));
+  const W = Math.min(TEX_MAX_W, textW + TEX_PAD * 2);
+  const Hh = rows.length * TEX_LINE + TEX_PAD * 2;
+  const cv = document.createElement('canvas');
+  cv.width = W;
+  cv.height = Hh;
+  const g = cv.getContext('2d');
+  g.fillStyle = l['background-default'] === 'true' ? 'rgba(0,0,0,.25)' : rgba(parseColor(l.background, '#000000'));
+  g.fillRect(0, 0, W, Hh);
+  g.textBaseline = 'middle';
+  g.textAlign = 'left';
+  g.globalAlpha = clamp(Number(l.opacity) || 255, 30, 255) / 255;
+  const align = String(l.alignment || 'CENTER').toUpperCase();
+  const shadow = l.shadow === 'true';
+  rows.forEach((r, ri) => {
+    let x = align === 'LEFT' ? TEX_PAD : align === 'RIGHT' ? W - TEX_PAD - widths[ri] : (W - widths[ri]) / 2;
+    const cy = TEX_PAD + ri * TEX_LINE + TEX_LINE / 2;
+    for (const c of r) {
+      const ch = c.st.k ? OBF[Math.floor(Math.random() * OBF.length)] : c.ch;
+      g.font = charFont(c.st);
+      if (shadow) { g.fillStyle = mix(c.st.c, '#000000', 0.75); g.fillText(ch, x + TEX_K, cy + TEX_K); }
+      g.fillStyle = c.st.c;
+      g.fillText(ch, x, cy);
+      if (c.st.u) g.fillRect(x, cy + TEX_FONT / 2, c.w, TEX_K);
+      if (c.st.s) g.fillRect(x, cy - 1, c.w, TEX_K);
+      x += c.w;
+    }
+  });
+  return {canvas: cv, w: W, h: Hh};
+}
+
+function orientFor(bb, yawDeg, cam, elev) {
+  if (bb === 'CENTER') return [cam.right[0], cam.up[0], -cam.f[0], cam.right[1], cam.up[1], -cam.f[1], cam.right[2], cam.up[2], -cam.f[2]];
+  if (bb === 'VERTICAL') return mRy(Math.atan2(-cam.f[0], -cam.f[2]));
+  if (bb === 'HORIZONTAL') return mMul(mRy(-yawDeg * DEG), mRx(-elev));
+  return mRy(-yawDeg * DEG);
+}
+
+const CUBE = [
+  {tl: [-1, 1, 1], tr: [1, 1, 1], bl: [-1, -1, 1], shade: 0.82},
+  {tl: [1, 1, -1], tr: [-1, 1, -1], bl: [1, -1, -1], shade: 0.82},
+  {tl: [1, 1, 1], tr: [1, 1, -1], bl: [1, -1, 1], shade: 0.66},
+  {tl: [-1, 1, -1], tr: [-1, 1, 1], bl: [-1, -1, -1], shade: 0.66},
+  {tl: [-1, 1, -1], tr: [1, 1, -1], bl: [-1, 1, 1], shade: 1},
+  {tl: [-1, -1, 1], tr: [1, -1, 1], bl: [-1, -1, -1], shade: 0.5}
+];
+
+function quadOf(base, M, tl, tr, bl) {
+  const w = v => vAdd(base, mVec(M, v));
+  return {tl: w(tl), tr: w(tr), bl: w(bl)};
+}
+
+function sceneCamera(sc, W, H) {
+  const ce = Math.cos(sc.el);
+  const dir = [Math.sin(sc.az) * ce, Math.sin(sc.el), Math.cos(sc.az) * ce];
+  const pos = vAdd(sc.target, dir.map(x => x * sc.dist));
+  const f = vNorm(vSub(sc.target, pos));
+  const right = vNorm(vCross(f, [0, 1, 0]));
+  const up = vCross(right, f);
+  return {pos, f, right, up, F: (H / 2) / Math.tan(VIEW_FOV / 2), W, H};
+}
+
+function project(cam, v) {
+  const r = vSub(v, cam.pos);
+  const z = vDot(r, cam.f);
+  if (z < NEAR) return null;
+  return {x: cam.W / 2 + vDot(r, cam.right) / z * cam.F, y: cam.H / 2 - vDot(r, cam.up) / z * cam.F, z};
+}
+
+function projectSegment(cam, a, b) {
+  const za = vDot(vSub(a, cam.pos), cam.f), zb = vDot(vSub(b, cam.pos), cam.f);
+  if (za < NEAR && zb < NEAR) return null;
+  let p = a, q = b;
+  if (za < NEAR) p = vAdd(a, vSub(b, a).map(x => x * (NEAR - za) / (zb - za)));
+  else if (zb < NEAR) q = vAdd(a, vSub(b, a).map(x => x * (NEAR - za) / (zb - za)));
+  const pa = project(cam, p), pb = project(cam, q);
+  return pa && pb ? [pa, pb] : null;
+}
+
+function lerp3(q, u, v) {
+  return [q.tl[0] + (q.tr[0] - q.tl[0]) * u + (q.bl[0] - q.tl[0]) * v, q.tl[1] + (q.tr[1] - q.tl[1]) * u + (q.bl[1] - q.tl[1]) * v, q.tl[2] + (q.tr[2] - q.tl[2]) * u + (q.bl[2] - q.tl[2]) * v];
+}
+
+function drawQuad(g, cam, q, dpr) {
+  const cols = q.nx, rows = q.ny;
+  const nodes = [];
+  for (let j = 0; j <= rows; j++) {
+    for (let i = 0; i <= cols; i++) {
+      const pj = project(cam, lerp3(q, i / cols, j / rows));
+      if (!pj) return;
+      nodes.push(pj);
+    }
+  }
+  const stride = cols + 1;
+  if (!q.tex) {
+    g.fillStyle = q.fill || '#3a4254';
+    g.beginPath();
+    g.moveTo(nodes[0].x, nodes[0].y);
+    g.lineTo(nodes[cols].x, nodes[cols].y);
+    g.lineTo(nodes[rows * stride + cols].x, nodes[rows * stride + cols].y);
+    g.lineTo(nodes[rows * stride].x, nodes[rows * stride].y);
+    g.closePath();
+    g.fill();
+    return;
+  }
+  g.imageSmoothingEnabled = q.smooth;
+  const sw = q.tw / cols, sh = q.th / rows;
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      const p00 = nodes[j * stride + i], p10 = nodes[j * stride + i + 1], p01 = nodes[(j + 1) * stride + i];
+      g.setTransform(dpr * (p10.x - p00.x) / sw, dpr * (p10.y - p00.y) / sw, dpr * (p01.x - p00.x) / sh, dpr * (p01.y - p00.y) / sh, dpr * p00.x, dpr * p00.y);
+      g.drawImage(q.tex, i * sw, j * sh, sw, sh, 0, 0, sw + 0.4, sh + 0.4);
+    }
+  }
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (q.shade < 1) {
+    g.fillStyle = 'rgba(0,0,0,' + (1 - q.shade).toFixed(3) + ')';
+    g.beginPath();
+    g.moveTo(nodes[0].x, nodes[0].y);
+    g.lineTo(nodes[cols].x, nodes[cols].y);
+    g.lineTo(nodes[rows * stride + cols].x, nodes[rows * stride + cols].y);
+    g.lineTo(nodes[rows * stride].x, nodes[rows * stride].y);
+    g.closePath();
+    g.fill();
+  }
+}
+
+function sceneQuads(sc, cam, secs, tick) {
+  const h = holoParams();
+  const n = S.lines.length;
+  const center = holoCenter(h, secs);
+  const spin = h.spin * DEG * secs;
+  const sway = h.swayA * DEG * Math.sin(TAU * h.swayS * secs);
+  const pulse = 1 + h.pulseA * Math.sin(TAU * h.pulseS * secs);
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const l = S.lines[i].props;
+    const lp = lineParams(l);
+    const p = holoPlace(h, lp, i, n, center, secs);
+    const base = [p[0], p[1], p[2]];
+    const R = mMul(mMul(mRy(spin), mRz(sway)), mMul(mRy(lp.ry), mMul(mRx(lp.rx), mRz(lp.rz))));
+    const M = mMul(orientFor(lp.bb, p[3], cam, sc.el), R);
+    const k = lp.scale * pulse;
+    const type = String(l.type || 'TEXT').toUpperCase();
+    if (type === 'TEXT') {
+      const chars = textChars(l.text, l, tick, i);
+      const sig = textSig(chars, l);
+      let t = sc.tex[i];
+      if (!t || t.sig !== sig) { t = buildTextTex(chars, l); t.sig = sig; sc.tex[i] = t; }
+      const w = t.w * BLOCK_PER_TEXPX * k, hh = t.h * BLOCK_PER_TEXPX * k;
+      const q = quadOf(base, M, [-w / 2, hh, 0], [w / 2, hh, 0], [-w / 2, 0, 0]);
+      q.tex = t.canvas;
+      q.tw = t.w;
+      q.th = t.h;
+      q.smooth = true;
+      q.shade = 1;
+      q.nx = clamp(Math.round(t.w / 64), 1, 8);
+      q.ny = clamp(Math.round(t.h / 40), 1, 3);
+      out.push(q);
+      continue;
+    }
     const name = String(l.material || '').toLowerCase();
-    const tile = name ? texEl(name, size) : el('div', {class: 'tile', text: '?'});
-    tile.style.width = tile.style.height = size + 'px';
-    box.append(tile);
-    box.style.background = 'transparent';
+    const e = name ? texNow(name) : null;
+    if (type === 'ITEM') {
+      const s = k / 2;
+      const q = quadOf(base, M, [-s, s, 0], [s, s, 0], [-s, -s, 0]);
+      q.tex = e ? e.img : null;
+      q.tw = e ? e.img.width : 1;
+      q.th = e ? e.img.height : 1;
+      q.smooth = false;
+      q.shade = 1;
+      q.nx = 2;
+      q.ny = 2;
+      out.push(q);
+      continue;
+    }
+    const s = k / 2;
+    for (const f of CUBE) {
+      const q = quadOf(base, M, f.tl.map(x => x * s), f.tr.map(x => x * s), f.bl.map(x => x * s));
+      q.tex = e ? e.img : null;
+      q.tw = e ? e.img.width : 1;
+      q.th = e ? e.img.height : 1;
+      q.smooth = false;
+      q.shade = f.shade;
+      q.fill = mix('#3a4254', '#000000', 1 - f.shade);
+      q.nx = 2;
+      q.ny = 2;
+      out.push(q);
+    }
   }
-  if (l.glow === 'true') box.style.filter = 'drop-shadow(0 0 5px ' + rgba(Object.assign(parseColor(l['glow-color']), {a: 255})) + ')';
-  root.append(box);
-  return {root, box, line: l, animated: l.type === 'TEXT' && isAnimated(l)};
+  for (const q of out) q.depth = vDot(vSub(lerp3(q, 0.5, 0.5), cam.pos), cam.f);
+  out.sort((a, b) => b.depth - a.depth);
+  return out;
 }
 
-function paintLine(n, tick) {
-  if (n.line.type !== 'TEXT') return;
-  n.box.replaceChildren(...renderText(n.line.text, n.line, tick));
-}
-
-let pv = [];
-function buildPreview() {
-  const stage = $('#stage');
-  pv = [];
-  if (!stage) return;
-  stage.replaceChildren();
-  if (!S.cur || S.cur.kind !== 'hologram') return;
-  const spacing = Number(S.props['line-spacing']) || 0.3;
-  const stack = el('div', {class: 'stack'});
-  stack.style.setProperty('--gap', Math.max(2, (spacing - 0.2) * PX_BLOCK) + 'px');
-  for (const l of S.lines) {
-    const n = lineNode(l.props);
-    stack.append(n.root);
-    pv.push(n);
+function drawGround(g, cam, h) {
+  g.lineWidth = 1;
+  for (let i = -GRID_HALF; i <= GRID_HALF; i++) {
+    const axis = i === 0;
+    g.strokeStyle = axis ? 'rgba(143,178,255,.55)' : 'rgba(120,150,220,.2)';
+    for (const seg of [[[i, 0, -GRID_HALF], [i, 0, GRID_HALF]], [[-GRID_HALF, 0, i], [GRID_HALF, 0, i]]]) {
+      const s = projectSegment(cam, seg[0], seg[1]);
+      if (!s) continue;
+      g.beginPath();
+      g.moveTo(s[0].x, s[0].y);
+      g.lineTo(s[1].x, s[1].y);
+      g.stroke();
+    }
   }
-  if (!S.lines.length) stack.append(el('div', {class: 'muted', text: 'No lines'}));
-  stage.append(stack);
-  const meta = $('#pvMeta');
-  if (meta) meta.textContent = S.lines.length + ' line(s)';
-  tickPreview(true);
+  const yawRad = h.yaw * DEG;
+  const fwd = [-Math.sin(yawRad) * 1.3, 0, Math.cos(yawRad) * 1.3];
+  const arrow = projectSegment(cam, [0, 0, 0], fwd);
+  if (arrow) {
+    g.strokeStyle = ACCENT;
+    g.lineWidth = 3;
+    g.beginPath();
+    g.moveTo(arrow[0].x, arrow[0].y);
+    g.lineTo(arrow[1].x, arrow[1].y);
+    g.stroke();
+  }
+  const o = project(cam, [0, 0, 0]);
+  if (o) {
+    g.fillStyle = '#ffffff';
+    g.fillRect(o.x - 3, o.y - 3, 6, 6);
+  }
+  const north = project(cam, [0, 0, -GRID_HALF - 0.5]);
+  if (north) {
+    g.font = '600 12px ' + FONT_CANVAS;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillStyle = '#9dbaff';
+    g.fillText('N', north.x, north.y);
+  }
 }
 
-function tickPreview(force) {
-  const tick = Math.floor((performance.now() - T0) / TICK_MS);
-  for (const n of pv) if (force || n.animated) paintLine(n, tick);
+function holoScene() {
+  const node = el('div', {class: 'scene3'});
+  const cvs = el('canvas');
+  node.append(cvs);
+  const g = cvs.getContext('2d');
+  const sc = {az: -(S.cur ? num(S.cur.yaw) : 0) * DEG + 0.5, el: 0.38, dist: 5, target: [0, 0.5, 0], tex: [], W: 0, H: 0, dpr: 1, dead: false, raf: 0, fitted: false};
+  const keep = S.sceneCam && S.cur && S.sceneCam.id === S.cur.kind + S.cur.id ? S.sceneCam : null;
+  if (keep) Object.assign(sc, {az: keep.az, el: keep.el, dist: keep.dist, target: keep.target, fitted: true});
+  const fit = () => {
+    const h = holoParams();
+    const n = S.lines.length;
+    let ymin = Infinity, ymax = -Infinity, r = 0.8;
+    for (let s = 0; s < 8; s++) {
+      const secs = s * 0.9;
+      const c = holoCenter(h, secs);
+      for (let i = 0; i < n; i++) {
+        const lp = lineParams(S.lines[i].props);
+        const p = holoPlace(h, lp, i, n, c, secs);
+        ymin = Math.min(ymin, p[1]);
+        ymax = Math.max(ymax, p[1] + 0.3 * lp.scale);
+        r = Math.max(r, Math.hypot(p[0], p[2]) + 0.8 * lp.scale);
+      }
+    }
+    if (!Number.isFinite(ymin)) { ymin = 0; ymax = 0.6; }
+    sc.target = [0, (ymin + ymax) / 2, 0];
+    sc.dist = clamp(Math.max(r * 2.3, (ymax - ymin) * 1.8, 3.2), SCENE_MIN_DIST, SCENE_MAX_DIST);
+    sc.fitted = true;
+  };
+  const setView = (az, elev) => { sc.az = az; sc.el = elev; };
+  const draw = () => {
+    const w = node.clientWidth, hh = node.clientHeight;
+    if (!w || !hh) return;
+    if (w !== sc.W || hh !== sc.H || sc.dpr !== (window.devicePixelRatio || 1)) {
+      sc.W = w;
+      sc.H = hh;
+      sc.dpr = window.devicePixelRatio || 1;
+      cvs.width = Math.round(w * sc.dpr);
+      cvs.height = Math.round(hh * sc.dpr);
+    }
+    if (!sc.fitted && S.lines.length) fit();
+    g.setTransform(sc.dpr, 0, 0, sc.dpr, 0, 0);
+    const bg = g.createLinearGradient(0, 0, 0, hh);
+    bg.addColorStop(0, '#1b2438');
+    bg.addColorStop(1, '#090c13');
+    g.fillStyle = bg;
+    g.fillRect(0, 0, w, hh);
+    const cam = sceneCamera(sc, w, hh);
+    const secs = (performance.now() - T0) / 1000;
+    const tick = Math.floor(secs * 20);
+    drawGround(g, cam, holoParams());
+    for (const q of sceneQuads(sc, cam, secs, tick)) drawQuad(g, cam, q, sc.dpr);
+    g.setTransform(sc.dpr, 0, 0, sc.dpr, 0, 0);
+    g.font = '12px ' + FONT_CANVAS;
+    g.textAlign = 'left';
+    g.textBaseline = 'alphabetic';
+    g.fillStyle = 'rgba(170,180,202,.85)';
+    g.fillText('Drag: orbit  |  Wheel: zoom  |  Double-click: fit', 8, hh - 8);
+  };
+  const frame = () => {
+    if (sc.dead) return;
+    sc.raf = requestAnimationFrame(frame);
+    if (!node.isConnected) { destroy(); return; }
+    if (!document.hidden) draw();
+  };
+  const destroy = () => {
+    sc.dead = true;
+    cancelAnimationFrame(sc.raf);
+    if (S.cur && sc.fitted) S.sceneCam = {id: S.cur.kind + S.cur.id, az: sc.az, el: sc.el, dist: sc.dist, target: sc.target};
+  };
+  let drag = null;
+  cvs.addEventListener('pointerdown', ev => {
+    cvs.setPointerCapture(ev.pointerId);
+    drag = {id: ev.pointerId, x: ev.clientX, y: ev.clientY};
+    cvs.style.cursor = 'grabbing';
+  });
+  cvs.addEventListener('pointermove', ev => {
+    if (!drag || drag.id !== ev.pointerId) return;
+    sc.az -= (ev.clientX - drag.x) * SCENE_ORBIT_K;
+    sc.el = clamp(sc.el + (ev.clientY - drag.y) * SCENE_ORBIT_K, -1.5, 1.5);
+    drag.x = ev.clientX;
+    drag.y = ev.clientY;
+  });
+  const end = () => { drag = null; cvs.style.cursor = 'grab'; };
+  cvs.addEventListener('pointerup', end);
+  cvs.addEventListener('pointercancel', end);
+  cvs.addEventListener('wheel', ev => {
+    ev.preventDefault();
+    const dy = ev.deltaMode === 1 ? ev.deltaY * 16 : ev.deltaY;
+    sc.dist = clamp(sc.dist * Math.exp(dy * SCENE_ZOOM_K), SCENE_MIN_DIST, SCENE_MAX_DIST);
+  }, {passive: false});
+  cvs.addEventListener('dblclick', fit);
+  sc.raf = requestAnimationFrame(frame);
+  return {
+    node,
+    fit,
+    setView,
+    destroy,
+    refresh: () => { sc.tex = []; },
+    top: () => setView(sc.az, 1.45),
+    side: () => setView(-(S.cur ? num(S.cur.yaw) : 0) * DEG, 0.05)
+  };
 }
-setInterval(() => { if (!document.hidden && S.cur && pv.length) tickPreview(false); }, TICK_MS);
 
 function pvCard() {
-  return el('section', {class: 'card'}, el('h2', {text: 'Live preview'}), el('div', {class: 'body'}, el('div', {class: 'stage', id: 'stage'}), el('div', {class: 'pv-meta', id: 'pvMeta'})));
+  const scene = holoScene();
+  S.scene = scene;
+  const tools = el('span', {class: 'row2'},
+    el('button', {class: 'btn sm', type: 'button', text: 'Fit', onclick: scene.fit}),
+    el('button', {class: 'btn sm', type: 'button', text: 'Front', onclick: scene.side}),
+    el('button', {class: 'btn sm', type: 'button', text: 'Top', onclick: scene.top}));
+  return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Live 3D preview'}), tools), el('div', {class: 'body'}, scene.node, el('div', {class: 'pv-meta', id: 'pvMeta', text: S.lines.length + ' line(s)'})));
 }
+
+function buildPreview() {
+  if (S.scene) S.scene.refresh();
+  const meta = $('#pvMeta');
+  if (meta) meta.textContent = S.lines.length + ' line(s)';
+}
+
 
 const IND = {pending: 'Unsaved...', saving: 'Saving...', saved: 'Saved ✓', error: 'Save failed'};
 function setInd(k) {
@@ -1316,42 +1878,612 @@ function loadCors(url) {
 
 function skinId() { return S.props['skin-name'] || (S.cur && S.cur.skinId) || STEVE; }
 
-function skinPreview() {
-  const node = el('div', {class: 'skinbox'});
-  const canvas = el('canvas', {width: SKIN_W, height: SKIN_H});
+function clonePose(p) {
+  const o = {};
+  for (const k of LIMBS) o[k] = p[k].slice();
+  return o;
+}
+function defaultPose() { return clonePose(POSE_DEFAULT); }
+function sameVec(a, b) { return a[0] === b[0] && a[1] === b[1] && a[2] === b[2]; }
+function fmtAngle(v) { return String(Math.round(v * 10) / 10); }
+function r1(v) { return Math.round(v * 10) / 10; }
+
+function parseAnim(text) {
+  const frames = [];
+  let prev = defaultPose();
+  for (const raw of String(text || '').split(/\r?\n/)) {
+    const toks = raw.trim().split(/\s+/);
+    if (!/^\d+$/.test(toks[0])) continue;
+    const limbs = clonePose(prev);
+    for (const t of toks.slice(1)) {
+      const m = /^(head|body|larm|rarm|lleg|rleg)=([^,]+),([^,]+),([^,]+)$/i.exec(t);
+      if (!m) continue;
+      const v = [m[2], m[3], m[4]].map(Number);
+      if (v.every(Number.isFinite)) limbs[m[1].toLowerCase()] = v;
+    }
+    frames.push({ticks: clamp(parseInt(toks[0], 10), ANIM_TICK_MIN, ANIM_TICK_MAX), limbs});
+    prev = limbs;
+    if (frames.length >= ANIM_MAX_FRAMES) break;
+  }
+  return frames;
+}
+
+function serializeAnim(frames) {
+  let prev = POSE_DEFAULT;
+  return frames.map(f => {
+    const parts = [String(f.ticks)];
+    for (const k of LIMBS) if (!sameVec(f.limbs[k].map(r1), prev[k].map(r1))) parts.push(k + '=' + f.limbs[k].map(fmtAngle).join(','));
+    if (parts.length === 1) parts.push('head=' + f.limbs.head.map(fmtAngle).join(','));
+    prev = f.limbs;
+    return parts.join(' ');
+  }).join('\n');
+}
+
+function animTotal(frames) { return frames.reduce((a, f) => a + f.ticks, 0); }
+
+function frameAt(frames, t) {
+  const total = animTotal(frames);
+  let tt = total > 0 ? ((t % total) + total) % total : 0;
+  let i = 0;
+  while (i < frames.length - 1 && tt >= frames[i].ticks) { tt -= frames[i].ticks; i++; }
+  return {i, f: frames[i] ? tt / frames[i].ticks : 0};
+}
+
+function poseAt(frames, t) {
+  if (!frames.length) return defaultPose();
+  const at = frameAt(frames, t);
+  const a = frames[at.i], b = frames[(at.i + 1) % frames.length];
+  const out = {};
+  for (const k of LIMBS) out[k] = [0, 1, 2].map(j => a.limbs[k][j] + (b.limbs[k][j] - a.limbs[k][j]) * at.f);
+  return out;
+}
+
+function frameStart(frames, idx) {
+  let t = 0;
+  for (let i = 0; i < idx && i < frames.length; i++) t += frames[i].ticks;
+  return t;
+}
+
+function applyPose(skin, pose) {
+  for (const k of LIMBS) {
+    const part = skin[LIMB_PART[k]];
+    const v = pose[k];
+    if (part && v) part.rotation.set(v[0] * DEG * POSE_SIGN_X, v[1] * DEG * POSE_SIGN_Y, v[2] * DEG * POSE_SIGN_Z);
+  }
+}
+
+function animSpeed() { return clamp(num(S.props['animation-speed']) || 1, 0.1, 5); }
+
+function animState() {
+  const text = String(S.props.animation || '');
+  if (!S.anim) S.anim = {frames: parseAnim(text), src: text, sel: 0, limb: 'rarm', playing: false, loop: true, pos: 0, last: 0, scrub: false, over: false};
+  else if (S.anim.src !== text) {
+    S.anim.frames = parseAnim(text);
+    S.anim.src = text;
+    S.anim.sel = clamp(S.anim.sel, 0, Math.max(0, S.anim.frames.length - 1));
+  }
+  return S.anim;
+}
+
+function quickPose() {
+  if (!isOn('animation-enabled')) return null;
+  const frames = animState().frames;
+  if (!frames.length) return null;
+  return poseAt(frames, (performance.now() - T0) * TICKS_PER_MS * animSpeed());
+}
+
+function npcViewer(opt) {
+  const node = el('div', {class: 'nv' + (opt.tall ? ' tall' : '')});
+  const canvas = el('canvas');
+  const ov = el('canvas', {class: 'ov'});
   const fb = el('img', {class: 'tex fb', alt: '', hidden: true});
-  node.append(canvas, fb);
-  let viewer = null;
-  let seq = 0;
-  let dead = false;
+  node.append(canvas, ov, fb, el('div', {class: 'cap', text: opt.caption || ''}));
+  const st = {viewer: null, lib: null, dead: false, raf: 0, seq: 0, manual: false, hover: null, drag: null, broken: false};
+
+  const screenOf = limb => {
+    const part = st.viewer.playerObject.skin[LIMB_PART[limb]];
+    if (!part) return null;
+    const obj = part.children && part.children[0] ? part.children[0] : part;
+    obj.updateWorldMatrix(true, false);
+    const p = st.viewer.camera.position.clone();
+    obj.getWorldPosition(p);
+    const d = st.viewer.camera.position.distanceTo(p) || 1;
+    p.project(st.viewer.camera);
+    const w = node.clientWidth, h = node.clientHeight;
+    return {x: (p.x + 1) / 2 * w, y: (1 - p.y) / 2 * h, px: (h / 2) / Math.tan(st.viewer.camera.fov * Math.PI / 360) / d};
+  };
+
+  const pick = (x, y) => {
+    if (!st.viewer || st.broken) return null;
+    let best = null, bestQ = 1;
+    for (const k of LIMBS) {
+      const s = screenOf(k);
+      if (!s) continue;
+      const q = Math.hypot((x - s.x) / (LIMB_PICK[k][0] * s.px), (y - s.y) / (LIMB_PICK[k][1] * s.px));
+      if (q <= 1 && q < bestQ) { best = k; bestQ = q; }
+    }
+    return best;
+  };
+
+  const ring = (g, limb, color, width) => {
+    const s = screenOf(limb);
+    if (!s) return;
+    g.strokeStyle = color;
+    g.lineWidth = width;
+    g.beginPath();
+    g.ellipse(s.x, s.y, LIMB_PICK[limb][0] * s.px * 0.9, LIMB_PICK[limb][1] * s.px * 0.9, 0, 0, TAU);
+    g.stroke();
+  };
+
+  const drawOverlay = () => {
+    const g = ov.getContext('2d');
+    g.clearRect(0, 0, ov.width, ov.height);
+    if (!opt.editable || !st.viewer || st.broken) return;
+    const sel = opt.getSel ? opt.getSel() : null;
+    if (st.hover && st.hover !== sel) ring(g, st.hover, 'rgba(255,255,255,.45)', 1.5);
+    if (sel) {
+      g.setLineDash([6, 4]);
+      ring(g, sel, ACCENT, 2.5);
+      g.setLineDash([]);
+      const s = screenOf(sel);
+      if (s) {
+        g.font = '600 12px ' + FONT_CANVAS;
+        g.textAlign = 'center';
+        g.fillStyle = '#ffffff';
+        g.strokeStyle = '#000000';
+        g.lineWidth = 3;
+        g.strokeText(LIMB_LABEL[sel], s.x, s.y - LIMB_PICK[sel][1] * s.px * 0.95 - 4);
+        g.fillText(LIMB_LABEL[sel], s.x, s.y - LIMB_PICK[sel][1] * s.px * 0.95 - 4);
+      }
+    }
+  };
+
+  const resize = () => {
+    const w = node.clientWidth, h = node.clientHeight;
+    if (!w || !h) return;
+    if (ov.width !== w || ov.height !== h) { ov.width = w; ov.height = h; }
+    if (st.viewer) {
+      if (typeof st.viewer.setSize === 'function') st.viewer.setSize(w, h);
+      else { st.viewer.width = w; st.viewer.height = h; }
+    }
+  };
+  const ro = 'ResizeObserver' in window ? new ResizeObserver(resize) : null;
+  if (ro) ro.observe(node);
+
+  const poseTick = () => {
+    if (!st.viewer || st.broken || !st.viewer.playerObject) return;
+    const pose = opt.getPose ? opt.getPose() : null;
+    if (pose) {
+      if (!st.manual) { st.viewer.animation = null; st.manual = true; }
+      applyPose(st.viewer.playerObject.skin, pose);
+    } else if (st.manual) {
+      st.manual = false;
+      st.viewer.animation = new st.lib.IdleAnimation();
+    }
+  };
+
+  const frame = () => {
+    if (st.dead) return;
+    st.raf = requestAnimationFrame(frame);
+    if (!node.isConnected) { destroy(); return; }
+    if (document.hidden) return;
+    poseTick();
+    drawOverlay();
+    if (opt.onFrame) opt.onFrame();
+  };
+
+  const onMove = ev => {
+    if (!st.drag || st.drag.id !== ev.pointerId) return;
+    const dx = ev.clientX - st.drag.x, dy = ev.clientY - st.drag.y;
+    st.drag.x = ev.clientX;
+    st.drag.y = ev.clientY;
+    if (opt.onDrag) opt.onDrag(st.drag.limb, dx, dy, ev.shiftKey);
+  };
+  const onUp = ev => {
+    if (!st.drag || st.drag.id !== ev.pointerId) return;
+    st.drag = null;
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', onUp);
+    node.style.cursor = '';
+  };
+  node.addEventListener('pointerdown', ev => {
+    if (!opt.editable || ev.button !== 0) return;
+    const r = node.getBoundingClientRect();
+    const k = pick(ev.clientX - r.left, ev.clientY - r.top);
+    if (!k) return;
+    ev.stopPropagation();
+    ev.preventDefault();
+    st.drag = {id: ev.pointerId, x: ev.clientX, y: ev.clientY, limb: k};
+    node.style.cursor = 'grabbing';
+    if (opt.onPick) opt.onPick(k);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+  }, true);
+  node.addEventListener('pointermove', ev => {
+    if (!opt.editable || st.drag || ev.buttons) return;
+    const r = node.getBoundingClientRect();
+    st.hover = pick(ev.clientX - r.left, ev.clientY - r.top);
+    node.style.cursor = st.hover ? 'pointer' : '';
+  });
+  node.addEventListener('pointerleave', () => { st.hover = null; });
+
   const showFallback = id => {
+    st.broken = true;
     canvas.hidden = true;
+    ov.hidden = true;
     fb.hidden = false;
     fb.src = fill(S.assets.body, {id, size: SKIN_H});
   };
+
   const reload = async () => {
-    const my = ++seq;
+    const my = ++st.seq;
     const id = skinId();
     try {
       const lib = await loadViewerLib();
-      if (dead || my !== seq) return;
-      if (!viewer) {
-        viewer = new lib.SkinViewer({canvas, width: SKIN_W, height: SKIN_H});
-        viewer.autoRotate = true;
-        viewer.autoRotateSpeed = 0.6;
-        viewer.zoom = 0.9;
-        viewer.animation = new lib.IdleAnimation();
+      if (st.dead || my !== st.seq) return;
+      if (!st.viewer) {
+        st.lib = lib;
+        st.viewer = new lib.SkinViewer({canvas, width: node.clientWidth || 300, height: node.clientHeight || SKIN_H});
+        st.viewer.autoRotate = !!opt.autoRotate;
+        st.viewer.autoRotateSpeed = 0.6;
+        st.viewer.zoom = 0.85;
+        if (st.viewer.controls) st.viewer.controls.enablePan = false;
+        st.viewer.animation = new lib.IdleAnimation();
+        resize();
       }
-      const img = await loadCors(fill(S.assets.skin, {id}));
-      if (dead || my !== seq) return;
-      await viewer.loadSkin(img);
+      let img;
+      try { img = await loadCors(fill(S.assets.skin, {id})); } catch (e) { img = await loadCors(fill(S.assets.skin, {id: STEVE})); }
+      if (st.dead || my !== st.seq) return;
+      await st.viewer.loadSkin(img);
+      st.broken = false;
       canvas.hidden = false;
+      ov.hidden = false;
       fb.hidden = true;
     } catch (e) {
-      if (!dead && my === seq) showFallback(id);
+      if (!st.dead && my === st.seq) showFallback(id);
     }
   };
-  return {node, reload, destroy: () => { dead = true; if (viewer) { try { viewer.dispose(); } catch (e) { viewer = null; } } }};
+
+  const destroy = () => {
+    st.dead = true;
+    cancelAnimationFrame(st.raf);
+    if (ro) ro.disconnect();
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', onUp);
+    if (st.viewer) { try { st.viewer.dispose(); } catch (e) { st.viewer = null; } }
+  };
+
+  st.raf = requestAnimationFrame(frame);
+  return {node, reload, destroy};
+}
+
+function equipBadges() {
+  const wrap = el('div', {class: 'badges'});
+  const eq = (S.cur.equipment || []).filter(s => s.material).sort((a, b) => EQUIP_ORDER.indexOf(a.slot) - EQUIP_ORDER.indexOf(b.slot));
+  for (const s of eq) {
+    const label = s.slot.toLowerCase().replace(/_/g, ' ');
+    wrap.append(el('div', {class: 'badge', title: label + ': ' + s.material}, texEl(String(s.material).toLowerCase(), 28), el('span', {text: label})));
+  }
+  if (!eq.length) wrap.append(el('div', {class: 'badge'}, el('span', {text: 'No gear'})));
+  return wrap;
+}
+
+function makePoseable() {
+  setProp('entity-type', POSE_NAME);
+  toast('Entity type set to Poseable (armor stand)', 'ok');
+  renderBody();
+}
+
+function poseHintBox() {
+  const type = S.props['entity-type'] || S.cfg.defaultNpcType;
+  const ok = type === POSE_NAME;
+  const box = el('div', {class: 'hintbox' + (ok ? ' good' : '')}, el('span', {text: ok ? 'Poseable armor stand: all six limbs animate in game. The preview uses a player model as an approximation.' : 'Full limb poses render in game on "Poseable" (armor stand) NPCs. Player-skin NPCs only play head and body turning.'}));
+  if (!ok) box.append(el('button', {class: 'btn primary', type: 'button', text: 'Make poseable', onclick: makePoseable}));
+  return box;
+}
+
+const poseOf = patch => {
+  const limbs = defaultPose();
+  for (const k of Object.keys(patch)) limbs[k] = patch[k].slice();
+  return limbs;
+};
+const fr = (ticks, patch) => ({ticks, limbs: poseOf(patch || {})});
+const BOW = {head: [40, 0, 0], body: [35, 0, 0], larm: [20, 0, -10], rarm: [20, 0, 10]};
+const SALUTE = {rarm: [-125, -35, 0], head: [-5, 0, 0]};
+const POINT = {rarm: [-90, -12, 0], head: [0, -18, 0], body: [0, -8, 0]};
+const DAB = {head: [40, 30, 15], larm: [-100, -70, 0], rarm: [-155, 0, 40], body: [0, 8, 0]};
+const ANIM_PRESETS = [
+  {id: 'wave', label: 'Wave', hint: 'Raise and wave a hand', icon: 'wave', make: () => [fr(8, {rarm: [-160, 0, 15], head: [0, 10, 0]}), fr(8, {rarm: [-160, 0, -25], head: [0, 10, 0]}), fr(8, {rarm: [-160, 0, 15], head: [0, 10, 0]}), fr(8, {rarm: [-160, 0, -25], head: [0, 10, 0]})]},
+  {id: 'dance', label: 'Dance', hint: 'Sway, arms up and down', icon: 'dance', make: () => [
+    fr(6, {larm: [-150, 0, -30], rarm: [-30, 0, 30], body: [0, 15, 0], head: [0, -15, 10], lleg: [-15, 0, -1], rleg: [10, 0, 1]}),
+    fr(5, {larm: [-90, 0, -60], rarm: [-90, 0, 60], body: [10, 0, 0], head: [10, 0, 0]}),
+    fr(6, {larm: [-30, 0, -30], rarm: [-150, 0, 30], body: [0, -15, 0], head: [0, 15, -10], lleg: [10, 0, -1], rleg: [-15, 0, 1]}),
+    fr(5, {larm: [-90, 0, -60], rarm: [-90, 0, 60], body: [10, 0, 0], head: [10, 0, 0]})]},
+  {id: 'walk', label: 'Walk', hint: 'Arm and leg swing', icon: 'bob', make: () => [
+    fr(8, {larm: [35, 0, -10], rarm: [-35, 0, 10], lleg: [-30, 0, -1], rleg: [30, 0, 1]}),
+    fr(8, {larm: [-35, 0, -10], rarm: [35, 0, 10], lleg: [30, 0, -1], rleg: [-30, 0, 1]})]},
+  {id: 'salute', label: 'Salute', hint: 'Hand to forehead', icon: 'guard', make: () => [fr(8), fr(30, SALUTE), fr(8, SALUTE)]},
+  {id: 'point', label: 'Point', hint: 'Point ahead', icon: 'look', make: () => [fr(10), fr(30, POINT), fr(10, POINT)]},
+  {id: 'bow', label: 'Bow', hint: 'Bow and rise', icon: 'sway', make: () => [fr(10), fr(24, BOW), fr(12, BOW)]},
+  {id: 'dab', label: 'Dab', hint: 'Strike the pose', icon: 'pulse', make: () => [fr(6), fr(16, DAB), fr(12, DAB)]},
+  {id: 'zombie', label: 'Zombie', hint: 'Arms out, shuffle', icon: 'orbit', make: () => [
+    fr(10, {larm: [-90, 0, -5], rarm: [-90, 0, 5], lleg: [-14, 0, -1], rleg: [14, 0, 1], body: [0, 6, 0], head: [10, 0, 0]}),
+    fr(10, {larm: [-90, 0, -5], rarm: [-90, 0, 5], lleg: [14, 0, -1], rleg: [-14, 0, 1], body: [0, -6, 0], head: [10, 0, 0]})]}
+];
+
+function bodyAnimate() {
+  const A = animState();
+  A.last = performance.now();
+  const ui = {rows: {}, chips: [], curIdx: -1, label: ''};
+  const root = el('div');
+  root.append(poseHintBox());
+
+  const maxText = () => S.pm.animation && S.pm.animation.max > 0 ? S.pm.animation.max : ANIM_TEXT_MAX;
+  const frameNow = () => A.frames[A.sel] || null;
+  const total = () => animTotal(A.frames);
+
+  const commit = enable => {
+    const text = serializeAnim(A.frames);
+    A.over = text.length > maxText();
+    ui.count.textContent = text.length + ' / ' + maxText() + ' chars';
+    ui.count.classList.toggle('warn', A.over);
+    if (A.over) return;
+    const was = String(S.props.animation || '').trim();
+    setProp('animation', text);
+    A.src = text;
+    if (A.frames.length && (enable || !was) && S.pm['animation-enabled'] && !isOn('animation-enabled')) {
+      setProp('animation-enabled', 'true');
+      if (ui.enable) ui.enable.checked = true;
+    }
+  };
+
+  const ensureFrame = () => {
+    if (!A.frames.length) {
+      A.frames.push({ticks: ANIM_TICK_DEF, limbs: defaultPose()});
+      A.sel = 0;
+      renderTl();
+    }
+    return A.frames[A.sel];
+  };
+
+  const syncSliders = () => {
+    const f = frameNow();
+    for (const k of LIMBS) {
+      const r = ui.rows[k];
+      r.row.classList.toggle('on', A.limb === k);
+      const v = f ? f.limbs[k] : POSE_DEFAULT[k];
+      r.cells.forEach((c, j) => {
+        c.rng.value = v[j];
+        if (document.activeElement !== c.num) c.num.value = r1(v[j]);
+      });
+    }
+  };
+
+  const syncTotal = () => {
+    const t = total();
+    const f = frameNow();
+    if (ui.ticks && document.activeElement !== ui.ticks) ui.ticks.value = f ? f.ticks : ANIM_TICK_DEF;
+    ui.ticks.disabled = !f;
+    ui.total.textContent = A.frames.length + ' frame(s), ' + t + ' ticks, ' + (t / (20 * animSpeed())).toFixed(2) + ' s at ' + animSpeed() + 'x';
+    ui.scrub.max = String(Math.max(1, t));
+  };
+
+  const renderTl = () => {
+    ui.chips = A.frames.map((f, i) => el('button', {type: 'button', class: 'fr' + (i === A.sel ? ' on' : ''), onclick: () => selectFrame(i)}, el('b', {text: '#' + (i + 1)}), el('span', {text: f.ticks + 't'})));
+    ui.tl.replaceChildren(...ui.chips);
+    if (!ui.chips.length) ui.tl.append(el('span', {class: 'muted', text: 'No frames yet. Pick a preset or add a frame.'}));
+    ui.curIdx = -1;
+  };
+
+  const syncAll = () => { renderTl(); syncSliders(); syncTotal(); syncPlay(); };
+
+  const selectFrame = i => {
+    A.sel = i;
+    A.playing = false;
+    A.scrub = false;
+    A.pos = frameStart(A.frames, i);
+    syncAll();
+  };
+
+  const changed = enable => { commit(enable); syncAll(); };
+
+  const frameOps = {
+    add: () => {
+      if (A.frames.length >= ANIM_MAX_FRAMES) return toast('Maximum ' + ANIM_MAX_FRAMES + ' frames', 'err');
+      const at = A.frames.length ? A.sel + 1 : 0;
+      A.frames.splice(at, 0, {ticks: ANIM_TICK_DEF, limbs: defaultPose()});
+      A.sel = at;
+      A.scrub = false;
+      changed(false);
+    },
+    dup: () => {
+      const f = frameNow();
+      if (!f) return;
+      if (A.frames.length >= ANIM_MAX_FRAMES) return toast('Maximum ' + ANIM_MAX_FRAMES + ' frames', 'err');
+      A.frames.splice(A.sel + 1, 0, {ticks: f.ticks, limbs: clonePose(f.limbs)});
+      A.sel++;
+      A.scrub = false;
+      changed(false);
+    },
+    del: () => {
+      if (!frameNow()) return;
+      A.frames.splice(A.sel, 1);
+      A.sel = clamp(A.sel, 0, Math.max(0, A.frames.length - 1));
+      A.scrub = false;
+      A.playing = false;
+      changed(false);
+    },
+    move: d => {
+      const j = A.sel + d;
+      if (!frameNow() || j < 0 || j >= A.frames.length) return;
+      [A.frames[A.sel], A.frames[j]] = [A.frames[j], A.frames[A.sel]];
+      A.sel = j;
+      changed(false);
+    }
+  };
+
+  const setAngle = (limb, j, v) => {
+    const f = ensureFrame();
+    f.limbs[limb][j] = clamp(v, -ANGLE_LIM, ANGLE_LIM);
+    A.limb = limb;
+    A.scrub = false;
+    A.playing = false;
+    commit(false);
+    syncSliders();
+    syncPlay();
+  };
+
+  const dragLimb = (limb, dx, dy, shift) => {
+    const f = ensureFrame();
+    const v = f.limbs[limb];
+    v[0] = clamp(v[0] + dy * DRAG_DEG_PER_PX, -ANGLE_LIM, ANGLE_LIM);
+    if (shift) v[2] = clamp(v[2] - dx * DRAG_DEG_PER_PX, -ANGLE_LIM, ANGLE_LIM);
+    else v[1] = clamp(v[1] - dx * DRAG_DEG_PER_PX, -ANGLE_LIM, ANGLE_LIM);
+    A.limb = limb;
+    A.scrub = false;
+    A.playing = false;
+    commit(false);
+    syncSliders();
+    syncPlay();
+  };
+
+  const stepAnim = () => {
+    const now = performance.now();
+    if (A.playing) {
+      const t = total();
+      A.pos += Math.min(now - A.last, 100) * TICKS_PER_MS * animSpeed();
+      if (t > 0 && A.pos >= t) {
+        if (A.loop) A.pos %= t;
+        else { A.playing = false; A.scrub = false; A.pos = frameStart(A.frames, A.sel); syncPlay(); }
+      }
+    }
+    A.last = now;
+  };
+
+  const animPose = () => {
+    stepAnim();
+    if ((A.playing || A.scrub) && A.frames.length) return poseAt(A.frames, A.pos);
+    const f = frameNow();
+    return f ? clonePose(f.limbs) : defaultPose();
+  };
+
+  const syncPlay = () => {
+    ui.play.textContent = A.playing ? 'Pause' : 'Play';
+    ui.play.classList.toggle('on', A.playing);
+    ui.loop.classList.toggle('on', A.loop);
+    ui.loop.textContent = A.loop ? 'Loop: on' : 'Loop: off';
+  };
+
+  const tick = () => {
+    if (!(A.playing || A.scrub) || !A.frames.length) {
+      if (ui.curIdx !== -1) { ui.chips.forEach(c => c.classList.remove('cur')); ui.curIdx = -1; }
+      return;
+    }
+    const idx = frameAt(A.frames, A.pos).i;
+    if (idx !== ui.curIdx) {
+      ui.chips.forEach((c, i) => c.classList.toggle('cur', i === idx));
+      ui.curIdx = idx;
+    }
+    if (document.activeElement !== ui.scrub) ui.scrub.value = String(A.pos);
+  };
+
+  const nv = npcViewer({tall: true, editable: true, autoRotate: false, caption: 'Click a limb, drag to rotate (Shift = roll). Drag empty space to orbit, scroll to zoom.', getPose: animPose, getSel: () => A.limb, onPick: k => { A.limb = k; syncSliders(); }, onDrag: dragLimb, onFrame: tick});
+  S.skin = nv;
+  nv.reload();
+  root.append(el('div', {class: 'nvwrap'}, nv.node, equipBadges()));
+
+  ui.play = el('button', {class: 'btn', type: 'button', onclick: () => {
+    if (!A.frames.length) return;
+    A.playing = !A.playing;
+    A.last = performance.now();
+    if (A.playing) A.scrub = true;
+    syncPlay();
+  }});
+  ui.loop = el('button', {class: 'btn', type: 'button', onclick: () => { A.loop = !A.loop; syncPlay(); }});
+  ui.scrub = el('input', {type: 'range', min: 0, max: 1, step: 0.1, value: 0, 'aria-label': 'Timeline position'});
+  ui.scrub.addEventListener('input', () => {
+    if (!A.frames.length) return;
+    A.playing = false;
+    A.scrub = true;
+    A.pos = Number(ui.scrub.value);
+    syncPlay();
+  });
+  ui.total = el('span', {class: 'muted'});
+  ui.count = el('span', {class: 'muted'});
+  const enableField = S.pm['animation-enabled'] ? control(S.pm['animation-enabled'], S.props['animation-enabled'], v => setProp('animation-enabled', v)) : null;
+  ui.enable = enableField ? enableField.querySelector('input') : null;
+  const speedField = pc('animation-speed');
+  root.append(el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Preview'}), ui.count), el('div', {class: 'body'},
+    el('div', {class: 'tbar', style: 'margin-top:0'}, ui.play, ui.loop, ui.scrub),
+    el('div', {class: 'pv-meta', style: 'text-align:left'}, ui.total),
+    el('div', {class: 'grid', style: 'margin-top:10px'}, enableField, speedField))));
+
+  ui.tl = el('div', {class: 'tl'});
+  ui.ticks = el('input', {type: 'number', min: ANIM_TICK_MIN, max: ANIM_TICK_MAX, step: 1, 'aria-label': 'Frame ticks'});
+  ui.ticks.addEventListener('input', () => {
+    const f = frameNow();
+    const v = Number(ui.ticks.value);
+    if (!f || !Number.isFinite(v) || ui.ticks.value === '') return;
+    f.ticks = clamp(Math.round(v), ANIM_TICK_MIN, ANIM_TICK_MAX);
+    commit(false);
+    renderTl();
+    syncTotal();
+  });
+  ui.ticks.addEventListener('change', () => { const f = frameNow(); if (f) ui.ticks.value = f.ticks; });
+  const op = (label, fn, cls) => el('button', {class: 'btn sm ' + (cls || ''), type: 'button', text: label, onclick: fn});
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Keyframes'}), el('div', {class: 'body'},
+    ui.tl,
+    el('div', {class: 'tbar', style: 'margin-top:0'},
+      op('+ New', frameOps.add), op('Duplicate', frameOps.dup), op('Delete', frameOps.del, 'danger'),
+      op('◀', () => frameOps.move(-1)), op('▶', () => frameOps.move(1)),
+      el('span', {class: 'grow'}), el('label', {class: 'muted', text: 'Ticks'}), el('div', {style: 'width:84px'}, ui.ticks)))));
+
+  const limbCards = el('div');
+  for (const k of LIMBS) {
+    const cells = AXES.map((ax, j) => {
+      const rng = el('input', {type: 'range', min: -ANGLE_LIM, max: ANGLE_LIM, step: 1, 'aria-label': LIMB_LABEL[k] + ' ' + ax});
+      const numI = el('input', {type: 'number', min: -ANGLE_LIM, max: ANGLE_LIM, step: 1, 'aria-label': LIMB_LABEL[k] + ' ' + ax + ' value'});
+      rng.addEventListener('input', () => { numI.value = rng.value; setAngle(k, j, Number(rng.value)); });
+      numI.addEventListener('input', () => { if (numI.value !== '' && Number.isFinite(Number(numI.value))) setAngle(k, j, Number(numI.value)); });
+      numI.addEventListener('change', () => syncSliders());
+      return {rng, num: numI, node: el('div', {class: 'axis'}, el('div', {class: 'ah'}, el('span', {text: ax}), numI), rng)};
+    });
+    const reset = () => {
+      const f = ensureFrame();
+      f.limbs[k] = POSE_DEFAULT[k].slice();
+      A.limb = k;
+      A.scrub = false;
+      commit(false);
+      syncSliders();
+    };
+    const row = el('div', {class: 'limbrow'},
+      el('div', {class: 'lh'}, el('button', {class: 'nm', type: 'button', text: LIMB_LABEL[k], onclick: () => { A.limb = k; syncSliders(); }}), el('button', {class: 'btn sm', type: 'button', text: 'Reset', onclick: reset})),
+      el('div', {class: 'axes'}, cells.map(c => c.node)));
+    ui.rows[k] = {row, cells};
+    limbCards.append(row);
+  }
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Pose of selected frame'}), el('div', {class: 'body'}, limbCards, el('p', {class: 'note', text: 'Angles are degrees. Arms: x -90 points forward, x -180 straight up. Head: x positive nods down.'}))));
+
+  const applyPreset = d => {
+    if (A.frames.length && !confirm('Replace the current keyframes with the ' + d.label + ' preset?')) return;
+    A.frames = d.make();
+    A.sel = 0;
+    A.pos = 0;
+    A.scrub = false;
+    A.playing = true;
+    A.last = performance.now();
+    changed(true);
+  };
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Presets'}), el('div', {class: 'body'}, el('div', {class: 'cards'}, ANIM_PRESETS.map(d => pcard(d.label, d.hint, svgIcon(ICONS[d.icon], 30), false, () => applyPreset(d)))))));
+
+  syncAll();
+  const initial = serializeAnim(A.frames);
+  ui.count.textContent = initial.length + " / " + maxText() + " chars";
+  ui.count.classList.toggle("warn", initial.length > maxText());
+  return root;
 }
 
 function shapePoints(kind) {
@@ -1613,16 +2745,18 @@ function bodyQuickNpc() {
   const root = el('div');
   const type = S.props['entity-type'] || S.cfg.defaultNpcType;
   const player = isPlayerType(type);
-  const prev = el('div', {class: 'qprev'});
-  if (player) {
-    const sp = skinPreview();
-    S.skin = sp;
-    prev.append(sp.node, el('span', {class: 'muted', text: 'Player'}));
-    sp.reload();
+  const modeled = player || type === POSE_NAME;
+  if (modeled) {
+    const nv = npcViewer({autoRotate: true, caption: (type === POSE_NAME ? 'Poseable armor stand' : 'Player') + '  |  drag to orbit, scroll to zoom', getPose: quickPose});
+    S.skin = nv;
+    nv.reload();
+    root.append(el('div', {class: 'nvwrap'}, nv.node, equipBadges()));
   } else {
     const opt = entityOptions().find(o => o.id === type);
+    const prev = el('div', {class: 'qprev'});
     prev.append(texEl(entityTex(type), 72), el('span', {text: opt ? opt.label : type}));
     prev.firstChild.classList.add('big');
+    root.append(el('div', {class: 'qtop'}, prev, el('div', {class: 'qfields'}, el('p', {class: 'note', text: 'Mob NPCs only support head and body turning. Switch to Player or Poseable for the 3D model and limb animations.'}))));
   }
   const fields = el('div', {class: 'qfields'});
   const nameCtl = pc('name');
@@ -1634,14 +2768,14 @@ function bodyQuickNpc() {
   }
   const vis = pc('name-visible');
   if (vis) fields.append(vis);
-  if (player) fields.append(skinBox());
+  if (modeled) fields.append(skinBox());
   const look = pc('look-at');
   if (look) fields.append(look);
   const glow = pc('glow');
   if (glow) fields.append(glow);
   const gc = pc('glow-color');
   if (gc) fields.append(gc);
-  root.append(el('div', {class: 'qtop'}, prev, fields));
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Basics'}), el('div', {class: 'body'}, fields)));
   const ent = pc('entity-type');
   if (ent) root.append(el('section', {class: 'card'}, el('h2', {text: 'Entity type'}), el('div', {class: 'body'}, ent)));
   const eq = equipmentPanel();
@@ -1653,14 +2787,70 @@ function skinBox() {
   const id = 'f' + (++uid);
   const input = el('input', {type: 'text', id, maxlength: 16, placeholder: 'Player name (e.g. Notch)', spellcheck: 'false', autocomplete: 'off'});
   input.value = S.props['skin-name'] || '';
-  const reload = debounce(() => { if (S.skin) S.skin.reload(); }, 600);
+  const reload = debounce(() => { if (S.skin && S.skin.reload) S.skin.reload(); }, 600);
   input.addEventListener('input', () => { setProp('skin-name', input.value.trim()); reload(); });
   return el('div', {class: 'field'}, el('label', {for: id, text: 'Skin (player name)'}), input);
+}
+
+function lineProp(id) {
+  return S.schema.kinds.line.sections.flatMap(s => s.props).find(p => p.id === id);
+}
+
+function setAllLines(map, textOnly) {
+  for (const l of S.lines) {
+    if (textOnly && l.props.type !== 'TEXT') continue;
+    for (const [k, v] of Object.entries(map)) l.props[k] = String(v);
+  }
+  touch();
+  buildPreview();
+}
+
+function firstLine(textOnly) {
+  const l = S.lines.find(x => !textOnly || x.props.type === 'TEXT');
+  return l ? l.props : S.cfg.lineDefaults;
+}
+
+function lookCard() {
+  const body = el('div', {class: 'body'});
+  const card = el('section', {class: 'card'}, el('h2', {text: 'Colors and orientation'}), body);
+  const render = () => {
+    const mode = firstLine(true).effect || 'NONE';
+    const fl = firstLine(true);
+    const chips = el('div', {class: 'modechips'}, LOOK_MODES.map(([id, label]) => el('button', {type: 'button', class: 'chip' + (mode === id ? ' on' : ''), text: label, onclick: () => {
+      const map = {effect: id};
+      if (MODE_A.has(id) && !fl['color-a']) map['color-a'] = '#FFFFFF';
+      if (MODE_B.has(id) && !fl['color-b']) map['color-b'] = '#FF5555';
+      setAllLines(map, true);
+      render();
+    }})));
+    body.replaceChildren(el('div', {class: 'sub', style: 'margin-top:0', text: 'TEXT COLOR MODE (all text lines)'}), chips);
+    const grid = el('div', {class: 'grid', style: 'margin-top:10px'});
+    if (MODE_A.has(mode)) grid.append(colorControl({label: mode === 'SOLID' ? 'Color' : 'Color A'}, 'f' + (++uid), fl['color-a'], v => setAllLines({'color-a': v}, true)));
+    if (MODE_B.has(mode)) grid.append(colorControl({label: 'Color B'}, 'f' + (++uid), fl['color-b'], v => setAllLines({'color-b': v}, true)));
+    if (mode !== 'NONE') {
+      const sp = lineProp('effect-speed');
+      if (sp) grid.append(control(sp, fl['effect-speed'], v => setAllLines({'effect-speed': v}, true)));
+    }
+    if (grid.children.length) body.append(grid);
+    const f0 = firstLine(false);
+    body.append(el('div', {class: 'sub', text: 'ORIENTATION (all lines)'}), el('div', {class: 'actions'},
+      el('button', {class: 'btn', type: 'button', text: 'Lay flat on ground', onclick: () => { setAllLines({'rot-x': -90, billboard: 'FIXED'}, false); render(); }}),
+      el('button', {class: 'btn', type: 'button', text: 'Stand up', onclick: () => { setAllLines({'rot-x': 0, 'rot-y': 0, 'rot-z': 0, billboard: 'CENTER'}, false); render(); }})));
+    const og = el('div', {class: 'grid', style: 'margin-top:10px'});
+    for (const id of ['billboard', 'rot-x', 'rot-y', 'rot-z', 'offset-x', 'offset-z']) {
+      const p = lineProp(id);
+      if (p) og.append(control(p, f0[id], v => setAllLines({[id]: v}, false)));
+    }
+    body.append(og, el('p', {class: 'note', text: 'Fixed billboard with tilt -90 lies flat. The hologram yaw sets the reading direction. Use the Lines tab for per-line values.'}));
+  };
+  render();
+  return card;
 }
 
 function bodyQuickHolo() {
   const root = el('div');
   root.append(pvCard());
+  root.append(lookCard());
   root.append(quickLines());
   root.append(el('section', {class: 'card'}, el('h2', {text: 'Shape'}), el('div', {class: 'body'}, shapeCards())));
   const g = groupCard('Basics', ['line-spacing', 'view-range']);
@@ -1696,10 +2886,11 @@ function bodyLines() {
 
 function renderBody() {
   if (S.skin) { S.skin.destroy(); S.skin = null; }
+  if (S.scene) { S.scene.destroy(); S.scene = null; }
   const body = $('#inspBody');
   const top = body.scrollTop;
   body.replaceChildren();
-  pv = [];
+  $('#app').classList.toggle('wide', !!S.cur && (S.wide || (S.cur.kind === 'npc' && S.tab === 'animate')));
   if (!S.cur) {
     body.append(el('div', {class: 'empty', text: 'Click an icon on the map or pick an object from the list. Use + New to create one at your position.'}));
     return;
@@ -1709,6 +2900,7 @@ function renderBody() {
   const k = S.cur.kind;
   let node;
   if (S.tab === 'quick') node = k === 'npc' ? bodyQuickNpc() : bodyQuickHolo();
+  else if (S.tab === 'animate') node = bodyAnimate();
   else if (S.tab === 'movement') node = k === 'npc' ? bodyMoveNpc() : bodyMoveHolo();
   else if (S.tab === 'appearance') node = bodyAppearance();
   else if (S.tab === 'advanced') node = bodyAdvanced();
@@ -1744,6 +2936,7 @@ function renderHeader() {
     el('div', {class: 'actions'},
       el('button', {class: 'btn sm', type: 'button', text: 'Teleport', onclick: ev => run(ev.currentTarget, async () => { await api('/api/teleport', ref()); toast('Teleported', 'ok'); })}),
       el('button', {class: 'btn sm', type: 'button', text: 'Move here', onclick: ev => run(ev.currentTarget, moveHere)}),
+      el('button', {class: 'btn sm', type: 'button', text: S.wide ? 'Narrow' : 'Wide', onclick: () => { S.wide = !S.wide; renderHeader(); renderBody(); }}),
       el('button', {class: 'btn sm danger', type: 'button', text: 'Delete', onclick: ev => run(ev.currentTarget, deleteCur)})));
 }
 
@@ -1775,6 +2968,7 @@ function adopt(data) {
   for (const [k, v] of Object.entries(data.props || {})) if (S.pm[k]) S.props[k] = v;
   S.lines = (data.lines || []).map((l, i) => ({ref: i, props: Object.assign({}, l.props), hasItem: !!l.hasItem, open: false}));
   S.path = parsePath(data.waypointList);
+  S.anim = null;
   S.pending = false;
   S.pathPending = false;
 }

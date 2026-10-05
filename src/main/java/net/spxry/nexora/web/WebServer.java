@@ -730,6 +730,8 @@ public final class WebServer {
         effects.put("waveStep", config.getDouble("effects.wave-step", 0.25));
         effects.put("waveSpread", config.getDouble("effects.wave-spread", 0.35));
         effects.put("scrollGap", config.getString("effects.scroll-gap", ""));
+        effects.put("flickerChance", config.getDouble("effects.flicker-chance", 0.35));
+        effects.put("fadeStep", config.getDouble("effects.fade-step", 0.08));
         Map<String, Object> placeholders = new LinkedHashMap<>();
         placeholders.put("online", Bukkit.getOnlinePlayers().size());
         placeholders.put("max", Bukkit.getMaxPlayers());
