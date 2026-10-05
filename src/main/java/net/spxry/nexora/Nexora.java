@@ -7,7 +7,7 @@ import net.spxry.nexora.edit.Schema;
 import net.spxry.nexora.listener.InteractListener;
 import net.spxry.nexora.nms.Packets;
 import net.spxry.nexora.npc.ActionRunner;
-import net.spxry.nexora.npc.SkinPalette;
+import net.spxry.nexora.npc.SkinParts;
 import net.spxry.nexora.object.ObjectManager;
 import net.spxry.nexora.object.Tracker;
 import net.spxry.nexora.scheduler.FoliaScheduler;
@@ -26,7 +26,7 @@ public final class Nexora extends JavaPlugin {
     private ObjectManager objects;
     private Tracker tracker;
     private ActionRunner actions;
-    private SkinPalette skins;
+    private SkinParts skinParts;
     private DialogMenus menus;
     private WebServer web;
 
@@ -48,7 +48,7 @@ public final class Nexora extends JavaPlugin {
         objects = new ObjectManager(this);
         tracker = new Tracker(this);
         actions = new ActionRunner(this);
-        skins = new SkinPalette(this);
+        skinParts = new SkinParts(this);
         menus = new DialogMenus(this);
         web = new WebServer(this);
 
@@ -70,6 +70,7 @@ public final class Nexora extends JavaPlugin {
     @Override
     public void onDisable() {
         if (web != null) web.stop();
+        if (skinParts != null) skinParts.shutdown();
         if (tracker != null) tracker.stopAll();
         if (objects != null) objects.shutdown();
         if (store != null) store.shutdown();
@@ -104,7 +105,7 @@ public final class Nexora extends JavaPlugin {
 
     public ActionRunner actions() { return actions; }
 
-    public SkinPalette skins() { return skins; }
+    public SkinParts skinParts() { return skinParts; }
 
     public DialogMenus menus() { return menus; }
 

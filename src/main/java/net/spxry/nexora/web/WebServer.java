@@ -795,9 +795,12 @@ public final class WebServer {
         view.put(K_Z, object.z());
         view.put(K_YAW, object.anchor().getYaw());
         view.put("pathPoints", object.waypointCount());
+        view.put("name", object instanceof Npc named ? named.values().getOrDefault("name", "") : object instanceof Hologram holo && !holo.lines().isEmpty() ? holo.lines().get(0).text() : "");
         if (object instanceof Npc npc) {
             view.put(K_ENTITY, npc.entityType());
             view.put("skinId", npc.skinId());
+            view.put("modelStatus", plugin.skinParts().status(npc.skinId()).name());
+            view.put("mineskinKey", !plugin.getConfig().getString("model.mineskin.api-key", "").isBlank());
         }
         if (object instanceof Hologram hologram) view.put(K_LINES, hologram.lines().size());
         return view;

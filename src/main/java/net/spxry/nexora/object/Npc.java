@@ -1,13 +1,11 @@
 package net.spxry.nexora.object;
 
 import com.destroystokyo.paper.profile.ProfileProperty;
-import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.DyedItemColor;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
 import net.spxry.nexora.npc.Effects;
-import net.spxry.nexora.npc.SkinPalette;
+import net.spxry.nexora.npc.SkinParts;
 import net.spxry.nexora.npc.Triggers;
 import net.spxry.nexora.Nexora;
 import net.spxry.nexora.edit.Binding;
@@ -15,13 +13,11 @@ import net.spxry.nexora.nms.Packets;
 import net.spxry.nexora.util.ColorUtil;
 import net.spxry.nexora.util.ItemCodec;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Ageable;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mannequin;
@@ -29,18 +25,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,7 +73,15 @@ public final class Npc extends NexoraObject {
     private static final Pattern TEXTURE_HASH = Pattern.compile("texture/([0-9a-fA-F]{32,})");
     private static final String EXTRA_EQUIPMENT = "equipment";
     private static final String DEFAULT_TYPE_KEY = "npc.default-type";
-    private static final String PALETTE_ENABLED_KEY = "npc.skin-palette.enabled";
+    private static final String ANIMATIONS_KEY = "npc.animations.";
+    private static final String ANIMATION_NONE = "NONE";
+    private static final String MODEL_TYPE = "MODEL";
+    private static final String MODEL_EYE_KEY = "model.eye-height";
+    private static final double DEFAULT_MODEL_EYE = 1.62;
+    private static final String AXIS_SPLIT = ",";
+    private static final Set<SkinParts.Part> REQUIRED_PARTS = EnumSet.complementOf(EnumSet.of(SkinParts.Part.HEAD));
+
+    private record Focus(double x, double y, double z, long until) {}
 
     public static final Map<String, Binding<Npc>> BINDINGS = bindings();
 
@@ -119,11 +124,21 @@ public final class Npc extends NexoraObject {
     private String actions = "";
     private String clickType = "";
     private int cooldown;
-    private boolean animationEnabled;
     private double animationSpeed = DEFAULT_SPEED;
-    private String animation = "";
-    private boolean small;
+    private String animation = ANIMATION_NONE;
+    private String poseHead = "";
+    private String poseBody = "";
+    private String poseRightArm = "";
+    private String poseLeftArm = "";
+    private String poseRightLeg = "";
+    private String poseLeftLeg = "";
 
+    private volatile SkinnedModel model;
+    private volatile String requestedSkin = "";
+    private volatile Focus focus;
+    private final Map<UUID, double[]> lookers = new ConcurrentHashMap<>();
+    private final float[] staticPose = new float[Keyframes.SIZE];
+    private final float[] angles = new float[Keyframes.SIZE];
     private volatile LivingEntity template;
     private volatile Entity handle;
     private volatile int entityId;
@@ -136,15 +151,11 @@ public final class Npc extends NexoraObject {
     private volatile float bodyOffset;
     private volatile float headOffset;
     private volatile float headPitch;
-    private volatile ItemStack skinHead;
     private long rotationKey;
     private int lastFrame = -1;
     private boolean itemsChanged;
     private Keyframes.State state = Keyframes.State.NONE;
-    private volatile Map<EquipmentSlot, ItemStack> tint = Map.of();
-    private volatile String tintId = "";
-    private final float[] limbs = new float[Keyframes.SIZE];
-    private final float[] appliedPose = new float[Keyframes.SIZE];
+    private final float[] sampled = new float[Keyframes.SIZE];
 
     public Npc(Nexora plugin, String id, Location anchor) {
         super(plugin, id, anchor);
@@ -176,10 +187,14 @@ public final class Npc extends NexoraObject {
         map.put("actions", Binding.text(n -> n.actions, (n, v) -> n.actions = v));
         map.put("click-type", Binding.text(n -> n.clickType, (n, v) -> n.clickType = v));
         map.put("cooldown", Binding.integer(n -> n.cooldown, (n, v) -> n.cooldown = v));
-        map.put("animation-enabled", Binding.bool(n -> n.animationEnabled, (n, v) -> n.animationEnabled = v));
         map.put("animation-speed", Binding.number(n -> n.animationSpeed, (n, v) -> n.animationSpeed = v));
         map.put("animation", Binding.text(n -> n.animation, (n, v) -> n.animation = v));
-        map.put("small", Binding.bool(n -> n.small, (n, v) -> n.small = v));
+        map.put("pose-head", Binding.text(n -> n.poseHead, (n, v) -> n.poseHead = v));
+        map.put("pose-body", Binding.text(n -> n.poseBody, (n, v) -> n.poseBody = v));
+        map.put("pose-right-arm", Binding.text(n -> n.poseRightArm, (n, v) -> n.poseRightArm = v));
+        map.put("pose-left-arm", Binding.text(n -> n.poseLeftArm, (n, v) -> n.poseLeftArm = v));
+        map.put("pose-right-leg", Binding.text(n -> n.poseRightLeg, (n, v) -> n.poseRightLeg = v));
+        map.put("pose-left-leg", Binding.text(n -> n.poseLeftLeg, (n, v) -> n.poseLeftLeg = v));
         map.put("triggers", Binding.text(n -> n.triggers, (n, v) -> n.triggers = v));
         map.put("look-trigger-range", Binding.number(n -> n.lookTriggerRange, (n, v) -> n.lookTriggerRange = v));
         map.put("approach-range", Binding.number(n -> n.approachRange, (n, v) -> n.approachRange = v));
@@ -215,7 +230,123 @@ public final class Npc extends NexoraObject {
 
     @Override
     protected Built build(Location anchor) {
-        var type = EntityType.valueOf(entityType.toUpperCase(Locale.ROOT));
+        var parts = modelParts();
+        return parts == null ? buildEntity(anchor) : buildModel(anchor, parts);
+    }
+
+    private boolean isModel() {
+        return MODEL_TYPE.equalsIgnoreCase(entityType.trim());
+    }
+
+    private Map<SkinParts.Part, ProfileProperty> modelParts() {
+        if (!isModel()) return null;
+        var skin = skinId();
+        if (skin.isBlank()) return null;
+        var cached = plugin.skinParts().cached(skin);
+        if (cached.isEmpty()) {
+            requestParts(skin);
+            return null;
+        }
+        return cached.get().keySet().containsAll(REQUIRED_PARTS) ? cached.get() : null;
+    }
+
+    private void requestParts(String skin) {
+        var service = plugin.skinParts();
+        var status = service.status(skin);
+        if (status == SkinParts.Status.NO_KEY || status == SkinParts.Status.NO_SKIN || status == SkinParts.Status.READY) return;
+        if (status == SkinParts.Status.GENERATING && skin.equals(requestedSkin)) return;
+        requestedSkin = skin;
+        service.request(skin)
+            .thenAccept(result -> rebuildWhenReady(skin, result))
+            .exceptionally(e -> {
+                plugin.getLogger().log(Level.WARNING, id(), e);
+                return null;
+            });
+    }
+
+    private void rebuildWhenReady(String skin, Optional<Map<SkinParts.Part, ProfileProperty>> result) {
+        if (result.isEmpty() || isRemoved() || !isModel() || !skin.equals(skinId())) return;
+        plugin.objects().mutate(this, n -> { }).exceptionally(e -> null);
+    }
+
+    private Built buildModel(Location anchor, Map<SkinParts.Part, ProfileProperty> parts) {
+        var skin = skinId();
+        var head = parts.get(SkinParts.Part.HEAD);
+        var headProfile = head == null ? profile() : ResolvableProfile.resolvableProfile().addProperty(head).build();
+        var built = new SkinnedModel(plugin, new SkinnedModel.Spec(anchor, parts, headProfile, plugin.skinParts().slim(skin), scale, viewRange, glowColor));
+        eyeHeight = plugin.getConfig().getDouble(MODEL_EYE_KEY, DEFAULT_MODEL_EYE) * scale;
+        template = null;
+        handle = null;
+        entityId = 0;
+        reset(anchor);
+        readStaticPose();
+        built.glow(glow);
+        model = built;
+        lastFrame = animate();
+        if (keyframes != null) state = keyframes.state(lastFrame);
+        applyItems(built);
+        setPosition(anchor.getX(), anchor.getY(), anchor.getZ());
+        built.pose(poseAngles(), currentYaw);
+        var spawn = built.spawn(x(), y(), z());
+        return new Built(spawn, List.of(built.destroy()), built.ids());
+    }
+
+    private void reset(Location anchor) {
+        base = anchor.clone();
+        currentYaw = anchor.getYaw();
+        sneaking = false;
+        looking.clear();
+        lookers.clear();
+        focus = null;
+        ruleCooldowns.clear();
+        rules = Triggers.parse(plugin, triggers);
+        double angle = plugin.getConfig().getDouble(LOOK_ANGLE_KEY, DEFAULT_LOOK_ANGLE);
+        lookCos = Math.cos(Math.toRadians(angle));
+        lookAwayCos = Math.cos(Math.toRadians(angle * LOOK_AWAY_FACTOR));
+        itemOverride = null;
+        animationPaused = false;
+        animationClock = 0;
+        var parsed = preset();
+        keyframes = parsed.isEmpty() ? null : parsed;
+        state = Keyframes.State.NONE;
+        itemsChanged = false;
+    }
+
+    private void readStaticPose() {
+        Arrays.fill(staticPose, NO_PITCH);
+        readAxes(poseHead, Keyframes.HEAD);
+        readAxes(poseBody, Keyframes.BODY);
+        readAxes(poseRightArm, Keyframes.RIGHT_ARM);
+        readAxes(poseLeftArm, Keyframes.LEFT_ARM);
+        readAxes(poseRightLeg, Keyframes.RIGHT_LEG);
+        readAxes(poseLeftLeg, Keyframes.LEFT_LEG);
+    }
+
+    private void readAxes(String text, int offset) {
+        if (text == null || text.isBlank()) return;
+        var parts = text.split(AXIS_SPLIT, -1);
+        for (int axis = 0; axis < Keyframes.AXES && axis < parts.length; axis++) {
+            try {
+                float value = Float.parseFloat(parts[axis].trim());
+                if (Float.isFinite(value)) staticPose[offset + axis] = value;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+    }
+
+    private float[] poseAngles() {
+        for (int i = 0; i < Keyframes.SIZE; i++) angles[i] = staticPose[i] + sampled[i];
+        return angles;
+    }
+
+    private void applyItems(SkinnedModel target) {
+        var items = shownEquipment();
+        target.items(items.get(EquipmentSlot.HAND), items.get(EquipmentSlot.OFF_HAND));
+    }
+
+    private Built buildEntity(Location anchor) {
+        model = null;
+        var type = EntityType.valueOf((isModel() ? EntityType.MANNEQUIN.name() : entityType).toUpperCase(Locale.ROOT));
         var cls = type.getEntityClass();
         if (cls == null) throw new IllegalStateException(entityType);
         var created = anchor.getWorld().createEntity(anchor, cls);
@@ -226,26 +357,8 @@ public final class Npc extends NexoraObject {
         template = living;
         handle = h;
         entityId = h.getId();
-        base = anchor.clone();
-        currentYaw = anchor.getYaw();
-        sneaking = false;
-        looking.clear();
-        ruleCooldowns.clear();
-        rules = Triggers.parse(plugin, triggers);
-        double angle = plugin.getConfig().getDouble(LOOK_ANGLE_KEY, DEFAULT_LOOK_ANGLE);
-        lookCos = Math.cos(Math.toRadians(angle));
-        lookAwayCos = Math.cos(Math.toRadians(angle * LOOK_AWAY_FACTOR));
-        itemOverride = null;
-        animationPaused = false;
-        animationClock = 0;
-        var parsed = animationEnabled ? Keyframes.parse(animation) : Keyframes.EMPTY;
-        keyframes = parsed.isEmpty() ? null : parsed;
-        skinHead = living instanceof ArmorStand ? headItem() : null;
-        tint(living);
-        Arrays.fill(appliedPose, Float.NaN);
-        state = Keyframes.State.NONE;
-        itemsChanged = false;
-        lastFrame = animate(living);
+        reset(anchor);
+        lastFrame = animate();
         if (keyframes != null) applyState(living, keyframes.state(lastFrame), false);
         rotationKey = rotationKey(currentYaw);
         setPosition(anchor.getX(), anchor.getY(), anchor.getZ());
@@ -266,12 +379,6 @@ public final class Npc extends NexoraObject {
         if (scale != UNIT_SCALE) {
             var attribute = entity.getAttribute(Attribute.SCALE);
             if (attribute != null) attribute.setBaseValue(scale);
-        }
-        if (entity instanceof ArmorStand stand) {
-            stand.setArms(true);
-            stand.setBasePlate(false);
-            stand.setSmall(small);
-            stand.setGravity(false);
         }
         if (entity instanceof Mannequin mannequin) {
             mannequin.setProfile(profile());
@@ -294,24 +401,9 @@ public final class Npc extends NexoraObject {
         return Mannequin.defaultProfile();
     }
 
-    private ItemStack headItem() {
-        if (skinValue.isBlank() && skinName.isBlank()) return null;
-        var item = new ItemStack(Material.PLAYER_HEAD);
-        item.setData(DataComponentTypes.PROFILE, profile());
-        return item;
-    }
-
-    private boolean emptySlot(EquipmentSlot slot) {
-        var current = equipment.get(slot);
-        return current == null || current.getType().isAir();
-    }
-
     private Map<EquipmentSlot, ItemStack> shownEquipment() {
         Map<EquipmentSlot, ItemStack> merged = new EnumMap<>(EquipmentSlot.class);
         merged.putAll(equipment);
-        var head = skinHead;
-        if (head != null && emptySlot(EquipmentSlot.HEAD)) merged.put(EquipmentSlot.HEAD, head);
-        for (var entry : tint.entrySet()) if (emptySlot(entry.getKey())) merged.put(entry.getKey(), entry.getValue());
         if (state.item() != null) merged.put(EquipmentSlot.HAND, new ItemStack(state.item()));
         if (state.offItem() != null) merged.put(EquipmentSlot.OFF_HAND, new ItemStack(state.offItem()));
         var held = itemOverride;
@@ -326,64 +418,47 @@ public final class Npc extends NexoraObject {
         return items;
     }
 
-    private void tint(LivingEntity living) {
-        tint = Map.of();
-        tintId = "";
-        if (!(living instanceof ArmorStand) || skinHead == null || !plugin.getConfig().getBoolean(PALETTE_ENABLED_KEY, true)) return;
-        var skin = skinId();
-        if (skin.isBlank()) return;
-        var cached = plugin.skins().cached(skin);
-        if (cached.isPresent()) {
-            tint = dye(cached.get());
-            tintId = skin;
-            return;
-        }
-        plugin.skins().request(skin)
-            .thenAccept(found -> retint(skin, found.isPresent()))
-            .exceptionally(e -> {
-                plugin.getLogger().log(Level.WARNING, id(), e);
-                return null;
-            });
+    private Keyframes preset() {
+        if (animation.isBlank()) return Keyframes.EMPTY;
+        return Keyframes.parse(plugin.getConfig().getString(ANIMATIONS_KEY + animation.trim().toUpperCase(Locale.ROOT)));
     }
 
-    private void retint(String skin, boolean found) {
-        if (!found || isRemoved() || skin.equals(tintId) || !skin.equals(skinId())) return;
-        plugin.objects().mutate(this, n -> {}).exceptionally(e -> {
-            if (!isRemoved()) plugin.getLogger().log(Level.WARNING, id(), e);
-            return null;
-        });
-    }
-
-    private static Map<EquipmentSlot, ItemStack> dye(SkinPalette.Palette palette) {
-        Map<EquipmentSlot, ItemStack> items = new EnumMap<>(EquipmentSlot.class);
-        items.put(EquipmentSlot.CHEST, dyed(Material.LEATHER_CHESTPLATE, palette.torso()));
-        items.put(EquipmentSlot.LEGS, dyed(Material.LEATHER_LEGGINGS, palette.legs()));
-        items.put(EquipmentSlot.FEET, dyed(Material.LEATHER_BOOTS, palette.feet()));
-        return items;
-    }
-
-    private static ItemStack dyed(Material material, Color color) {
-        var item = new ItemStack(material);
-        item.setData(DataComponentTypes.DYED_COLOR, DyedItemColor.dyedItemColor(color));
-        return item;
-    }
-
-    private int animate(LivingEntity entity) {
+    private int animate() {
         var frames = keyframes;
         if (frames != null && animationPaused) return lastFrame;
         bodyOffset = NO_PITCH;
         headOffset = NO_PITCH;
         headPitch = NO_PITCH;
-        if (frames == null) return -1;
-        int frame = frames.sample(animationClock * animationSpeed, limbs);
-        if (entity instanceof ArmorStand stand) {
-            applyPose(stand);
-            return frame;
+        if (frames == null) {
+            Arrays.fill(sampled, NO_PITCH);
+            return -1;
         }
-        bodyOffset = limbs[Keyframes.at(Keyframes.BODY, Keyframes.YAW)];
-        headOffset = limbs[Keyframes.at(Keyframes.HEAD, Keyframes.YAW)];
-        headPitch = limbs[Keyframes.at(Keyframes.HEAD, Keyframes.PITCH)];
+        int frame = frames.sample(animationClock * animationSpeed, sampled);
+        if (model != null) return frame;
+        bodyOffset = sampled[Keyframes.BODY_YAW];
+        headOffset = sampled[Keyframes.HEAD_YAW];
+        headPitch = sampled[Keyframes.HEAD_PITCH];
         return frame;
+    }
+
+    private void gestureModel(SkinnedModel target, int frame) {
+        lastFrame = frame;
+        var frames = keyframes;
+        if (frames == null) return;
+        var next = frames.state(frame);
+        var previous = state;
+        state = next;
+        if (!Objects.equals(next.item(), previous.item()) || !Objects.equals(next.offItem(), previous.offItem())) {
+            itemsChanged = true;
+            applyItems(target);
+        }
+        var swing = frames.swing(frame);
+        if (swing != Keyframes.Hand.NONE) {
+            target.swing(swing == Keyframes.Hand.OFF);
+            fire(Triggers.Event.SWING, null, true, 0);
+        }
+        notifyUse(previous.use(), next.use());
+        fire(Triggers.Event.FRAME, null, true, frame);
     }
 
     private void gesture(LivingEntity entity, int frame, List<Packet<?>> out) {
@@ -407,7 +482,7 @@ public final class Npc extends NexoraObject {
         if (next.equals(previous)) return false;
         state = next;
         entity.setPose(currentPose(entity), true);
-        if (!(entity instanceof ArmorStand)) Packets.useItem(handle, next.use() != Keyframes.Hand.NONE, next.use() == Keyframes.Hand.OFF);
+        Packets.useItem(handle, next.use() != Keyframes.Hand.NONE, next.use() == Keyframes.Hand.OFF);
         if (notify) notifyUse(previous.use(), next.use());
         return !Objects.equals(next.item(), previous.item()) || !Objects.equals(next.offItem(), previous.offItem());
     }
@@ -416,23 +491,6 @@ public final class Npc extends NexoraObject {
         if (sneaking) return validPose(entity, Pose.SNEAKING);
         var gesture = state.pose();
         return gesture == null ? basePose : validPose(entity, gesture);
-    }
-
-    private void applyPose(ArmorStand stand) {
-        for (int limb = 0; limb < Keyframes.LIMBS; limb++) {
-            int at = Keyframes.at(limb, Keyframes.PITCH);
-            if (limbs[at] == appliedPose[at] && limbs[at + 1] == appliedPose[at + 1] && limbs[at + 2] == appliedPose[at + 2]) continue;
-            System.arraycopy(limbs, at, appliedPose, at, Keyframes.AXES);
-            var angle = new EulerAngle(Math.toRadians(limbs[at]), Math.toRadians(limbs[at + 1]), Math.toRadians(limbs[at + 2]));
-            switch (limb) {
-                case Keyframes.HEAD -> stand.setHeadPose(angle);
-                case Keyframes.BODY -> stand.setBodyPose(angle);
-                case Keyframes.LEFT_ARM -> stand.setLeftArmPose(angle);
-                case Keyframes.RIGHT_ARM -> stand.setRightArmPose(angle);
-                case Keyframes.LEFT_LEG -> stand.setLeftLegPose(angle);
-                default -> stand.setRightLegPose(angle);
-            }
-        }
     }
 
     private float bodyYaw(float yaw) { return yaw + bodyOffset; }
@@ -475,12 +533,17 @@ public final class Npc extends NexoraObject {
     protected void tick(int interval) {
         ticks += interval;
         if (!animationPaused) animationClock += interval;
+        var shown = model;
+        if (shown != null) {
+            tickModel(shown, interval);
+            return;
+        }
         var entity = template;
         var h = handle;
         if (entity == null || h == null) return;
         List<Packet<?>> everyone = new ArrayList<>();
         List<Packet<?>> rotation = new ArrayList<>();
-        int frame = animate(entity);
+        int frame = animate();
         if (frame != lastFrame) gesture(entity, frame, everyone);
         double seconds = ticks / (double) TICKS_PER_SECOND;
         float yaw = currentYaw;
@@ -512,11 +575,64 @@ public final class Npc extends NexoraObject {
         if (data != null) everyone.add(data);
         broadcast(everyone);
         broadcast(rotation, looking.keySet());
+        finishTick(swung, interval);
+    }
+
+    private void finishTick(boolean swung, int interval) {
         particles(x(), y() + PARTICLE_HEIGHT, z(), interval);
         if (swung) fire(Triggers.Event.SWING, null, true, 0);
         periodic(Triggers.Event.INTERVAL, interval);
         periodic(Triggers.Event.HOLDING, interval);
         if (crossed(PRUNE_PERIOD, interval)) pruneCooldowns();
+    }
+
+    private void tickModel(SkinnedModel shown, int interval) {
+        List<Packet<?>> out = new ArrayList<>();
+        int frame = animate();
+        if (frame != lastFrame) gestureModel(shown, frame);
+        double seconds = ticks / (double) TICKS_PER_SECOND;
+        float yaw = currentYaw;
+        double moved = 0;
+        var point = pathPoint(seconds);
+        if (point != null) {
+            moved = Math.hypot(point[0] - x(), point[2] - z());
+            yaw = (float) point[3];
+            if (moved > 0 || point[1] != y()) {
+                setPosition(point[0], point[1], point[2]);
+                out.addAll(shown.teleport(point[0], point[1], point[2]));
+            }
+        } else if (spinSpeed != 0) {
+            yaw = base.getYaw() + (float) (spinSpeed * seconds);
+        }
+        currentYaw = yaw;
+        boolean swung = crossed(swingInterval, interval);
+        if (swung) shown.swing(false);
+        out.addAll(shown.tick(poseAngles(), yaw, moved, lookTarget(), interval));
+        broadcast(out);
+        finishTick(swung, interval);
+    }
+
+    private double[] lookTarget() {
+        double hx = x();
+        double hy = y() + eyeHeight;
+        double hz = z();
+        var forced = focus;
+        if (forced != null && System.currentTimeMillis() < forced.until()) {
+            return new double[]{forced.x() - hx, forced.y() - hy, forced.z() - hz};
+        }
+        if (!lookAt) return null;
+        double nearest = lookRange * lookRange;
+        double[] pick = null;
+        for (var eye : lookers.values()) {
+            double dx = eye[0] - hx;
+            double dy = eye[1] - hy;
+            double dz = eye[2] - hz;
+            double distance = dx * dx + dy * dy + dz * dz;
+            if (distance > nearest) continue;
+            nearest = distance;
+            pick = new double[]{dx, dy, dz};
+        }
+        return pick;
     }
 
     private void periodic(Triggers.Event event, int interval) {
@@ -646,6 +762,11 @@ public final class Npc extends NexoraObject {
     }
 
     public void swing(boolean offHand) {
+        var shown = model;
+        if (shown != null) {
+            shown.swing(offHand);
+            return;
+        }
         var h = handle;
         if (h != null) broadcast(List.of(Packets.swing(h, offHand)));
     }
@@ -655,6 +776,15 @@ public final class Npc extends NexoraObject {
     }
 
     public void glow(Triggers.Toggle mode) {
+        var shown = model;
+        if (shown != null) {
+            shown.glow(switch (mode) {
+                case ON -> true;
+                case OFF -> false;
+                case TOGGLE -> !shown.glowing();
+            });
+            return;
+        }
         var entity = template;
         if (entity == null) return;
         entity.setGlowing(switch (mode) {
@@ -676,6 +806,13 @@ public final class Npc extends NexoraObject {
     }
 
     public void overrideItem(Material material) {
+        var shown = model;
+        if (shown != null) {
+            itemOverride = material;
+            itemsChanged = true;
+            applyItems(shown);
+            return;
+        }
         if (handle == null) return;
         itemOverride = material;
         itemsChanged = true;
@@ -683,6 +820,12 @@ public final class Npc extends NexoraObject {
     }
 
     public void faceToward(Player player) {
+        if (model != null) {
+            var eye = player.getEyeLocation();
+            long hold = plugin.getConfig().getLong(LOOK_HOLD_KEY, DEFAULT_LOOK_HOLD);
+            focus = new Focus(eye.getX(), eye.getY(), eye.getZ(), System.currentTimeMillis() + hold * MILLIS_PER_TICK);
+            return;
+        }
         var h = handle;
         if (h == null) return;
         var aim = aim(player.getEyeLocation());
@@ -715,6 +858,11 @@ public final class Npc extends NexoraObject {
     }
 
     public void look(Player viewer, Location viewerEye) {
+        if (model != null) {
+            if (lookAt) lookers.put(viewer.getUniqueId(), new double[]{viewerEye.getX(), viewerEye.getY(), viewerEye.getZ()});
+            else lookers.remove(viewer.getUniqueId());
+            return;
+        }
         var h = handle;
         if (h == null) return;
         double dx = viewerEye.getX() - x();
@@ -735,6 +883,8 @@ public final class Npc extends NexoraObject {
 
     @Override
     protected List<Packet<?>> catchUp() {
+        var shown = model;
+        if (shown != null) return shown.catchUp(x(), y(), z());
         var h = handle;
         if (h == null) return List.of();
         List<Packet<?>> list = new ArrayList<>();
@@ -755,6 +905,7 @@ public final class Npc extends NexoraObject {
     @Override
     protected void onHide(UUID viewer) {
         looking.remove(viewer);
+        lookers.remove(viewer);
         gazing.remove(viewer);
         near.remove(viewer);
     }

@@ -34,6 +34,7 @@ cmd:
       - "&8» &f/nexora npc skin <id> <player|name> &7- set the skin"
       - "&8» &f/nexora demo &7- spawn demo NPCs and holograms in front of you"
       - "&8» &f/nexora demo clear &7- remove the demo objects"
+      - "&8» &f/nexora mineskin <key> &7- enable Skinned Model NPCs (posable skinned limbs)"
   reloaded:
     messages:
       - "{prefix}&#00FF5AConfiguration reloaded."
@@ -155,6 +156,18 @@ cmd:
     sound: "entity.player.levelup"
     sound-volume: 1.0
     sound-pitch: 1.2
+  mineskin-usage:
+    messages:
+      - "{prefix}&#FF0000Usage: /nexora mineskin <api-key> (get one free at account.mineskin.org)"
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  mineskin-set:
+    messages:
+      - "{prefix}&#00FF5AMineSkin key saved. Skinned Model NPCs will now generate their limbs."
+    sound: "entity.player.levelup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
   demo-cleared:
     messages:
       - "{prefix}&7Removed &#6293F0{count}&7 demo objects."

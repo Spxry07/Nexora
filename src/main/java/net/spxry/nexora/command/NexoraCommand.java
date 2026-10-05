@@ -39,6 +39,8 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private static final String EQUIP = "equip";
     private static final String SKIN = "skin";
     private static final String DEMO = "demo";
+    private static final String MINESKIN = "mineskin";
+    private static final String MINESKIN_KEY_PATH = "model.mineskin.api-key";
     private static final String ENTITY_TYPE = "entity-type";
     private static final String ADD = "add";
     private static final String CLEAR = "clear";
@@ -52,7 +54,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private static final String NEWLINE_ESCAPE = "\\n";
     private static final String NEWLINE = "\n";
     private static final String KINDS_KEY = "dialog.kinds.";
-    private static final List<String> ROOT = List.of(HELP, RELOAD, WEB, DEMO, HOLO, NPC);
+    private static final List<String> ROOT = List.of(HELP, RELOAD, WEB, DEMO, MINESKIN, HOLO, NPC);
     private static final List<String> HOLO_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, ADD_LINE, ADD_ITEM);
     private static final List<String> NPC_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, EQUIP, SKIN);
     private static final Set<String> ID_SUBS = Set.of(EDIT, DELETE, MOVE_HERE, TP, PATH, ADD_LINE, ADD_ITEM, EQUIP, SKIN);
@@ -91,6 +93,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
                 plugin.messages().send(player, "cmd.reloaded");
             }
             case WEB -> web(player, args);
+            case MINESKIN -> mineskin(player, args);
             case DEMO -> {
                 if (args.length > 1 && CLEAR.equalsIgnoreCase(args[1])) plugin.menus().clearDemo(player);
                 else plugin.menus().spawnDemo(player);
@@ -149,6 +152,17 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
         var config = plugin.getConfig();
         return player.hasPermission(config.getString("permissions.admin", ""))
             || WEB.equals(sub) && player.hasPermission(config.getString("permissions.web", ""));
+    }
+
+    private void mineskin(Player player, String[] args) {
+        if (args.length < 2 || args[1].isBlank()) {
+            plugin.messages().send(player, "cmd.mineskin-usage");
+            return;
+        }
+        plugin.getConfig().set(MINESKIN_KEY_PATH, args[1].trim());
+        plugin.scheduler().runAsync(plugin::saveConfig);
+        plugin.objects().restartAll();
+        plugin.messages().send(player, "cmd.mineskin-set");
     }
 
     private void help(Player player) {

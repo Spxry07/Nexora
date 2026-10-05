@@ -6,20 +6,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 final class Keyframes {
+    static final int AXES = 3;
     static final int HEAD = 0;
-    static final int BODY = 1;
-    static final int LEFT_ARM = 2;
-    static final int RIGHT_ARM = 3;
-    static final int LEFT_LEG = 4;
-    static final int RIGHT_LEG = 5;
-    static final int LIMBS = 6;
+    static final int BODY = AXES;
+    static final int RIGHT_ARM = AXES * 2;
+    static final int LEFT_ARM = AXES * 3;
+    static final int RIGHT_LEG = AXES * 4;
+    static final int LEFT_LEG = AXES * 5;
+    static final int SIZE = AXES * 6;
     static final int PITCH = 0;
     static final int YAW = 1;
-    static final int AXES = 3;
-    static final int SIZE = LIMBS * AXES;
+    static final int ROLL = 2;
+    static final int HEAD_PITCH = HEAD + PITCH;
+    static final int HEAD_YAW = HEAD + YAW;
+    static final int BODY_YAW = BODY + YAW;
 
     enum Hand { NONE, MAIN, OFF }
 
@@ -45,8 +49,9 @@ final class Keyframes {
     private static final String KEY_OFF_ITEM = "offitem";
     private static final String KEY_SWING = "swing";
     private static final Set<String> POSES = Set.of("STANDING", "SNEAKING", "SWIMMING", "FALL_FLYING", "SPIN_ATTACK", "SLEEPING", "SITTING");
-    private static final List<String> NAMES = List.of("head", "body", "larm", "rarm", "lleg", "rleg");
-    private static final float[] DEFAULTS = {0F, 0F, 0F, 0F, 0F, 0F, -10F, 0F, -10F, -15F, 0F, 10F, -1F, 0F, -1F, 1F, 0F, 1F};
+    private static final Map<String, Integer> LIMBS = Map.of(
+        "head", HEAD, "body", BODY, "rarm", RIGHT_ARM, "larm", LEFT_ARM, "rleg", RIGHT_LEG, "lleg", LEFT_LEG);
+    private static final float[] DEFAULTS = new float[SIZE];
 
     private final float[][] poses;
     private final int[] starts;
@@ -67,10 +72,6 @@ final class Keyframes {
             sum += durations[i];
         }
         this.total = sum;
-    }
-
-    static int at(int limb, int axis) {
-        return limb * AXES + axis;
     }
 
     boolean isEmpty() {
@@ -117,7 +118,10 @@ final class Keyframes {
                     case KEY_ITEM -> state = new State(state.pose(), state.use(), readMaterial(value, state.item()), state.offItem());
                     case KEY_OFF_ITEM -> state = new State(state.pose(), state.use(), state.item(), readMaterial(value, state.offItem()));
                     case KEY_SWING -> swing = readHand(value, Hand.NONE);
-                    default -> readLimb(key, value, pose);
+                    default -> {
+                        var offset = LIMBS.get(key);
+                        if (offset != null) readLimb(value, pose, offset);
+                    }
                 }
             }
             frames.add(pose);
@@ -158,21 +162,24 @@ final class Keyframes {
         return material.isAir() ? null : material;
     }
 
-    private static void readLimb(String name, String value, float[] pose) {
-        int limb = NAMES.indexOf(name);
-        if (limb < 0) return;
+    private static void readLimb(String value, float[] pose, int offset) {
+        var axes = readAxes(value);
+        if (axes != null) System.arraycopy(axes, 0, pose, offset, AXES);
+    }
+
+    private static float[] readAxes(String value) {
         var parts = value.split(AXIS_SEPARATOR, -1);
-        if (parts.length != AXES) return;
+        if (parts.length != AXES) return null;
         float[] values = new float[AXES];
         try {
             for (int axis = 0; axis < AXES; axis++) {
                 values[axis] = Float.parseFloat(parts[axis].trim());
-                if (!Float.isFinite(values[axis])) return;
+                if (!Float.isFinite(values[axis])) return null;
             }
         } catch (NumberFormatException e) {
-            return;
+            return null;
         }
-        System.arraycopy(values, 0, pose, at(limb, PITCH), AXES);
+        return values;
     }
 
     int sample(double elapsed, float[] out) {

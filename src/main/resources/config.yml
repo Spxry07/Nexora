@@ -64,24 +64,31 @@ npc:
     base-height: 1.8
     line-spacing: 0.28
   animations:
-    WAVE: "8 swing=main head=0,0,10\n8 swing=main head=0,0,-10\n8 swing=main head=0,0,10\n30 head=0,0,0"
+    WAVE: "8 swing=main rarm=165,0,-25 head=0,0,10\n8 swing=main rarm=165,0,15 head=0,0,-10\n8 swing=main rarm=165,0,-25 head=0,0,10\n30 rarm=0,0,0 head=0,0,0"
     NOD: "6 head=20,0,0\n6 head=-5,0,0\n6 head=20,0,0\n40 head=0,0,0"
     LOOK_AROUND: "30 head=0,45,0\n30 head=10,-45,0\n30 head=0,0,0"
-    CHEER: "6 swing=main head=-15,0,0\n6 swing=off\n6 swing=main\n6 swing=off\n6 pose=SNEAKING head=0,0,0\n10 pose=STANDING"
-    CROUCH_DANCE: "5 pose=SNEAKING head=0,20,0\n5 pose=STANDING swing=main\n5 pose=SNEAKING head=0,-20,0\n5 pose=STANDING swing=off"
-    ARCHER: "20 item=bow use=none head=0,0,0\n25 use=main head=-5,0,0\n6 use=none swing=main\n20 head=0,0,0"
-    CROSSBOW: "20 item=crossbow use=none\n25 use=main\n8 use=none swing=main\n20 head=0,0,0"
-    TRIDENT: "20 item=trident use=none head=0,0,0\n20 use=main head=-20,0,0\n6 use=none swing=main\n20 head=0,0,0"
-    CAST: "20 item=blaze_rod use=none head=0,0,0\n18 item=trident use=main head=-25,0,0\n6 use=none swing=main item=blaze_rod\n16 head=10,0,0\n10 head=0,0,0"
-    SPYGLASS: "15 item=spyglass use=none head=0,0,0\n40 use=main head=-10,30,0\n40 head=-10,-30,0\n15 use=none head=0,0,0"
-    HORN: "20 item=goat_horn use=none head=0,0,0\n30 use=main head=-25,0,0\n30 use=none head=0,0,0"
-    SHIELD: "20 offitem=shield use=none\n40 use=off\n20 use=none swing=main"
-    GUARD: "40 item=iron_sword offitem=shield use=off head=0,25,0\n40 head=0,-25,0\n10 use=none swing=main head=0,0,0"
-    FEAST: "10 item=cooked_beef use=none head=0,0,0\n32 use=main\n20 use=none head=0,20,0\n10 head=0,0,0"
-    POTION: "10 item=potion use=none head=0,0,0\n32 use=main head=-20,0,0\n20 use=none head=0,0,0"
-    SWIMMER: "60 pose=SWIMMING swing=main\n60 swing=off"
-    RIPTIDE: "40 pose=SPIN_ATTACK item=trident\n30 pose=STANDING"
-    SLEEPY: "100 pose=SLEEPING"
+    CHEER: "6 swing=main rarm=170,0,-15 larm=170,0,15 head=-15,0,0\n6 swing=off rarm=140,0,-30 larm=140,0,30\n6 swing=main rarm=170,0,-15 larm=170,0,15\n6 swing=off pose=SNEAKING rarm=0,0,0 larm=0,0,0 head=0,0,0\n10 pose=STANDING"
+    CROUCH_DANCE: "5 pose=SNEAKING head=0,20,0 rarm=40,0,-20 larm=-20,0,20 lleg=-15,0,0 rleg=15,0,0\n5 pose=STANDING swing=main rarm=-20,0,-20 larm=40,0,20 lleg=15,0,0 rleg=-15,0,0\n5 pose=SNEAKING head=0,-20,0 rarm=40,0,-20 larm=-20,0,20 lleg=-15,0,0 rleg=15,0,0\n5 pose=STANDING swing=off rarm=-20,0,-20 larm=40,0,20 lleg=15,0,0 rleg=-15,0,0"
+    ARCHER: "20 item=bow use=none head=0,0,0 rarm=0,0,0 larm=0,0,0\n25 use=main head=-5,0,0 rarm=90,-15,0 larm=90,35,0\n6 use=none swing=main rarm=60,0,0 larm=60,0,0\n20 head=0,0,0 rarm=0,0,0 larm=0,0,0"
+    CROSSBOW: "20 item=crossbow use=none rarm=0,0,0 larm=0,0,0\n25 use=main rarm=80,-20,0 larm=60,30,0\n8 use=none swing=main rarm=90,0,0 larm=90,30,0\n20 head=0,0,0 rarm=0,0,0 larm=0,0,0"
+    TRIDENT: "20 item=trident use=none head=0,0,0 rarm=0,0,0\n20 use=main head=-20,0,0 rarm=170,0,-10\n6 use=none swing=main rarm=60,0,0\n20 head=0,0,0 rarm=0,0,0"
+    CAST: "20 item=blaze_rod use=none head=0,0,0 rarm=0,0,0 larm=0,0,0\n18 item=trident use=main head=-25,0,0 rarm=160,0,-20 larm=120,0,30\n6 use=none swing=main item=blaze_rod rarm=90,0,0 larm=60,0,20\n16 head=10,0,0 rarm=40,0,0 larm=20,0,0\n10 head=0,0,0 rarm=0,0,0 larm=0,0,0"
+    SPYGLASS: "15 item=spyglass use=none head=0,0,0 rarm=0,0,0\n40 use=main head=-10,30,0 rarm=130,30,0\n40 head=-10,-30,0 rarm=130,-20,0\n15 use=none head=0,0,0 rarm=0,0,0"
+    HORN: "20 item=goat_horn use=none head=0,0,0 rarm=0,0,0\n30 use=main head=-25,0,0 rarm=140,20,0\n30 use=none head=0,0,0 rarm=0,0,0"
+    SHIELD: "20 offitem=shield use=none larm=0,0,0\n40 use=off larm=60,40,0\n20 use=none swing=main larm=0,0,0 rarm=70,0,0\n10 rarm=0,0,0"
+    GUARD: "40 item=iron_sword offitem=shield use=off head=0,25,0 larm=50,40,0 rarm=30,0,0\n40 head=0,-25,0\n10 use=none swing=main head=0,0,0 rarm=100,0,0\n10 rarm=30,0,0"
+    FEAST: "10 item=cooked_beef use=none head=0,0,0 rarm=0,0,0\n32 use=main rarm=110,30,0 head=10,0,0\n20 use=none head=0,20,0 rarm=0,0,0\n10 head=0,0,0"
+    POTION: "10 item=potion use=none head=0,0,0 rarm=0,0,0\n32 use=main head=-20,0,0 rarm=130,20,0\n20 use=none head=0,0,0 rarm=0,0,0"
+    SWIMMER: "60 pose=SWIMMING swing=main rarm=170,0,0 larm=170,0,0\n60 swing=off rarm=90,0,-60 larm=90,0,60"
+    RIPTIDE: "40 pose=SPIN_ATTACK item=trident rarm=170,0,0\n30 pose=STANDING rarm=0,0,0"
+    SLEEPY: "100 pose=SLEEPING head=15,0,0"
+    WALK: "10 rarm=-30,0,0 larm=30,0,0 rleg=30,0,0 lleg=-30,0,0\n10 rarm=30,0,0 larm=-30,0,0 rleg=-30,0,0 lleg=30,0,0"
+    SALUTE: "10 rarm=150,-40,0 head=-5,0,0\n40 rarm=150,-40,0\n10 rarm=0,0,0 head=0,0,0\n20"
+    POINT: "10 rarm=90,0,0 head=0,0,0\n40 rarm=90,0,0\n10 rarm=0,0,0\n20"
+    BOW: "12 body=30,0,0 head=20,0,0 rarm=-20,0,0 larm=-20,0,0\n20 body=30,0,0\n12 body=0,0,0 head=0,0,0 rarm=0,0,0 larm=0,0,0\n30"
+    DAB: "8 rarm=120,0,-60 larm=100,60,40 head=35,-30,0\n30 rarm=120,0,-60\n8 rarm=0,0,0 larm=0,0,0 head=0,0,0\n20"
+    ZOMBIE: "20 rarm=90,0,0 larm=90,0,0 head=0,0,0\n20 rarm=95,0,5 larm=85,0,-5 head=5,10,0"
+    DANCE: "6 rarm=150,0,-30 larm=20,0,20 rleg=20,0,0 lleg=-10,0,0 body=0,15,0 head=0,15,0\n6 rarm=20,0,-20 larm=150,0,30 rleg=-10,0,0 lleg=20,0,0 body=0,-15,0 head=0,-15,0"
   equipment-slots:
     - HAND
     - OFF_HAND
@@ -201,6 +208,12 @@ defaults:
     cooldown: 20
     animation-speed: 1
     animation: "NONE"
+    pose-head: "0,0,0"
+    pose-body: "0,0,0"
+    pose-right-arm: "0,0,0"
+    pose-left-arm: "0,0,0"
+    pose-right-leg: "0,0,0"
+    pose-left-leg: "0,0,0"
     triggers: "look -> particle HEART 3 head; sound entity.villager.ambient\nclick -> particle! TOTEM_OF_UNDYING 20 body 0.6"
     look-trigger-range: 6
     approach-range: 5
@@ -217,3 +230,36 @@ defaults:
     particle-radius: 0.5
     particle-interval: 10
 
+
+model:
+  mineskin:
+    api-key: ""
+    user-agent: "Nexora/1.0"
+    queue-url: "https://api.mineskin.org/v2/queue"
+    poll-ms: 1500
+    timeout-seconds: 20
+    max-concurrent-skins: 2
+    visibility: "unlisted"
+  skin-url:
+    hash: "http://textures.minecraft.net/texture/{hash}"
+    name: "https://mc-heads.net/skin/{name}"
+  item-transform: "NONE"
+  cube-size: 0.5
+  cube-offset-y: -0.25
+  part-yaw: 0
+  hitbox-width: 0.6
+  eye-height: 1.62
+  look-max-yaw: 70
+  look-max-pitch: 40
+  walk-swing: 30
+  walk-phase-per-block: 2.66
+  walk-blend: 0.35
+  hitbox-height: 1.8
+  hand-transform-main: "THIRDPERSON_RIGHTHAND"
+  hand-transform-off: "THIRDPERSON_LEFTHAND"
+  hand-offset-x: 0
+  hand-offset-y: -0.125
+  hand-offset-z: 0.625
+  look-smoothing: 0.4
+  swing-angle: 80
+  swing-ticks: 6

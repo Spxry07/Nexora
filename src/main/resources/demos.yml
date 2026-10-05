@@ -1,4 +1,4 @@
-file-version: 6
+file-version: 7
 id-prefix: "demo-"
 skin-property: "textures"
 objects:
@@ -307,14 +307,14 @@ objects:
     offset: {forward: 6, right: -1.8, up: 0, yaw: 180}
     copy-skin: true
     props:
-      entity-type: "MANNEQUIN"
+      entity-type: "MODEL"
       name: "&#FF66CC&lᴅᴀɴᴄᴇʀ"
       name-visible: true
       look-at: false
       glow: true
       glow-color: "light_purple"
       animation-speed: 1
-      animation: "CROUCH_DANCE"
+      animation: "DANCE"
       particle: "NOTE"
       particle-count: 1
       particle-radius: 0.6
