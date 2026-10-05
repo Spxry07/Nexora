@@ -25,3 +25,10 @@ The web editor is plain HTTP on `0.0.0.0:8155`. Links carry a random token that 
 
 ## Build
 CI (`.github/workflows/build.yml`) runs `mvn paper-nms:init` (Mojang-mapped Paper) then `mvn package`.
+
+## Skinned Model NPCs (posable skinned limbs, no resource pack)
+1. Get a free API key at https://account.mineskin.org/keys
+2. In game: `/nexora mineskin <key>`
+3. Set an NPC's type to **Skinned Model (posable)** (web editor → Pose tab → "Switch to Skinned Model").
+The NPC's skin is cut into 10 part textures and uploaded once through MineSkin (cached in `skin-parts.yml`; takes a minute or two per new skin). Until then it shows as a normal skinned NPC. Pose every limb in the web Pose tab or use the animation presets (Walk, Dance, Salute, Dab, ...).
+If parts look misaligned or face backwards, tune `model.cube-size`, `model.cube-offset-y` and `model.part-yaw` (0 or 180) in `config.yml`, then `/nexora reload`.

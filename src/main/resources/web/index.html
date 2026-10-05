@@ -299,6 +299,25 @@ details.adv>.body{padding:var(--s4)}
 .acard.on .chk{display:grid}
 .acard .chk svg{width:12px;height:12px}
 .acard.skeleton .stagebox{background:linear-gradient(100deg,var(--surface2) 30%,var(--elev) 50%,var(--surface2) 70%);background-size:300% 100%;animation:shimmer 1.3s linear infinite}
+a{color:var(--accent2)}
+.hintbox.bad{background:var(--danger-bg);border-color:rgba(255,107,114,.4)}
+.hintbox code{font:600 12px var(--mono);background:var(--field);border:1px solid var(--line2);border-radius:5px;padding:0 6px;color:var(--text);white-space:nowrap}
+.spin{width:18px;height:18px;flex:none;border:3px solid var(--accent-bd);border-top-color:var(--accent2);border-radius:50%;animation:kspin .9s linear infinite}
+.hintbox .spin{flex:none;min-width:0}
+.mbanner{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ok);margin-bottom:var(--s3)}
+.mbanner.dim{color:var(--faint)}
+.mbadge{position:absolute;top:7px;left:7px;z-index:1;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent2);background:rgba(11,14,20,.8);border:1px solid var(--accent-bd);border-radius:20px;padding:1px 7px;pointer-events:none}
+.limbrow{border:1px solid var(--line2);border-radius:var(--r2);margin-bottom:var(--s2);background:var(--elev);overflow:hidden;transition:border-color var(--dur),background var(--dur)}
+.limbrow.on{border-color:var(--accent);background:var(--accent-bg)}
+.limbrow>button{width:100%;display:flex;align-items:center;gap:var(--s3);background:none;border:0;padding:9px var(--s3);text-align:left;border-radius:var(--r2)}
+.limbrow>button:hover{background:#ffffff08}
+.limbrow .ln{flex:1;font-weight:600}
+.limbrow .lv{font:500 12px var(--mono);color:var(--muted)}
+.limbrow .lb{padding:2px var(--s3) var(--s3);display:flex;flex-direction:column;gap:var(--s2)}
+.axrow{display:grid;grid-template-columns:86px minmax(0,1fr) 84px;gap:var(--s2);align-items:center}
+.axrow label{font-size:12px;color:var(--muted)}
+.lb .actions{justify-content:flex-end}
+.posefeat{margin:var(--s3) 0;padding-left:18px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 #toasts{position:fixed;right:var(--s4);bottom:var(--s4);display:flex;flex-direction:column;gap:var(--s2);z-index:300;max-width:calc(100vw - 32px)}
 .toast{background:var(--elev);border:1px solid var(--line2);border-left:4px solid var(--accent);border-radius:10px;padding:10px 14px;box-shadow:var(--shadow2);max-width:380px;word-break:break-word;animation:toastin .22s var(--ease);display:flex;gap:var(--s3);align-items:center}
 .toast.err{border-left-color:var(--danger)}
@@ -616,6 +635,50 @@ const DUP_PLATE_MS = 400;
 const DUP_OFFSET = 1.5;
 const LIMBS = ['head', 'body', 'larm', 'rarm', 'lleg', 'rleg'];
 const LIMB_PART = {head: 'head', body: 'body', larm: 'leftArm', rarm: 'rightArm', lleg: 'leftLeg', rleg: 'rightLeg'};
+const MODEL_TYPE = 'MODEL';
+const MODEL_POLL_MS = 5000;
+const MODEL_FIRST_MS = 300;
+const MODEL_TRIES_MAX = 6;
+const MODEL_ANIMS = new Set(['WALK', 'SALUTE', 'POINT', 'BOW', 'DAB', 'ZOMBIE', 'DANCE']);
+const POSE_PROP = {head: 'pose-head', body: 'pose-body', rarm: 'pose-right-arm', larm: 'pose-left-arm', rleg: 'pose-right-leg', lleg: 'pose-left-leg'};
+const LIMB_ORDER = ['head', 'body', 'rarm', 'larm', 'rleg', 'lleg'];
+const LIMB_LABEL = {head: 'Head', body: 'Body', rarm: 'Right arm', larm: 'Left arm', rleg: 'Right leg', lleg: 'Left leg'};
+const LIMB_MIRROR = {head: 'head', body: 'body', rarm: 'larm', larm: 'rarm', rleg: 'lleg', lleg: 'rleg'};
+const LIMB_PITCH_SIGN = {head: 1, body: 1, rarm: -1, larm: -1, rleg: -1, lleg: -1};
+const LIMB_ROLL_SIGN = {head: 1, body: 1, rarm: -1, larm: 1, rleg: -1, lleg: 1};
+const LIMB_MESH_H = {head: 8, body: 12, rarm: 12, larm: 12, rleg: 12, lleg: 12};
+const LIMB_PICK_R = {head: 4.6, body: 4.6, rarm: 2.8, larm: 2.8, rleg: 2.8, lleg: 2.8};
+const LIMB_PIVOT_END = {head: 'b', body: 'b', rarm: 'a', larm: 'a', rleg: 'a', lleg: 'a'};
+const AXIS_NAMES = ['X', 'Y', 'Z'];
+const AXIS_HINT = {head: ['nod', 'turn', 'tilt'], body: ['lean', 'twist', 'tilt'], limb: ['swing', 'twist', 'outward']};
+const AXIS_TIP = {
+  head: ['Nod the head down (positive) or up', 'Turn the head toward the model\'s right (positive)', 'Tilt the head sideways'],
+  body: ['Lean forward (positive) or back', 'Twist the torso', 'Tilt the torso sideways'],
+  limb: ['Swing forward (positive) or back', 'Twist or sweep sideways', 'Swing outward (positive) from the body']
+};
+const POSE_MIN = -180;
+const POSE_MAX = 180;
+const POSE_DRAG_MAX = 30;
+const POSE_DRAG_EPS = 0.05;
+const POSE_DRAG_FALLBACK = 0.5;
+const POSE_FALLBACK_MIN = 0.04;
+const POSE_PROBE_DEG = 1;
+const DRAG_PLAIN = {head: {axes: [0, 1], tip: [0, 0, 4]}, body: {axes: [0, 2], tip: [0, 6, 0]}, limb: {axes: [0, 2], tip: [0, -6, 0]}};
+const DRAG_SHIFT = {head: {axes: [2], tip: [4, 0, 0]}, body: {axes: [1], tip: [4, 0, 0]}, limb: {axes: [1], tip: [0, -6, 2]}};
+const POSE_PRESETS = [
+  {id: 'idle', label: 'Idle', hint: 'Relaxed', limbs: {}},
+  {id: 'wave', label: 'Wave', hint: 'Right hand raised', limbs: {rarm: [160, 0, -20], head: [0, 0, 8]}},
+  {id: 'point', label: 'Point', hint: 'Arm straight ahead', limbs: {rarm: [90, 0, 0], head: [5, 0, 0]}},
+  {id: 'salute', label: 'Salute', hint: 'Hand to the brow', limbs: {rarm: [150, -40, 0], head: [-5, 0, 0]}},
+  {id: 'handsup', label: 'Hands up', hint: 'Both arms overhead', limbs: {rarm: [170, 0, -12], larm: [170, 0, -12]}},
+  {id: 'crossed', label: 'Crossed arms', hint: 'Approximate', limbs: {rarm: [55, -55, 0], larm: [55, 55, 0]}},
+  {id: 'tpose', label: 'T-pose', hint: 'Arms straight out', limbs: {rarm: [0, 0, 90], larm: [0, 0, 90]}},
+  {id: 'sitting', label: 'Sitting', hint: 'Legs forward', limbs: {rleg: [90, 0, 0], lleg: [90, 0, 0]}},
+  {id: 'running', label: 'Running', hint: 'Mid stride', limbs: {body: [12, 0, 0], head: [-10, 0, 0], rarm: [-50, 0, 0], larm: [50, 0, 0], rleg: [55, 0, 0], lleg: [-35, 0, 0]}},
+  {id: 'kneel', label: 'Kneel', hint: 'Approximate', limbs: {body: [10, 0, 0], head: [10, 0, 0], rarm: [20, 0, 0], larm: [20, 0, 0], rleg: [85, 0, 0], lleg: [-40, 0, 0]}},
+  {id: 'thinking', label: 'Thinking', hint: 'Hand toward the chin', limbs: {head: [15, -10, 0], rarm: [80, -45, 0], larm: [10, 0, 0]}},
+  {id: 'victory', label: 'Victory', hint: 'Arms up in a V', limbs: {rarm: [165, 0, -35], larm: [165, 0, -35], head: [-15, 0, 0], rleg: [0, 0, 8], lleg: [0, 0, 8]}}
+];
 const BASE_POSE = {head: [0, 0, 0], body: [0, 0, 0], larm: [-10, 0, -10], rarm: [-15, 0, 10], lleg: [-1, 0, -1], rleg: [1, 0, 1]};
 const POSE_SIGN_X = 1;
 const POSE_SIGN_Y = -1;
@@ -675,7 +738,14 @@ const ANIM_FALLBACK = {
   POTION: "10 item=potion use=none head=0,0,0\n32 use=main head=-20,0,0\n20 use=none head=0,0,0",
   SWIMMER: "60 pose=SWIMMING swing=main\n60 swing=off",
   RIPTIDE: "40 pose=SPIN_ATTACK item=trident\n30 pose=STANDING",
-  SLEEPY: "100 pose=SLEEPING"
+  SLEEPY: "100 pose=SLEEPING",
+  WALK: "10 rarm=-30,0,0 larm=30,0,0 rleg=30,0,0 lleg=-30,0,0\n10 rarm=30,0,0 larm=-30,0,0 rleg=-30,0,0 lleg=30,0,0",
+  SALUTE: "10 rarm=150,-40,0 head=-5,0,0\n40 rarm=150,-40,0\n10 rarm=0,0,0 head=0,0,0\n20",
+  POINT: "10 rarm=90,0,0 head=0,0,0\n40 rarm=90,0,0\n10 rarm=0,0,0\n20",
+  BOW: "12 body=30,0,0 head=20,0,0 rarm=-20,0,0 larm=-20,0,0\n20 body=30,0,0\n12 body=0,0,0 head=0,0,0 rarm=0,0,0 larm=0,0,0\n30",
+  DAB: "8 rarm=120,0,-60 larm=100,60,40 head=35,-30,0\n30 rarm=120,0,-60\n8 rarm=0,0,0 larm=0,0,0 head=0,0,0\n20",
+  ZOMBIE: "20 rarm=90,0,0 larm=90,0,0 head=0,0,0\n20 rarm=95,0,5 larm=85,0,-5 head=5,10,0",
+  DANCE: "6 rarm=150,0,-30 larm=20,0,20 rleg=20,0,0 lleg=-10,0,0 body=0,15,0 head=0,15,0\n6 rarm=20,0,-20 larm=150,0,30 rleg=-10,0,0 lleg=20,0,0 body=0,-15,0 head=0,-15,0"
 };
 const ANIM_HINT = {
   NONE: 'Idle, no animation',
@@ -696,7 +766,14 @@ const ANIM_HINT = {
   POTION: 'Drinks a potion',
   SWIMMER: 'Crawl stroke',
   RIPTIDE: 'Riptide spin',
-  SLEEPY: 'Lies down to sleep'
+  SLEEPY: 'Lies down to sleep',
+  WALK: 'Walking arm and leg swing',
+  SALUTE: 'Snaps a salute',
+  POINT: 'Points straight ahead',
+  BOW: 'Takes a bow',
+  DAB: 'Strikes a dab',
+  ZOMBIE: 'Arms out, shambling',
+  DANCE: 'Full body dance'
 };
 const IC = {
   logo: 'M12 3l7 9-7 9-7-9zM9 11h6M10 14h4',
@@ -749,11 +826,12 @@ const IC = {
   potion: 'M9 3h6M10 3v5L5 19a1 1 0 001 1h12a1 1 0 001-1l-5-11V3',
   info: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 11v5M12 8h.01',
   chev: 'M9 6l6 6-6 6',
+  pose: 'M12 3a2 2 0 100 4 2 2 0 000-4zM12 8v7M5 11l7-3 7 3M9 21l3-6 3 6',
   none: 'M12 3a9 9 0 100 18 9 9 0 000-18zM6 6l12 12'
 };
-const ANIM_ICON = {NONE: 'none', WAVE: 'wave', NOD: 'bob', LOOK_AROUND: 'look', CHEER: 'star', CROUCH_DANCE: 'dance', ARCHER: 'target', CROSSBOW: 'crossbow', TRIDENT: 'trident', CAST: 'wand', SPYGLASS: 'spyglass', HORN: 'horn', SHIELD: 'guard', GUARD: 'guard', FEAST: 'feast', POTION: 'potion', SWIMMER: 'wave', RIPTIDE: 'spin', SLEEPY: 'moon'};
+const ANIM_ICON = {NONE: 'none', WAVE: 'wave', NOD: 'bob', LOOK_AROUND: 'look', CHEER: 'star', CROUCH_DANCE: 'dance', ARCHER: 'target', CROSSBOW: 'crossbow', TRIDENT: 'trident', CAST: 'wand', SPYGLASS: 'spyglass', HORN: 'horn', SHIELD: 'guard', GUARD: 'guard', FEAST: 'feast', POTION: 'potion', SWIMMER: 'wave', RIPTIDE: 'spin', SLEEPY: 'moon', WALK: 'route', SALUTE: 'hand', POINT: 'target', BOW: 'bob', DAB: 'star', ZOMBIE: 'user', DANCE: 'dance'};
 const TABS = {
-  npc: [['quick', 'Overview', 'home', 'Name, skin and gear'], ['animate', 'Animation', 'playc', 'Pick an animation preset'], ['movement', 'Behaviour', 'route', 'Looking, walking and patrol paths'], ['triggers', 'Triggers', 'bolt', 'React to clicks, looks and more'], ['nameplate', 'Nameplate', 'tag', 'Hologram text above the head'], ['appearance', 'Look', 'palette', 'Entity type, glow, particles'], ['advanced', 'Advanced', 'sliders', 'Every raw property']],
+  npc: [['quick', 'Overview', 'home', 'Name, skin and gear'], ['animate', 'Animation', 'playc', 'Pick an animation preset'], ['pose', 'Pose', 'pose', 'Pose the head, body, arms and legs of a skinned model'], ['movement', 'Behaviour', 'route', 'Looking, walking and patrol paths'], ['triggers', 'Triggers', 'bolt', 'React to clicks, looks and more'], ['nameplate', 'Nameplate', 'tag', 'Hologram text above the head'], ['appearance', 'Look', 'palette', 'Entity type, glow, particles'], ['advanced', 'Advanced', 'sliders', 'Every raw property']],
   hologram: [['quick', 'Overview', 'home', 'Preview, text and style'], ['lines', 'Lines', 'text', 'Detailed per-line settings'], ['movement', 'Motion', 'route', 'Shape, motion and paths'], ['appearance', 'Look', 'palette', 'Range and particles'], ['advanced', 'Advanced', 'sliders', 'Every raw property']]
 };
 const NPC_APPEARANCE = [
@@ -784,7 +862,13 @@ const TIPS = {
   'glow-color': 'Color of the glow outline.',
   'scale': 'Size multiplier.',
   'pose': 'Static body pose.',
-  'entity-type': 'The kind of entity. Player (skin) supports skins and animations.',
+  'entity-type': 'The kind of entity. Player (skin) supports skins and animations. Skinned Model also lets you pose every limb.',
+  'pose-head': 'Static head rotation as x,y,z degrees. x positive nods down.',
+  'pose-body': 'Static body rotation as x,y,z degrees. x positive leans forward.',
+  'pose-right-arm': 'Static right arm rotation as x,y,z degrees. x positive swings forward, z positive swings outward.',
+  'pose-left-arm': 'Static left arm rotation as x,y,z degrees. x positive swings forward, z positive swings outward.',
+  'pose-right-leg': 'Static right leg rotation as x,y,z degrees. x positive swings forward.',
+  'pose-left-leg': 'Static left leg rotation as x,y,z degrees. x positive swings forward.',
   'skin-name': 'Name of the Minecraft player whose skin is used.',
   'nameplate': 'Use a hologram attached above the NPC instead of the name tag.',
   'nameplate-height': 'Blocks above the head.',
@@ -836,7 +920,7 @@ const NPC_TEMPLATES = [
     props: {name: '&c&lGuard', 'name-visible': 'true', animation: 'GUARD', 'look-at': 'true', 'look-range': '12'},
     triggers: ['approach cooldown 300 -> message &cMove along, {player}.'],
     equip: {HAND: 'iron_sword', OFF_HAND: 'shield', HEAD: 'iron_helmet', CHEST: 'iron_chestplate', LEGS: 'iron_leggings', FEET: 'iron_boots'}},
-  {id: 'wizard', base: 'wizard', label: 'Wizard', hint: 'Casts spells, purple glow', icon: 'wand', type: 'MANNEQUIN',
+  {id: 'wizard', base: 'wizard', label: 'Wizard', hint: 'Casts spells with posable limbs', icon: 'wand', type: MODEL_TYPE,
     props: {name: '&5&lWizard', 'name-visible': 'true', animation: 'CAST', glow: 'true', 'glow-color': 'dark_purple'},
     triggers: ['interval 80 -> particle ENCHANT 20 around 0.8 0.5', 'click cooldown 60 -> particle WITCH 15 hand 0.3 0.05; sound block.enchantment_table.use 1 1'], equip: {CHEST: 'leather_chestplate'}},
   {id: 'archer', base: 'archer', label: 'Archer', hint: 'Draws and fires a bow', icon: 'target', type: 'MANNEQUIN',
@@ -849,7 +933,12 @@ const NPC_TEMPLATES = [
     props: {name: '&7Sleepy', 'name-visible': 'true', animation: 'SLEEPY'},
     triggers: ['interval 60 -> particle CLOUD 2 above 0.2 0.01'], equip: {}},
   {id: 'statue', base: 'statue', label: 'Statue', hint: 'Silent, stands still', icon: 'pillar', type: 'MANNEQUIN',
-    props: {name: '&7Statue', 'name-visible': 'false', animation: 'NONE', 'look-at': 'false', 'spin-speed': '0'}, equip: {}}
+    props: {name: '&7Statue', 'name-visible': 'false', animation: 'NONE', 'look-at': 'false', 'spin-speed': '0'}, equip: {}},
+  {id: 'posable_hero', base: 'hero', label: 'Posable Hero', hint: 'Skinned model, full body dance', icon: 'dance', type: MODEL_TYPE,
+    props: {name: '&#6293F0&lPosable Hero', 'name-visible': 'true', animation: 'DANCE', 'look-at': 'false'},
+    triggers: ['interval 30 -> particle NOTE 3 above 0.4 0.5'], equip: {}},
+  {id: 'posable_statue', base: 'statue_posable', label: 'Statue (posable)', hint: 'Frozen victory pose', icon: 'pillar', type: MODEL_TYPE,
+    props: Object.assign({name: '&7Victory Statue', 'name-visible': 'false', animation: 'NONE', 'look-at': 'false', 'spin-speed': '0'}, poseTexts(POSE_PRESETS.find(p => p.id === 'victory').limbs)), equip: {}}
 ];
 const HOLO_TEMPLATES = [
   {id: 'blank', base: 'hologram', label: 'Blank hologram', hint: 'One empty text line', icon: 'layers', props: {}, lines: [{text: 'Hello world'}]},
@@ -1139,7 +1228,7 @@ function headEl(id, size) {
   return i;
 }
 function entityTex(type) { return ENTITY_TEX[type] || String(type || '').toLowerCase() + '_spawn_egg'; }
-function isPlayerType(t) { return !t || t === 'MANNEQUIN'; }
+function isPlayerType(t) { return !t || t === 'MANNEQUIN' || t === MODEL_TYPE; }
 function iconEl(o, size) {
   if (o.kind === 'hologram') return holoIcon(size);
   return isPlayerType(o.entityType) ? headEl(o.skinId, size) : texEl(entityTex(o.entityType), size);
@@ -2039,7 +2128,7 @@ function setProp(id, v) {
   touch();
   const o = curEntry();
   if (o) {
-    if (id === 'entity-type') { o.entityType = v; S.cur.entityType = v; redraw(); renderList(); renderHeader(); }
+    if (id === 'entity-type') { o.entityType = v; S.cur.entityType = v; S.cur.modelStatus = null; S.cur.modelTries = 0; redraw(); renderList(); renderHeader(); }
     if (id === 'skin-name' && v) { o.skinId = v; S.cur.skinId = v; skinSideEffect(); }
   }
   if (S.cur && S.cur.kind === 'hologram') buildPreview();
@@ -2272,7 +2361,7 @@ function mobGrid(value, onPick) {
   let cur = value;
   const paint = () => { for (const b of grid.children) b.classList.toggle('on', b.dataset.v === cur); };
   for (const o of entityOptions()) {
-    const icon = o.id === 'MANNEQUIN' ? headEl(STEVE, 32) : texEl(entityTex(o.id), 32, true);
+    const icon = o.id === 'MANNEQUIN' || o.id === MODEL_TYPE ? headEl(STEVE, 32) : texEl(entityTex(o.id), 32, true);
     const b = el('button', {type: 'button', class: 'mob', title: o.label, 'data-v': o.id}, icon, el('span', {text: o.label}));
     b.addEventListener('click', () => { cur = o.id; paint(); onPick(o.id); });
     grid.append(b);
@@ -2584,6 +2673,84 @@ function clonePose(p) {
   return o;
 }
 function defaultPose() { return clonePose(BASE_POSE); }
+function zeroPose() {
+  const o = {};
+  for (const k of LIMBS) o[k] = [0, 0, 0];
+  return o;
+}
+
+function parseAxes(text) {
+  const parts = String(text || '').split(',');
+  return [0, 1, 2].map(i => {
+    const raw = parts[i];
+    const v = Number(raw);
+    return raw != null && String(raw).trim() !== '' && Number.isFinite(v) ? clamp(v, POSE_MIN, POSE_MAX) : 0;
+  });
+}
+function fmtAxes(a) { return a.map(v => Math.round(v)).join(','); }
+function poseTexts(limbs) {
+  const out = {};
+  for (const k of LIMBS) out[POSE_PROP[k]] = fmtAxes(limbs[k] || [0, 0, 0]);
+  return out;
+}
+function staticPose() {
+  const o = {};
+  for (const k of LIMBS) o[k] = parseAxes(S.props[POSE_PROP[k]]);
+  return o;
+}
+function curModel() { return !!S.cur && S.cur.kind === 'npc' && String(S.props['entity-type'] || '').toUpperCase() === MODEL_TYPE; }
+
+function qMul(a, b) {
+  return [
+    a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
+    a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+    a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
+    a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
+  ];
+}
+function qAxis(i, ang) {
+  const q = [0, 0, 0, Math.cos(ang / 2)];
+  q[i] = Math.sin(ang / 2);
+  return q;
+}
+function qRot(q, v) {
+  const x = v[0], y = v[1], z = v[2], qx = q[0], qy = q[1], qz = q[2], qw = q[3];
+  const ix = qw * x + qy * z - qz * y;
+  const iy = qw * y + qz * x - qx * z;
+  const iz = qw * z + qx * y - qy * x;
+  const iw = -qx * x - qy * y - qz * z;
+  return [ix * qw + iw * -qx + iy * -qz - iz * -qy, iy * qw + iw * -qy + iz * -qx - ix * -qz, iz * qw + iw * -qz + ix * -qy - iy * -qx];
+}
+function limbQuat(limb, v) {
+  const pitch = v[0] * DEG * LIMB_PITCH_SIGN[limb];
+  const yaw = -v[1] * DEG;
+  const roll = v[2] * DEG * LIMB_ROLL_SIGN[limb];
+  return qMul(qMul(qAxis(2, roll), qAxis(1, yaw)), qAxis(0, pitch));
+}
+
+function segDist(x, y, a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const l2 = dx * dx + dy * dy;
+  const t = l2 ? clamp(((x - a.x) * dx + (y - a.y) * dy) / l2, 0, 1) : 0;
+  return Math.hypot(x - (a.x + t * dx), y - (a.y + t * dy));
+}
+
+function solveDrag(cols, dx, dy) {
+  const energy = cols.map(c => c[0] * c[0] + c[1] * c[1]);
+  const raw = cols.length === 1 ? [dx] : [dy, dx];
+  if (energy.every(e => e < POSE_FALLBACK_MIN)) return raw.map(v => v * POSE_DRAG_FALLBACK);
+  let out;
+  if (cols.length === 1) {
+    out = [(cols[0][0] * dx + cols[0][1] * dy) / (energy[0] + POSE_DRAG_EPS)];
+  } else {
+    const a = energy[0] + POSE_DRAG_EPS, d = energy[1] + POSE_DRAG_EPS;
+    const b = cols[0][0] * cols[1][0] + cols[0][1] * cols[1][1];
+    const r0 = cols[0][0] * dx + cols[0][1] * dy, r1 = cols[1][0] * dx + cols[1][1] * dy;
+    const det = a * d - b * b;
+    out = det > 0 ? [(r0 * d - b * r1) / det, (a * r1 - b * r0) / det] : [0, 0];
+  }
+  return out.map(v => clamp(v, -POSE_DRAG_MAX, POSE_DRAG_MAX));
+}
 
 function readGesture(g, key, val) {
   if (key === 'pose') { if (POSE_IDS.has(val.toUpperCase())) g.pose = val.toUpperCase(); }
@@ -2595,25 +2762,25 @@ function readGesture(g, key, val) {
 
 function parseAnim(text) {
   const frames = [];
-  let head = [0, 0, 0];
+  let limbs = zeroPose();
   let gs = Object.assign({}, GEST_DEFAULT);
   for (const raw of String(text || '').split(/\r?\n/)) {
     const toks = raw.trim().split(/\s+/);
     if (!/^\d+$/.test(toks[0])) continue;
     const g = Object.assign({}, gs, {swing: ''});
-    let h = head;
+    const L = clonePose(limbs);
     for (const t of toks.slice(1)) {
-      const m = /^head=([^,]+),([^,]+),([^,]+)$/i.exec(t);
+      const m = /^(head|body|rarm|larm|rleg|lleg)=([^,]+),([^,]+),([^,]+)$/i.exec(t);
       if (m) {
-        const v = [m[1], m[2], m[3]].map(Number);
-        if (v.every(Number.isFinite)) h = v;
+        const v = [m[2], m[3], m[4]].map(Number);
+        if (v.every(Number.isFinite)) L[m[1].toLowerCase()] = v;
         continue;
       }
       const kv = /^(pose|use|item|offitem|swing)=(\S+)$/i.exec(t);
       if (kv) readGesture(g, kv[1].toLowerCase(), kv[2].toLowerCase());
     }
-    frames.push({ticks: clamp(parseInt(toks[0], 10), ANIM_TICK_MIN, ANIM_TICK_MAX), head: h.slice(), g});
-    head = h;
+    frames.push({ticks: clamp(parseInt(toks[0], 10), ANIM_TICK_MIN, ANIM_TICK_MAX), head: L.head.slice(), limbs: L, g});
+    limbs = L;
     gs = g;
     if (frames.length >= ANIM_MAX_FRAMES) break;
   }
@@ -2634,6 +2801,25 @@ function headAt(frames, t) {
   const at = frameAt(frames, t);
   const a = frames[at.i], b = frames[(at.i + 1) % frames.length];
   return [0, 1, 2].map(j => a.head[j] + (b.head[j] - a.head[j]) * at.f);
+}
+
+function limbsAt(frames, t) {
+  const at = frameAt(frames, t);
+  const a = frames[at.i].limbs, b = frames[(at.i + 1) % frames.length].limbs;
+  const o = {};
+  for (const k of LIMBS) o[k] = [0, 1, 2].map(j => a[k][j] + (b[k][j] - a[k][j]) * at.f);
+  return o;
+}
+
+function modelState(frames, t, speed) {
+  const base = staticPose();
+  let g = Object.assign({}, GEST_DEFAULT, {swingT: 1});
+  if (frames.length) {
+    const s = limbsAt(frames, t);
+    for (const k of LIMBS) for (let j = 0; j < 3; j++) base[k][j] += s[k][j];
+    g = Object.assign(gestureAt(frames, t, speed), {pose: 'STANDING', use: 'none', swing: ''});
+  }
+  return {model: base, gest: withHeld(g)};
 }
 
 function gestureAt(frames, t, speed) {
@@ -2724,6 +2910,7 @@ function clockTick(now) {
 function animState() {
   const id = curAnim();
   const frames = id === 'NONE' ? [] : animFrames(id);
+  if (curModel()) return modelState(frames, clockTick(performance.now()), animSpeed());
   if (!frames.length) {
     clockTick(performance.now());
     const g = withHeld(Object.assign({}, GEST_DEFAULT, {swingT: 1}));
@@ -2854,16 +3041,117 @@ function skinStage(o) {
     }
   };
 
+  const ready = () => !!st.viewer && !st.broken && !!st.viewer.playerObject;
+
+  const rigInit = () => {
+    if (st.rig) return;
+    const skin = st.viewer.playerObject.skin;
+    const orig = {};
+    for (const k of LIMBS) {
+      const part = skin[LIMB_PART[k]];
+      orig[k] = part ? [part.position.x, part.position.y, part.position.z] : [0, 0, 0];
+    }
+    st.rig = {orig, pivot: [0, 1, 2].map(i => (orig.rleg[i] + orig.lleg[i]) / 2), on: false};
+  };
+
+  const poseModel = limbs => {
+    rigInit();
+    const skin = st.viewer.playerObject.skin;
+    const orig = st.rig.orig, pivot = st.rig.pivot;
+    const body = limbQuat('body', limbs.body);
+    for (const k of LIMBS) {
+      const part = skin[LIMB_PART[k]];
+      if (!part) continue;
+      const own = limbQuat(k, limbs[k]);
+      const child = k === 'body' || k === 'head' || k === 'rarm' || k === 'larm';
+      const q = child && k !== 'body' ? qMul(body, own) : own;
+      let pos = orig[k];
+      if (child) {
+        const off = qRot(body, [pos[0] - pivot[0], pos[1] - pivot[1], pos[2] - pivot[2]]);
+        pos = [pivot[0] + off[0], pivot[1] + off[1], pivot[2] + off[2]];
+      }
+      part.position.set(pos[0], pos[1], pos[2]);
+      part.quaternion.set(q[0], q[1], q[2], q[3]);
+    }
+    st.rig.on = true;
+  };
+
+  const unrig = () => {
+    if (!st.rig || !st.rig.on) return;
+    const skin = st.viewer.playerObject.skin;
+    for (const k of LIMBS) {
+      const part = skin[LIMB_PART[k]];
+      if (!part) continue;
+      const o = st.rig.orig[k];
+      part.position.set(o[0], o[1], o[2]);
+      part.quaternion.set(0, 0, 0, 1);
+    }
+    st.rig.on = false;
+  };
+
+  const ptScreen = v => {
+    const cam = st.viewer.camera;
+    const d = cam.position.distanceTo(v) || 1;
+    v.project(cam);
+    const sz = dims();
+    return {x: (v.x + 1) / 2 * sz.w, y: (1 - v.y) / 2 * sz.h, px: (sz.h / 2) / Math.tan(cam.fov * Math.PI / 360) / d, d};
+  };
+
+  const localScreen = (limb, p) => {
+    const part = st.viewer.playerObject.skin[LIMB_PART[limb]];
+    if (!part) return null;
+    const mesh = part.children && part.children[0] ? part.children[0] : part;
+    const v = st.viewer.camera.position.clone();
+    v.set(p[0], p[1], p[2]);
+    mesh.updateWorldMatrix(true, false);
+    mesh.localToWorld(v);
+    return ptScreen(v);
+  };
+
+  st.limbSeg = limb => {
+    if (!ready() || !st.rig) return null;
+    const h = LIMB_MESH_H[limb] / 2;
+    const a = localScreen(limb, [0, h, 0]);
+    const b = localScreen(limb, [0, -h, 0]);
+    if (!a || !b) return null;
+    return {a, b, r: LIMB_PICK_R[limb] * (a.px + b.px) / 2, d: (a.d + b.d) / 2};
+  };
+
+  st.pick = (x, y) => {
+    let best = null;
+    for (const limb of LIMBS) {
+      const s = st.limbSeg(limb);
+      if (!s || segDist(x, y, s.a, s.b) > s.r) continue;
+      if (!best || s.d < best.d) best = {limb, d: s.d};
+    }
+    return best ? best.limb : null;
+  };
+
+  st.applyModel = model => { if (ready()) poseModel(model); };
+
+  st.tip = (limb, p, model) => {
+    if (!ready()) return null;
+    poseModel(model);
+    return localScreen(limb, p);
+  };
+
   st.drive = s => {
-    if (!st.viewer || st.broken || !st.viewer.playerObject) return;
+    if (!ready()) return;
     if (s) {
       if (!st.manual) { initBase(); st.viewer.animation = null; st.manual = true; }
+      if (s.model) {
+        xform(null);
+        poseModel(s.model);
+        return;
+      }
+      unrig();
       const gp = gesturePose(s.pose, s.gest, performance.now() * TICKS_PER_MS);
       applyPose(st.viewer.playerObject.skin, gp.pose);
       xform(gp.xf);
     } else if (st.manual) {
       st.manual = false;
       xform(null);
+      unrig();
       st.viewer.animation = new st.lib.IdleAnimation();
     }
   };
@@ -2901,6 +3189,8 @@ function skinStage(o) {
       try { img = await loadCors(fill(S.assets.skin, {id})); } catch (e) { img = await loadCors(fill(S.assets.skin, {id: STEVE})); }
       if (st.dead || my !== st.seq) return false;
       await st.viewer.loadSkin(img);
+      unrig();
+      st.rig = null;
       st.broken = false;
       return true;
     } catch (e) {
@@ -2969,7 +3259,7 @@ function npcViewer(opt) {
     if (!stage.viewer) return;
     if (s) stage.sprites(g, s.gest);
     drawPlate(g);
-    if (opt.onFrame) opt.onFrame(s);
+    if (opt.onFrame) opt.onFrame(s, g);
   };
 
   const reload = async () => {
@@ -3011,6 +3301,7 @@ function galleryBuild(player) {
   const vis = new Set();
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const g = {node: grid, dead: false, raf: 0, last: 0, ready: false};
+  const isModel = curModel();
   let stage = null;
 
   const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
@@ -3042,7 +3333,7 @@ function galleryBuild(player) {
     const meta = el('div', {class: 'meta'}, el('b', {text: label}), el('span', {text: frames.length ? secs.toFixed(1) + ' s loop' : ANIM_HINT[id] || ''}));
     const on = curAnim() === id;
     const btn = el('button', {type: 'button', class: 'acard skeleton' + (on ? ' on' : ''), 'aria-pressed': on ? 'true' : 'false', title: label + ': ' + (ANIM_HINT[id] || 'animation preset') + '. Click to use it.', onclick: () => select(id)},
-      el('div', {class: 'stagebox'}, el('span', {class: 'fbico'}, ic(ANIM_ICON[id] || 'playc')), canvas),
+      el('div', {class: 'stagebox'}, el('span', {class: 'fbico'}, ic(ANIM_ICON[id] || 'playc')), canvas, MODEL_ANIMS.has(id) ? el('span', {class: 'mbadge', title: 'Plays on Skinned Model NPCs only', text: 'Model'}) : null),
       el('span', {class: 'chk'}, ic('check', 12)), meta);
     const c = {id, frames, canvas, ctx: canvas.getContext('2d'), btn, sel: on, hover: false, drawn: false};
     btn.addEventListener('pointerenter', () => { c.hover = true; });
@@ -3064,19 +3355,25 @@ function galleryBuild(player) {
   const drawCard = c => {
     const speed = animSpeed();
     const t = (performance.now() - T0) * TICKS_PER_MS * speed;
-    let pose = defaultPose();
-    let gest;
-    if (c.frames.length) {
-      pose.head = headAt(c.frames, t);
-      gest = withHeld(gestureAt(c.frames, t, speed));
+    let state;
+    if (isModel) {
+      state = modelState(c.frames, t, speed);
     } else {
-      gest = withHeld(Object.assign({}, GEST_DEFAULT, {swingT: 1}));
+      const pose = defaultPose();
+      let gest;
+      if (c.frames.length) {
+        pose.head = headAt(c.frames, t);
+        gest = withHeld(gestureAt(c.frames, t, speed));
+      } else {
+        gest = withHeld(Object.assign({}, GEST_DEFAULT, {swingT: 1}));
+      }
+      state = {pose, gest};
     }
-    stage.drive({pose, gest});
+    stage.drive(state);
     stage.render();
     c.ctx.clearRect(0, 0, GAL_W, GAL_H);
     c.ctx.drawImage(stage.canvas, 0, 0, GAL_W, GAL_H);
-    stage.sprites(c.ctx, gest);
+    stage.sprites(c.ctx, state.gest);
   };
 
   const loop = ts => {
@@ -3124,6 +3421,7 @@ function bodyAnimate() {
   clock.pos = 0;
   clock.paused = false;
   clock.last = performance.now();
+  if (curModel()) root.append(modelBanner());
   if (!player) {
     root.append(el('div', {class: 'hintbox info'}, el('span', {text: 'Animation presets play on Player (skin) NPCs. This NPC is a ' + pretty(type) + ', so the preview is only a guide.'}),
       el('button', {class: 'btn sm primary', type: 'button', text: 'Switch to Player', title: 'Change the entity type to Player (skin)', onclick: () => { setProp('entity-type', 'MANNEQUIN'); renderBody(); }})));
@@ -3147,7 +3445,9 @@ function bodyAnimate() {
   }
   const speed = pc('animation-speed');
   const speedBody = el('div', {class: 'body'}, el('div', {class: 'grid'}, speed));
-  speedBody.append(el('p', {class: 'note', text: 'Presets are ready-made and play on the NPC itself, using its skin and the items it holds. Pick one below.'}));
+  speedBody.append(el('p', {class: 'note', text: curModel()
+    ? 'Presets play full limb motion on this Skinned Model, on top of its static pose from the Pose tab. Presets marked Model only move limbs on Skinned Model NPCs.'
+    : 'Presets are ready-made and play on the NPC itself, using its skin and the items it holds. Pick one below. Presets marked Model only move limbs on Skinned Model NPCs.'}));
   root.append(el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Playback'})), speedBody));
   const gal = galleryBuild(player);
   gal.onSelect = id => {
@@ -3157,6 +3457,365 @@ function bodyAnimate() {
   };
   S.gallery = gal;
   root.append(el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Animation presets'}), el('span', {class: 'muted', style: 'font-weight:400;font-size:12px', text: 'Click one to use it'})), el('div', {class: 'body'}, gal.node)));
+  return root;
+}
+
+const modelBanners = new Set();
+let modelTimer = 0;
+
+function paintBanners() { for (const b of modelBanners) b.paint(); }
+
+async function fetchModelStatus() {
+  const c = S.cur;
+  if (!c || c.kind !== 'npc') return;
+  try {
+    await flushAll();
+    const d = await api('/api/object', {kind: c.kind, id: c.id});
+    if (S.cur !== c) return;
+    const was = c.modelStatus;
+    c.modelStatus = d.modelStatus || null;
+    c.mineskinKey = !!d.mineskinKey;
+    if (!c.modelStatus) c.modelTries = (c.modelTries || 0) + 1;
+    if (was === 'GENERATING' && c.modelStatus === 'READY') toast('Skinned limbs are ready', 'ok');
+  } catch (e) {
+    c.modelTries = (c.modelTries || 0) + 1;
+  }
+  paintBanners();
+}
+
+async function pollModel() {
+  modelTimer = 0;
+  for (const b of Array.from(modelBanners)) if (!b.node.isConnected) modelBanners.delete(b);
+  if (!modelBanners.size) return;
+  await fetchModelStatus();
+  scheduleModelPoll();
+}
+
+function scheduleModelPoll() {
+  clearTimeout(modelTimer);
+  modelTimer = 0;
+  const c = S.cur;
+  if (!c || !modelBanners.size || !curModel()) return;
+  const st = c.modelStatus;
+  if (st && st !== 'GENERATING') return;
+  if (!st && (c.modelTries || 0) >= MODEL_TRIES_MAX) return;
+  modelTimer = setTimeout(pollModel, st ? MODEL_POLL_MS : MODEL_FIRST_MS);
+}
+
+function checkModel() {
+  if (!S.cur) return;
+  S.cur.modelStatus = null;
+  S.cur.modelTries = 0;
+  paintBanners();
+  scheduleModelPoll();
+}
+
+async function retryModel() {
+  const c = S.cur;
+  if (!c) return;
+  c.modelStatus = 'GENERATING';
+  c.modelTries = 0;
+  paintBanners();
+  try {
+    await flushAll();
+    const props = {'entity-type': MODEL_TYPE};
+    if (S.props['skin-name']) props['skin-name'] = S.props['skin-name'];
+    await api('/api/save', {kind: c.kind, id: c.id, props});
+  } catch (e) {
+    toast(e.message, 'err');
+  }
+  scheduleModelPoll();
+}
+
+function bannerNode(c) {
+  const st = c.modelStatus;
+  const again = el('button', {class: 'btn sm', type: 'button', text: 'Check again', title: 'Ask the server for the current status', onclick: checkModel});
+  if (st === 'READY') return el('div', {class: 'mbanner'}, ic('check', 14), el('span', {text: 'Skinned limbs active'}));
+  if (st === 'GENERATING') {
+    return el('div', {class: 'hintbox info'}, el('span', {class: 'spin', role: 'progressbar', 'aria-label': 'Generating skinned limbs'}),
+      el('span', {text: 'Generating the skinned limbs from this skin. It can take a minute and this checks again every 5 seconds. Until it finishes the NPC shows as a normal skinned NPC.'}));
+  }
+  if (st === 'NO_KEY') {
+    return el('div', {class: 'hintbox'},
+      el('span', {}, 'No MineSkin API key is set, so this NPC shows as a normal skinned NPC for now. Get a free key at ',
+        el('a', {href: 'https://account.mineskin.org', target: '_blank', rel: 'noopener noreferrer', text: 'account.mineskin.org'}),
+        ', then run ', el('code', {text: '/nexora mineskin <key>'}), ' in game.'), again);
+  }
+  if (st === 'FAILED') {
+    return el('div', {class: 'hintbox bad'},
+      el('span', {}, 'Generating the skinned limbs failed, so the NPC shows as a normal skinned NPC. This is usually a MineSkin rate limit or a wrong key. Check the key with ', el('code', {text: '/nexora mineskin <key>'}), ', then retry.'),
+      el('button', {class: 'btn sm primary', type: 'button', text: 'Retry', title: 'Ask the server to generate the limbs again', onclick: retryModel}));
+  }
+  if (st === 'NO_SKIN') {
+    return el('div', {class: 'hintbox'}, el('span', {text: 'This NPC has no skin to build limbs from yet. Pick a skin (player name) in the Overview tab.'}),
+      S.tab === 'quick' ? null : el('button', {class: 'btn sm', type: 'button', text: 'Overview', onclick: () => gotoTab('quick')}));
+  }
+  if ((c.modelTries || 0) >= MODEL_TRIES_MAX) return el('div', {class: 'mbanner dim'}, el('span', {text: 'Skinned model status unavailable'}), again);
+  return el('div', {class: 'mbanner dim'}, el('span', {class: 'spin'}), el('span', {text: 'Checking skinned model status...'}));
+}
+
+function modelBanner() {
+  const node = el('div');
+  const b = {node, paint: () => { if (S.cur) node.replaceChildren(bannerNode(S.cur)); }};
+  modelBanners.add(b);
+  b.paint();
+  scheduleModelPoll();
+  return node;
+}
+
+function poseStrip() {
+  return el('div', {class: 'hintbox info'}, ic('pose', 18),
+    el('span', {text: 'Pose every limb with sliders or by dragging the model in 3D.'}),
+    el('button', {class: 'btn sm', type: 'button', text: 'Edit pose', title: 'Open the Pose tab', onclick: () => gotoTab('pose')}));
+}
+
+function poseIntro() {
+  const switchBtn = el('button', {class: 'btn primary', type: 'button', text: 'Switch to Skinned Model', title: 'Change the entity type to Skinned Model (posable)', onclick: () => {
+    setProp('entity-type', MODEL_TYPE);
+    renderBody();
+  }});
+  const feats = ['Head, body, both arms and both legs rotate freely', 'Built from the NPC skin, no resource pack needed', 'Pose it here, or play full body animations like Dance, Salute and Bow'];
+  return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Skinned Model (posable)'})),
+    el('div', {class: 'body'},
+      el('p', {class: 'note', style: 'margin-top:0', text: 'This NPC cannot be posed yet. A Skinned Model is a player NPC built from separate pieces, each textured from the skin, so every limb can be rotated.'}),
+      el('ul', {class: 'posefeat'}, feats.map(t => el('li', {text: t}))),
+      switchBtn,
+      el('p', {class: 'note', text: 'It needs a free MineSkin API key, set once with one command. Until the limbs are generated it shows as a normal skinned NPC.'})));
+}
+
+function poseInput(viewer, hooks) {
+  const node = viewer.node, stage = viewer.stage;
+  let drag = null;
+  const at = ev => {
+    const r = node.getBoundingClientRect();
+    return [ev.clientX - r.left - node.clientLeft, ev.clientY - r.top - node.clientTop];
+  };
+  node.addEventListener('pointerdown', ev => {
+    if (ev.button !== 0) return;
+    const p = at(ev);
+    const k = stage.pick(p[0], p[1]);
+    if (!k) return;
+    ev.stopPropagation();
+    ev.preventDefault();
+    node.setPointerCapture(ev.pointerId);
+    drag = {id: ev.pointerId, k, x: p[0], y: p[1]};
+    stage.canvas.style.cursor = 'grabbing';
+    hooks.select(k);
+  }, true);
+  node.addEventListener('pointermove', ev => {
+    const p = at(ev);
+    if (!drag) {
+      const h = stage.pick(p[0], p[1]);
+      hooks.hover(h);
+      stage.canvas.style.cursor = h ? 'grab' : '';
+      return;
+    }
+    if (ev.pointerId !== drag.id) return;
+    const dx = p[0] - drag.x, dy = p[1] - drag.y;
+    drag.x = p[0];
+    drag.y = p[1];
+    hooks.drag(drag.k, dx, dy, ev.shiftKey);
+  });
+  const end = ev => {
+    if (!drag || ev.pointerId !== drag.id) return;
+    const k = drag.k;
+    drag = null;
+    stage.canvas.style.cursor = '';
+    hooks.end(k);
+  };
+  node.addEventListener('pointerup', end);
+  node.addEventListener('pointercancel', end);
+  node.addEventListener('pointerleave', () => {
+    if (drag) return;
+    hooks.hover(null);
+    stage.canvas.style.cursor = '';
+  });
+}
+
+function bodyPose() {
+  const root = el('div');
+  if (!curModel()) {
+    root.append(poseIntro());
+    return root;
+  }
+  root.append(modelBanner());
+  if (!S.pm[POSE_PROP.head]) {
+    root.append(el('div', {class: 'hintbox'}, el('span', {text: 'This server has no pose properties yet. Update Nexora to pose skinned models.'})));
+    return root;
+  }
+  const P = {limbs: staticPose(), sel: 'rarm', hover: null};
+  const rows = {};
+  const presetBtns = [];
+
+  const presetOn = d => LIMBS.every(k => P.limbs[k].every((x, i) => Math.round(x) === (d.limbs[k] || [0, 0, 0])[i]));
+  const markPresets = () => { for (const p of presetBtns) p.btn.classList.toggle('on', presetOn(p.d)); };
+  const commit = k => { setProp(POSE_PROP[k], fmtAxes(P.limbs[k])); markPresets(); };
+  const commitAll = () => { for (const k of LIMBS) if (S.props[POSE_PROP[k]] !== fmtAxes(P.limbs[k])) commit(k); markPresets(); };
+
+  const paint = (k, skip) => {
+    const r = rows[k], v = P.limbs[k];
+    r.sum.textContent = fmtAxes(v).split(',').join(', ');
+    for (let i = 0; i < 3; i++) {
+      const val = String(Math.round(v[i]));
+      if (r.rng[i] !== skip) r.rng[i].value = val;
+      if (r.num[i] !== skip) r.num[i].value = val;
+    }
+  };
+  const paintAll = () => { for (const k of LIMBS) paint(k); };
+
+  const select = k => {
+    P.sel = k;
+    for (const j of LIMB_ORDER) {
+      const on = j === k;
+      rows[j].node.classList.toggle('on', on);
+      rows[j].body.hidden = !on;
+      rows[j].head.setAttribute('aria-expanded', on ? 'true' : 'false');
+    }
+  };
+
+  const setAxis = (k, i, v, skip) => {
+    P.limbs[k][i] = clamp(Math.round(v), POSE_MIN, POSE_MAX);
+    commit(k);
+    paint(k, skip);
+  };
+
+  const resetLimb = k => {
+    P.limbs[k] = [0, 0, 0];
+    commit(k);
+    paint(k);
+  };
+
+  const resetAll = () => {
+    P.limbs = zeroPose();
+    commitAll();
+    paintAll();
+  };
+
+  const mirror = () => {
+    const next = {};
+    for (const k of LIMBS) {
+      const o = P.limbs[LIMB_MIRROR[k]];
+      const self = k === 'head' || k === 'body';
+      next[k] = [o[0], 0 - o[1], self ? 0 - o[2] : o[2]];
+    }
+    P.limbs = next;
+    commitAll();
+    paintAll();
+  };
+
+  const applyPreset = d => {
+    P.limbs = zeroPose();
+    for (const k of Object.keys(d.limbs)) P.limbs[k] = d.limbs[k].slice();
+    commitAll();
+    paintAll();
+  };
+
+  const buildRow = k => {
+    const kind = k === 'head' || k === 'body' ? k : 'limb';
+    const sum = el('span', {class: 'lv'});
+    const head = el('button', {type: 'button', 'aria-expanded': 'false', title: 'Edit the ' + LIMB_LABEL[k].toLowerCase(), onclick: () => select(k)}, el('span', {class: 'ln', text: LIMB_LABEL[k]}), sum);
+    const body = el('div', {class: 'lb', hidden: true});
+    const rng = [], num2 = [];
+    for (let i = 0; i < 3; i++) {
+      const name = LIMB_LABEL[k] + ' ' + AXIS_NAMES[i];
+      const r = el('input', {type: 'range', min: POSE_MIN, max: POSE_MAX, step: 1, 'aria-label': name, title: AXIS_TIP[kind][i]});
+      const n = el('input', {type: 'number', min: POSE_MIN, max: POSE_MAX, step: 1, 'aria-label': name, title: AXIS_TIP[kind][i]});
+      r.addEventListener('input', () => setAxis(k, i, Number(r.value), r));
+      n.addEventListener('input', () => { if (n.value !== '' && Number.isFinite(Number(n.value))) setAxis(k, i, Number(n.value), n); });
+      n.addEventListener('change', () => { setAxis(k, i, Number(n.value) || 0); });
+      rng.push(r);
+      num2.push(n);
+      body.append(el('div', {class: 'axrow', title: AXIS_TIP[kind][i]}, el('label', {text: AXIS_NAMES[i] + ' ' + AXIS_HINT[kind][i]}), r, n));
+    }
+    body.append(el('div', {class: 'actions'}, el('button', {class: 'btn sm', type: 'button', text: 'Reset ' + LIMB_LABEL[k].toLowerCase(), title: 'Set this limb back to 0, 0, 0', onclick: () => resetLimb(k)})));
+    const node = el('div', {class: 'limbrow'}, head, body);
+    rows[k] = {node, head, body, sum, rng, num: num2};
+    return node;
+  };
+
+  const dragLimb = (k, dx, dy, shift) => {
+    const stage = viewer.stage;
+    const kind = k === 'head' || k === 'body' ? k : 'limb';
+    const spec = (shift ? DRAG_SHIFT : DRAG_PLAIN)[kind];
+    const base = stage.tip(k, spec.tip, P.limbs);
+    if (!base) return;
+    const cols = spec.axes.map(ax => {
+      const probe = clonePose(P.limbs);
+      probe[k][ax] += POSE_PROBE_DEG;
+      const t = stage.tip(k, spec.tip, probe);
+      return t ? [(t.x - base.x) / POSE_PROBE_DEG, (t.y - base.y) / POSE_PROBE_DEG] : [0, 0];
+    });
+    stage.applyModel(P.limbs);
+    const delta = solveDrag(cols, dx, dy);
+    spec.axes.forEach((ax, i) => { P.limbs[k][ax] = clamp(P.limbs[k][ax] + delta[i], POSE_MIN, POSE_MAX); });
+    commit(k);
+    paint(k);
+  };
+
+  const drawSel = g => {
+    const stripe = (k, alpha) => {
+      const s = viewer.stage.limbSeg(k);
+      if (!s) return null;
+      g.lineCap = 'round';
+      g.strokeStyle = 'rgba(98,147,240,' + alpha + ')';
+      g.lineWidth = s.r * 2;
+      g.beginPath();
+      g.moveTo(s.a.x, s.a.y);
+      g.lineTo(s.b.x, s.b.y);
+      g.stroke();
+      return s;
+    };
+    if (P.hover && P.hover !== P.sel) stripe(P.hover, 0.16);
+    const s = stripe(P.sel, 0.32);
+    if (!s) return;
+    const p = LIMB_PIVOT_END[P.sel] === 'a' ? s.a : s.b;
+    g.fillStyle = ACCENT;
+    g.strokeStyle = '#ffffff';
+    g.lineWidth = 2;
+    g.beginPath();
+    g.arc(p.x, p.y, 5, 0, TAU);
+    g.fill();
+    g.stroke();
+  };
+
+  const viewer = npcViewer({
+    tall: true,
+    autoRotate: false,
+    tag: 'Static pose',
+    caption: 'Click a limb, drag to rotate. Shift for roll.',
+    getPlate: plateModel,
+    getState: () => ({model: P.limbs, gest: withHeld(Object.assign({}, GEST_DEFAULT, {swingT: 1}))}),
+    onFrame: (s, g) => drawSel(g)
+  });
+  S.skin = viewer;
+  viewer.reload();
+  ensurePlate();
+  poseInput(viewer, {
+    select,
+    hover: h => { P.hover = h; },
+    drag: dragLimb,
+    end: k => { P.limbs[k] = P.limbs[k].map(v => Math.round(v)); commit(k); paint(k); }
+  });
+  root.append(el('div', {class: 'nvwrap'}, viewer.node));
+
+  const list = el('div');
+  for (const k of LIMB_ORDER) list.append(buildRow(k));
+  const mirrorBtn = el('button', {class: 'btn sm', type: 'button', text: 'Mirror', title: 'Swap the left and right side, mirroring the pose', onclick: mirror});
+  const resetBtn = el('button', {class: 'btn sm danger', type: 'button', text: 'Reset all', title: 'Set every limb back to 0, 0, 0', onclick: resetAll});
+  root.append(el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Limbs'}), el('span', {class: 'row2'}, mirrorBtn, resetBtn)),
+    el('div', {class: 'body'}, list, el('p', {class: 'note', text: 'Angles in degrees. X swings forward, Z swings an arm or leg outward, Y twists. This is the resting pose and it saves automatically. Animations play on top of it.'}))));
+
+  const cards = el('div', {class: 'cards'});
+  for (const d of POSE_PRESETS) {
+    const btn = pcard(d.label, d.hint, ic('pose', 26), false, () => applyPreset(d));
+    presetBtns.push({d, btn});
+    cards.append(btn);
+  }
+  root.append(el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Pose presets'}), el('span', {class: 'muted', style: 'font-weight:400;font-size:12px', text: 'Replaces the whole pose'})), el('div', {class: 'body'}, cards)));
+
+  paintAll();
+  select(P.sel);
+  markPresets();
   return root;
 }
 
@@ -3371,7 +4030,10 @@ function skinBox() {
   const id = 'f' + (++uid);
   const input = el('input', {type: 'text', id, maxlength: 16, placeholder: 'Player name (e.g. Notch)', spellcheck: 'false', autocomplete: 'off'});
   input.value = S.props['skin-name'] || '';
-  const reload = debounce(() => { if (S.skin && S.skin.reload) S.skin.reload(); }, 600);
+  const reload = debounce(() => {
+    if (S.skin && S.skin.reload) S.skin.reload();
+    if (curModel()) { S.cur.modelStatus = null; S.cur.modelTries = 0; paintBanners(); scheduleModelPoll(); }
+  }, 600);
   input.addEventListener('input', () => { setProp('skin-name', input.value.trim()); reload(); });
   return el('div', {class: 'field'}, el('label', {for: id, text: 'Skin (player name)'}), input);
 }
@@ -3426,6 +4088,7 @@ function bodyQuickNpc() {
   clock.pos = 0;
   clock.paused = false;
   clock.last = performance.now();
+  if (curModel()) root.append(modelBanner());
   if (player) {
     const v = npcViewer({autoRotate: true, tag: curAnim() === 'NONE' ? '' : animLabel(curAnim()), caption: 'Drag to orbit, scroll to zoom', getPlate: plateModel});
     ensurePlate();
@@ -3433,6 +4096,7 @@ function bodyQuickNpc() {
     v.reload();
     root.append(el('div', {class: 'nvwrap'}, v.node, equipBadges()));
     if (S.pm.animation) root.append(animStrip());
+    if (curModel()) root.append(poseStrip());
   } else {
     const opt = entityOptions().find(o => o.id === type);
     const prev = el('div', {class: 'qprev'});
@@ -4164,6 +4828,9 @@ function emptyInspector() {
 }
 
 function destroyLive() {
+  modelBanners.clear();
+  clearTimeout(modelTimer);
+  modelTimer = 0;
   if (S.skin) { S.skin.destroy(); S.skin = null; }
   if (S.scene) { S.scene.destroy(); S.scene = null; }
   if (S.gallery) { S.gallery.destroy(); S.gallery = null; }
@@ -4176,7 +4843,7 @@ function renderBody() {
   const fade = S.fadeNext;
   S.fadeNext = false;
   body.replaceChildren();
-  $('#app').classList.toggle('wide', !!S.cur && (S.wide || (S.cur.kind === 'npc' && (S.tab === 'animate' || S.tab === 'triggers'))));
+  $('#app').classList.toggle('wide', !!S.cur && (S.wide || (S.cur.kind === 'npc' && (S.tab === 'animate' || S.tab === 'triggers' || S.tab === 'pose'))));
   if (!S.cur) {
     body.append(emptyInspector());
     return;
@@ -4186,6 +4853,7 @@ function renderBody() {
   let node;
   if (S.tab === 'quick') node = k === 'npc' ? bodyQuickNpc() : bodyQuickHolo();
   else if (S.tab === 'animate') node = bodyAnimate();
+  else if (S.tab === 'pose') node = bodyPose();
   else if (S.tab === 'triggers') node = bodyTriggers();
   else if (S.tab === 'nameplate') node = bodyNameplate();
   else if (S.tab === 'movement') node = k === 'npc' ? bodyMoveNpc() : bodyMoveHolo();
@@ -4261,7 +4929,7 @@ async function run(btn, fn) {
 }
 
 function adopt(data) {
-  S.cur = {kind: data.kind, id: data.id, world: data.world, x: data.x, y: data.y, z: data.z, yaw: data.yaw, waypoints: data.waypoints, equipment: data.equipment, skinId: data.skinId, entityType: data.entityType};
+  S.cur = {kind: data.kind, id: data.id, world: data.world, x: data.x, y: data.y, z: data.z, yaw: data.yaw, waypoints: data.waypoints, equipment: data.equipment, skinId: data.skinId, entityType: data.entityType, modelStatus: data.modelStatus || null, mineskinKey: !!data.mineskinKey, modelTries: 0};
   const props = S.schema.kinds[data.kind].sections.flatMap(s => s.props);
   S.pm = Object.fromEntries(props.map(p => [p.id, p]));
   S.props = {};
@@ -4440,6 +5108,11 @@ async function duplicateCur() {
 async function refreshList() {
   const data = await api('/api/objects');
   S.objects = data.objects;
+  for (const o of S.objects) {
+    const n = plainText(o.name);
+    const editing = S.cur && S.cur.kind === o.kind && S.cur.id === o.id && busy();
+    if (n && !editing) S.names.set(o.kind + ':' + o.id, n);
+  }
   S.loaded = true;
   refreshWorldSel();
   renderList();
