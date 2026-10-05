@@ -73,7 +73,11 @@ final class SkinnedModel {
 
     private static final float NECK_Y = 24f;
     private static final float BODY_PIVOT_Y = 12f;
-    private static final float SHOULDER_X = 6f;
+    private static final float SHOULDER_X = 5f;
+    private static final float ARM_PIVOT_INSET = 1f;
+    private static final float VANILLA_HAND_X = 0.0625f;
+    private static final float VANILLA_HAND_Y = -0.125f;
+    private static final float VANILLA_HAND_Z = 0.625f;
     private static final float SHOULDER_Y = 22f;
     private static final float HIP_X = 2f;
     private static final float HIP_Y = 12f;
@@ -115,9 +119,9 @@ final class SkinnedModel {
     private static final String HITBOX_HEIGHT_KEY = CONFIG + "hitbox-height";
     private static final String HAND_MAIN_KEY = CONFIG + "hand-transform-main";
     private static final String HAND_OFF_KEY = CONFIG + "hand-transform-off";
-    private static final String HAND_X_KEY = CONFIG + "hand-offset-x";
-    private static final String HAND_Y_KEY = CONFIG + "hand-offset-y";
-    private static final String HAND_Z_KEY = CONFIG + "hand-offset-z";
+    private static final String HAND_X_KEY = CONFIG + "hand-adjust-x";
+    private static final String HAND_Y_KEY = CONFIG + "hand-adjust-y";
+    private static final String HAND_Z_KEY = CONFIG + "hand-adjust-z";
     private static final String WALK_SWING_KEY = CONFIG + "walk-swing";
     private static final String WALK_PHASE_KEY = CONFIG + "walk-phase-per-block";
     private static final String WALK_BLEND_KEY = CONFIG + "walk-blend";
@@ -133,9 +137,6 @@ final class SkinnedModel {
     private static final double DEFAULT_CUBE_OFFSET = -0.25;
     private static final double DEFAULT_HITBOX_WIDTH = 0.6;
     private static final double DEFAULT_HITBOX_HEIGHT = 1.8;
-    private static final double DEFAULT_HAND_X = 0.0;
-    private static final double DEFAULT_HAND_Y = -0.125;
-    private static final double DEFAULT_HAND_Z = 0.625;
     private static final double DEFAULT_WALK_SWING = 30.0;
     private static final double DEFAULT_WALK_PHASE = 2.66;
     private static final double DEFAULT_WALK_BLEND = 0.35;
@@ -198,9 +199,9 @@ final class SkinnedModel {
         cubeOffset = (float) config.getDouble(CUBE_OFFSET_KEY, DEFAULT_CUBE_OFFSET);
         faceFix = new Quaternionf().rotationY((float) Math.toRadians(DISPLAY_FLIP + config.getDouble(PART_YAW_KEY, 0)));
         handOffset = new Vector3f(
-            (float) config.getDouble(HAND_X_KEY, DEFAULT_HAND_X),
-            (float) config.getDouble(HAND_Y_KEY, DEFAULT_HAND_Y),
-            (float) config.getDouble(HAND_Z_KEY, DEFAULT_HAND_Z)).mul(scale);
+            VANILLA_HAND_X + (float) config.getDouble(HAND_X_KEY, 0),
+            VANILLA_HAND_Y + (float) config.getDouble(HAND_Y_KEY, 0),
+            VANILLA_HAND_Z + (float) config.getDouble(HAND_Z_KEY, 0)).mul(scale);
         walkSwing = (float) config.getDouble(WALK_SWING_KEY, DEFAULT_WALK_SWING);
         walkPhaseRate = (float) config.getDouble(WALK_PHASE_KEY, DEFAULT_WALK_PHASE);
         walkBlendRate = (float) config.getDouble(WALK_BLEND_KEY, DEFAULT_WALK_BLEND);
@@ -245,10 +246,10 @@ final class SkinnedModel {
         map.put(Part.HEAD, new Slot(Group.HEAD, HEAD_EDGE, HEAD_EDGE, HEAD_EDGE, 0f, HEAD_CENTRE));
         map.put(Part.TORSO_UPPER, new Slot(Group.BODY, TORSO_WIDTH, HALF_HEIGHT, LIMB_DEPTH, 0f, TORSO_UPPER_CENTRE));
         map.put(Part.TORSO_LOWER, new Slot(Group.BODY, TORSO_WIDTH, HALF_HEIGHT, LIMB_DEPTH, 0f, TORSO_LOWER_CENTRE));
-        map.put(Part.RIGHT_ARM_UPPER, new Slot(Group.RIGHT_ARM, armWidth, HALF_HEIGHT, LIMB_DEPTH, shift, ARM_UPPER_CENTRE));
-        map.put(Part.RIGHT_ARM_LOWER, new Slot(Group.RIGHT_ARM, armWidth, HALF_HEIGHT, LIMB_DEPTH, shift, ARM_LOWER_CENTRE));
-        map.put(Part.LEFT_ARM_UPPER, new Slot(Group.LEFT_ARM, armWidth, HALF_HEIGHT, LIMB_DEPTH, -shift, ARM_UPPER_CENTRE));
-        map.put(Part.LEFT_ARM_LOWER, new Slot(Group.LEFT_ARM, armWidth, HALF_HEIGHT, LIMB_DEPTH, -shift, ARM_LOWER_CENTRE));
+        map.put(Part.RIGHT_ARM_UPPER, new Slot(Group.RIGHT_ARM, armWidth, HALF_HEIGHT, LIMB_DEPTH, shift - ARM_PIVOT_INSET, ARM_UPPER_CENTRE));
+        map.put(Part.RIGHT_ARM_LOWER, new Slot(Group.RIGHT_ARM, armWidth, HALF_HEIGHT, LIMB_DEPTH, shift - ARM_PIVOT_INSET, ARM_LOWER_CENTRE));
+        map.put(Part.LEFT_ARM_UPPER, new Slot(Group.LEFT_ARM, armWidth, HALF_HEIGHT, LIMB_DEPTH, ARM_PIVOT_INSET - shift, ARM_UPPER_CENTRE));
+        map.put(Part.LEFT_ARM_LOWER, new Slot(Group.LEFT_ARM, armWidth, HALF_HEIGHT, LIMB_DEPTH, ARM_PIVOT_INSET - shift, ARM_LOWER_CENTRE));
         map.put(Part.RIGHT_LEG_UPPER, new Slot(Group.RIGHT_LEG, LEG_WIDTH, HALF_HEIGHT, LIMB_DEPTH, 0f, LEG_UPPER_CENTRE));
         map.put(Part.RIGHT_LEG_LOWER, new Slot(Group.RIGHT_LEG, LEG_WIDTH, HALF_HEIGHT, LIMB_DEPTH, 0f, LEG_LOWER_CENTRE));
         map.put(Part.LEFT_LEG_UPPER, new Slot(Group.LEFT_LEG, LEG_WIDTH, HALF_HEIGHT, LIMB_DEPTH, 0f, LEG_UPPER_CENTRE));

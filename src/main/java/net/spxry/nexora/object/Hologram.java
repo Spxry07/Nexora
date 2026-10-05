@@ -188,6 +188,7 @@ public final class Hologram extends NexoraObject {
         List<HoloLine> restored = new ArrayList<>();
         for (var entry : section.getMapList(LINES_KEY)) {
             var line = new HoloLine();
+            line.apply(plugin.schema(), plugin.objects().defaults(LINE));
             if (entry.get(PROPS_KEY) instanceof Map<?, ?> props) {
                 Map<String, String> values = new LinkedHashMap<>();
                 props.forEach((key, value) -> values.put(String.valueOf(key), String.valueOf(value)));

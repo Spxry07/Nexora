@@ -316,6 +316,7 @@ public final class ObjectManager {
         };
         if (object == null) return;
         try {
+            object.apply(defaults(object.kind()));
             object.restore(data);
         } catch (RuntimeException e) {
             plugin.getLogger().log(Level.WARNING, entry.kind() + ":" + entry.id(), e);

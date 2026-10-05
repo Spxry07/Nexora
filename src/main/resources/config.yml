@@ -258,9 +258,9 @@ model:
   hitbox-height: 1.8
   hand-transform-main: "THIRDPERSON_RIGHTHAND"
   hand-transform-off: "THIRDPERSON_LEFTHAND"
-  hand-offset-x: 0
-  hand-offset-y: -0.125
-  hand-offset-z: 0.625
+  hand-adjust-x: 0
+  hand-adjust-y: 0
+  hand-adjust-z: 0
   look-smoothing: 0.4
   swing-angle: 80
   swing-ticks: 6
