@@ -1,0 +1,224 @@
+kinds:
+  hologram:
+    sections:
+      general:
+        title: "&#6293F0&lɢᴇɴᴇʀᴀʟ"
+        properties: [view-range, line-spacing]
+      motion:
+        title: "&#6293F0&lᴍᴏᴛɪᴏɴ"
+        properties: [spin-speed, bob-height, bob-speed, orbit-radius, orbit-speed]
+      effects:
+        title: "&#6293F0&lᴛʀᴀɴꜱꜰᴏʀᴍ ᴇꜰꜰᴇᴄᴛꜱ"
+        properties: [pulse-amount, pulse-speed, sway-angle, sway-speed]
+      path:
+        title: "&#6293F0&lᴘᴀᴛʜ"
+        properties: [path-speed]
+      particles:
+        title: "&#6293F0&lᴘᴀʀᴛɪᴄʟᴇꜱ"
+        properties: [particle, particle-count, particle-radius, particle-interval]
+    properties:
+      view-range: {label: "&fᴠɪᴇᴡ ʀᴀɴɢᴇ", type: number, min: 4, max: 160, step: 1}
+      line-spacing: {label: "&fʟɪɴᴇ ꜱᴘᴀᴄɪɴɢ", type: number, min: 0.05, max: 2, step: 0.05}
+      spin-speed: {label: "&fꜱᴘɪɴ ꜱᴘᴇᴇᴅ (°/s)", type: number, min: -720, max: 720, step: 5}
+      bob-height: {label: "&fʙᴏʙ ʜᴇɪɢʜᴛ", type: number, min: 0, max: 3, step: 0.05}
+      bob-speed: {label: "&fʙᴏʙ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
+      orbit-radius: {label: "&fᴏʀʙɪᴛ ʀᴀᴅɪᴜꜱ", type: number, min: 0, max: 10, step: 0.1}
+      orbit-speed: {label: "&fᴏʀʙɪᴛ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: -5, max: 5, step: 0.05}
+      pulse-amount: {label: "&fᴘᴜʟꜱᴇ ᴀᴍᴏᴜɴᴛ", type: number, min: 0, max: 1, step: 0.05}
+      pulse-speed: {label: "&fᴘᴜʟꜱᴇ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
+      sway-angle: {label: "&fꜱᴡᴀʏ ᴀɴɢʟᴇ (°)", type: number, min: 0, max: 90, step: 1}
+      sway-speed: {label: "&fꜱᴡᴀʏ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
+      path-speed: {label: "&fᴘᴀᴛʜ ꜱᴘᴇᴇᴅ (blocks/s)", type: number, min: 0, max: 20, step: 0.1}
+      particle: &particles
+        label: "&fᴘᴀʀᴛɪᴄʟᴇ"
+        type: choice
+        options:
+          NONE: "None"
+          FLAME: "Flame"
+          SOUL_FIRE_FLAME: "Soul Flame"
+          END_ROD: "End Rod"
+          HEART: "Heart"
+          NOTE: "Note"
+          PORTAL: "Portal"
+          ENCHANT: "Enchant"
+          HAPPY_VILLAGER: "Happy Villager"
+          CLOUD: "Cloud"
+          SNOWFLAKE: "Snowflake"
+          TOTEM_OF_UNDYING: "Totem"
+          ELECTRIC_SPARK: "Electric Spark"
+          GLOW: "Glow"
+          CRIT: "Crit"
+          SOUL: "Soul"
+          FIREWORK: "Firework"
+          WAX_ON: "Wax"
+          NAUTILUS: "Nautilus"
+          WITCH: "Witch"
+      particle-count: &particle-count {label: "&fᴘᴀʀᴛɪᴄʟᴇ ᴄᴏᴜɴᴛ", type: integer, min: 0, max: 50, step: 1}
+      particle-radius: &particle-radius {label: "&fᴘᴀʀᴛɪᴄʟᴇ ʀᴀᴅɪᴜꜱ", type: number, min: 0, max: 5, step: 0.1}
+      particle-interval: &particle-interval {label: "&fᴘᴀʀᴛɪᴄʟᴇ ɪɴᴛᴇʀᴠᴀʟ (ticks)", type: integer, min: 0, max: 200, step: 1}
+
+  line:
+    sections:
+      content:
+        title: "&#6293F0&lᴄᴏɴᴛᴇɴᴛ"
+        properties: [type, text, material, frame-interval]
+      effect:
+        title: "&#6293F0&lᴛᴇxᴛ ᴇꜰꜰᴇᴄᴛ"
+        properties: [effect, effect-speed, color-a, color-b, scroll-width]
+      transform:
+        title: "&#6293F0&lᴛʀᴀɴꜱꜰᴏʀᴍ"
+        properties: [scale, offset-y, billboard, item-transform]
+      style:
+        title: "&#6293F0&lꜱᴛʏʟᴇ"
+        properties: [background-default, background, shadow, see-through, alignment, line-width, opacity]
+      glow:
+        title: "&#6293F0&lɢʟᴏᴡ & ʟɪɢʜᴛ"
+        properties: [glow, glow-color, brightness]
+    properties:
+      type:
+        label: "&fʟɪɴᴇ ᴛʏᴘᴇ"
+        type: choice
+        options: {TEXT: "Text", ITEM: "Item", BLOCK: "Block"}
+      text: {label: "&fᴛᴇxᴛ (frames split by ||)", type: multiline, max: 1024}
+      material: {label: "&fᴍᴀᴛᴇʀɪᴀʟ (item/block lines)", type: text, max: 64}
+      frame-interval: {label: "&fꜰʀᴀᴍᴇ ɪɴᴛᴇʀᴠᴀʟ (ticks)", type: integer, min: 1, max: 200, step: 1}
+      effect:
+        label: "&fᴇꜰꜰᴇᴄᴛ"
+        type: choice
+        options: {NONE: "None", TYPEWRITER: "Typewriter", RAINBOW: "Rainbow", WAVE: "Gradient Wave", SCROLL: "Scroll", BLINK: "Blink"}
+      effect-speed: {label: "&fᴇꜰꜰᴇᴄᴛ ꜱᴘᴇᴇᴅ (ticks/step)", type: integer, min: 1, max: 100, step: 1}
+      color-a: {label: "&fᴄᴏʟᴏʀ ᴀ", type: color}
+      color-b: {label: "&fᴄᴏʟᴏʀ ʙ", type: color}
+      scroll-width: {label: "&fꜱᴄʀᴏʟʟ ᴡɪᴅᴛʜ", type: integer, min: 4, max: 64, step: 1}
+      scale: {label: "&fꜱᴄᴀʟᴇ", type: number, min: 0.1, max: 10, step: 0.05}
+      offset-y: {label: "&fʏ ᴏꜰꜰꜱᴇᴛ", type: number, min: -5, max: 5, step: 0.05}
+      billboard:
+        label: "&fʙɪʟʟʙᴏᴀʀᴅ"
+        type: choice
+        options: {CENTER: "Face player", VERTICAL: "Vertical", HORIZONTAL: "Horizontal", FIXED: "Fixed"}
+      item-transform:
+        label: "&fɪᴛᴇᴍ ᴛʀᴀɴꜱꜰᴏʀᴍ"
+        type: choice
+        options: {FIXED: "Fixed", GROUND: "Ground", GUI: "GUI", HEAD: "Head", NONE: "None", THIRDPERSON_RIGHTHAND: "Third person", FIRSTPERSON_RIGHTHAND: "First person"}
+      background-default: {label: "&fᴅᴇꜰᴀᴜʟᴛ ʙᴀᴄᴋɢʀᴏᴜɴᴅ", type: bool}
+      background: {label: "&fʙᴀᴄᴋɢʀᴏᴜɴᴅ (#AARRGGBB)", type: color}
+      shadow: {label: "&fᴛᴇxᴛ ꜱʜᴀᴅᴏᴡ", type: bool}
+      see-through: {label: "&fꜱᴇᴇ ᴛʜʀᴏᴜɢʜ ʙʟᴏᴄᴋꜱ", type: bool}
+      alignment:
+        label: "&fᴀʟɪɢɴᴍᴇɴᴛ"
+        type: choice
+        options: {CENTER: "Center", LEFT: "Left", RIGHT: "Right"}
+      line-width: {label: "&fᴍᴀx ʟɪɴᴇ ᴡɪᴅᴛʜ", type: integer, min: 20, max: 1000, step: 10}
+      opacity: {label: "&fᴛᴇxᴛ ᴏᴘᴀᴄɪᴛʏ", type: integer, min: 30, max: 255, step: 5}
+      glow: {label: "&fɢʟᴏᴡ ᴏᴜᴛʟɪɴᴇ", type: bool}
+      glow-color: {label: "&fɢʟᴏᴡ ᴄᴏʟᴏʀ", type: color}
+      brightness: {label: "&fʙʀɪɢʜᴛɴᴇꜱꜱ (-1 = world)", type: integer, min: -1, max: 15, step: 1}
+
+  npc:
+    sections:
+      identity:
+        title: "&#6293F0&lɪᴅᴇɴᴛɪᴛʏ"
+        properties: [entity-type, name, name-visible, description]
+      skin:
+        title: "&#6293F0&lꜱᴋɪɴ"
+        properties: [skin-name, skin-value, skin-signature]
+      appearance:
+        title: "&#6293F0&lᴀᴘᴘᴇᴀʀᴀɴᴄᴇ"
+        properties: [pose, glow, glow-color, scale]
+      behaviour:
+        title: "&#6293F0&lʙᴇʜᴀᴠɪᴏᴜʀ"
+        properties: [look-at, look-range, spin-speed, path-speed, view-range]
+      animations:
+        title: "&#6293F0&lᴀɴɪᴍᴀᴛɪᴏɴꜱ"
+        properties: [swing-interval, sneak-interval, hurt-interval]
+      interaction:
+        title: "&#6293F0&lɪɴᴛᴇʀᴀᴄᴛɪᴏɴ"
+        properties: [actions, click-type, cooldown]
+      particles:
+        title: "&#6293F0&lᴘᴀʀᴛɪᴄʟᴇꜱ"
+        properties: [particle, particle-count, particle-radius, particle-interval]
+    properties:
+      entity-type:
+        label: "&fᴇɴᴛɪᴛʏ ᴛʏᴘᴇ"
+        type: choice
+        options:
+          MANNEQUIN: "Player (skin)"
+          ZOMBIE: "Zombie"
+          SKELETON: "Skeleton"
+          VILLAGER: "Villager"
+          WANDERING_TRADER: "Wandering Trader"
+          PIGLIN: "Piglin"
+          WITCH: "Witch"
+          PILLAGER: "Pillager"
+          VINDICATOR: "Vindicator"
+          EVOKER: "Evoker"
+          IRON_GOLEM: "Iron Golem"
+          SNOW_GOLEM: "Snow Golem"
+          ALLAY: "Allay"
+          BLAZE: "Blaze"
+          ENDERMAN: "Enderman"
+          CREEPER: "Creeper"
+          FOX: "Fox"
+          WOLF: "Wolf"
+          CAT: "Cat"
+          AXOLOTL: "Axolotl"
+          FROG: "Frog"
+          BEE: "Bee"
+          PANDA: "Panda"
+          POLAR_BEAR: "Polar Bear"
+          SHEEP: "Sheep"
+          COW: "Cow"
+          PIG: "Pig"
+          CHICKEN: "Chicken"
+          HORSE: "Horse"
+          ARMOR_STAND: "Armor Stand"
+      name: {label: "&fɴᴀᴍᴇ", type: text, max: 256}
+      name-visible: {label: "&fꜱʜᴏᴡ ɴᴀᴍᴇ", type: bool}
+      description: {label: "&fᴅᴇꜱᴄʀɪᴘᴛɪᴏɴ (player type)", type: text, max: 256}
+      skin-name: {label: "&fꜱᴋɪɴ ᴘʟᴀʏᴇʀ ɴᴀᴍᴇ", type: text, max: 16}
+      skin-value: {label: "&fꜱᴋɪɴ ᴛᴇxᴛᴜʀᴇ ᴠᴀʟᴜᴇ", type: text, max: 4096}
+      skin-signature: {label: "&fꜱᴋɪɴ ꜱɪɢɴᴀᴛᴜʀᴇ", type: text, max: 4096}
+      pose:
+        label: "&fᴘᴏꜱᴇ"
+        type: choice
+        options: {STANDING: "Standing", SNEAKING: "Sneaking", SLEEPING: "Sleeping", SWIMMING: "Swimming", FALL_FLYING: "Gliding", SPIN_ATTACK: "Riptide", SITTING: "Sitting"}
+      glow: {label: "&fɢʟᴏᴡ", type: bool}
+      glow-color:
+        label: "&fɢʟᴏᴡ ᴄᴏʟᴏʀ"
+        type: choice
+        options:
+          white: "White"
+          gray: "Gray"
+          dark_gray: "Dark Gray"
+          black: "Black"
+          red: "Red"
+          dark_red: "Dark Red"
+          gold: "Gold"
+          yellow: "Yellow"
+          green: "Green"
+          dark_green: "Dark Green"
+          aqua: "Aqua"
+          dark_aqua: "Dark Aqua"
+          blue: "Blue"
+          dark_blue: "Dark Blue"
+          light_purple: "Pink"
+          dark_purple: "Purple"
+      scale: {label: "&fꜱᴄᴀʟᴇ", type: number, min: 0.1, max: 5, step: 0.05}
+      look-at: {label: "&fʟᴏᴏᴋ ᴀᴛ ᴘʟᴀʏᴇʀꜱ", type: bool}
+      look-range: {label: "&fʟᴏᴏᴋ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
+      spin-speed: {label: "&fꜱᴘɪɴ ꜱᴘᴇᴇᴅ (°/s)", type: number, min: -720, max: 720, step: 5}
+      path-speed: {label: "&fᴡᴀʟᴋ ꜱᴘᴇᴇᴅ (blocks/s)", type: number, min: 0, max: 20, step: 0.1}
+      view-range: {label: "&fᴠɪᴇᴡ ʀᴀɴɢᴇ", type: number, min: 4, max: 160, step: 1}
+      swing-interval: {label: "&fꜱᴡɪɴɢ ᴀʀᴍ ᴇᴠᴇʀʏ (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
+      sneak-interval: {label: "&fᴛᴏɢɢʟᴇ ꜱɴᴇᴀᴋ ᴇᴠᴇʀʏ (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
+      hurt-interval: {label: "&fʜᴜʀᴛ ꜰʟᴀꜱʜ ᴇᴠᴇʀʏ (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
+      actions: {label: "&fᴀᴄᴛɪᴏɴꜱ (one per line)", type: multiline, max: 2048}
+      click-type:
+        label: "&fᴄʟɪᴄᴋ ᴛʏᴘᴇ"
+        type: choice
+        options: {ANY: "Any", RIGHT: "Right click", LEFT: "Left click"}
+      cooldown: {label: "&fᴄᴏᴏʟᴅᴏᴡɴ (ticks)", type: integer, min: 0, max: 12000, step: 1}
+      particle: *particles
+      particle-count: *particle-count
+      particle-radius: *particle-radius
+      particle-interval: *particle-interval

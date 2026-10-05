@@ -1,0 +1,331 @@
+prefix: "&#6293F0&lNEXORA &7» "
+
+startup:
+  nms-failed: "Nexora needs Paper 1.21.11 (Mojang-mapped NMS). Disabling."
+
+cmd:
+  player-only:
+    messages:
+      - "{prefix}&#FF0000Only players can use this command."
+  no-permission:
+    messages:
+      - "{prefix}&#FF0000You do not have permission to do that."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  help:
+    messages:
+      - "{prefix}&#6293F0Commands"
+      - "&8» &f/nexora &7- open the main menu"
+      - "&8» &f/nexora reload &7- reload all configuration"
+      - "&8» &f/nexora web &7- get the web editor link"
+      - "&8» &f/nexora <holo|npc> create <id> &7- create at your position"
+      - "&8» &f/nexora <holo|npc> edit [id] &7- open the editor"
+      - "&8» &f/nexora <holo|npc> delete <id> &7- delete"
+      - "&8» &f/nexora <holo|npc> movehere <id> &7- move to you"
+      - "&8» &f/nexora <holo|npc> tp <id> &7- teleport to it"
+      - "&8» &f/nexora <holo|npc> list &7- list ids"
+      - "&8» &f/nexora <holo|npc> path <id> <add|clear> &7- edit path"
+      - "&8» &f/nexora holo addline <id> <text> &7- add a text line (\\n = new line)"
+      - "&8» &f/nexora holo additem <id> &7- add your held item as a line"
+      - "&8» &f/nexora npc equip <id> <slot> &7- equip your held item (empty hand clears)"
+      - "&8» &f/nexora npc skin <id> <player|name> &7- set the skin"
+      - "&8» &f/nexora <holo|npc> preset <id> <preset> &7- apply a ready-made style"
+      - "&8» &f/nexora <holo|npc> create <id> [preset] &7- create from a preset"
+  reloaded:
+    messages:
+      - "{prefix}&#00FF5AConfiguration reloaded."
+    sound: "entity.player.levelup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  web-disabled:
+    messages:
+      - "{prefix}&#FF0000The web editor is disabled."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  invalid-id:
+    messages:
+      - "{prefix}&#FF0000Invalid id '{id}'. Use 1-32 letters, numbers, - or _."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  exists:
+    messages:
+      - "{prefix}&#FF0000A {kind} with the id '{id}' already exists."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  not-found:
+    messages:
+      - "{prefix}&#FF0000'{id}' does not exist."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  created:
+    messages:
+      - "{prefix}&7Created {kind} &#6293F0{id}&7."
+    sound: "entity.player.levelup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  deleted:
+    messages:
+      - "{prefix}&7Deleted &#6293F0{id}&7."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  moved:
+    messages:
+      - "{prefix}&7Moved &#6293F0{id}&7 to your position."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  teleported:
+    messages:
+      - "{prefix}&7Teleported to &#6293F0{id}&7."
+    sound: "entity.enderman.teleport"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  list:
+    messages:
+      - "{prefix}&#6293F0{kind}&7: &f{ids}"
+  list-empty:
+    messages:
+      - "{prefix}&7No {kind} yet."
+  line-added:
+    messages:
+      - "{prefix}&7Added a line to &#6293F0{id}&7."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  line-max:
+    messages:
+      - "{prefix}&#FF0000A hologram can have at most {max} lines."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  no-item:
+    messages:
+      - "{prefix}&#FF0000Hold an item in your main hand."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  path-added:
+    messages:
+      - "{prefix}&7Added a path point to &#6293F0{id}&7."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  path-cleared:
+    messages:
+      - "{prefix}&7Cleared the path of &#6293F0{id}&7."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  path-max:
+    messages:
+      - "{prefix}&#FF0000The path of '{id}' has reached the maximum number of points."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  equip-set:
+    messages:
+      - "{prefix}&7Equipped &#6293F0{slot}&7 on &#6293F0{id}&7."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  equip-cleared:
+    messages:
+      - "{prefix}&7Cleared &#6293F0{slot}&7 on &#6293F0{id}&7."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  invalid-slot:
+    messages:
+      - "{prefix}&#FF0000Unknown equipment slot '{slot}'."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  preset-applied:
+    messages:
+      - "{prefix}&7Applied preset {preset} &7to &#6293F0{id}&7."
+    sound: "entity.player.levelup"
+    sound-volume: 1.0
+    sound-pitch: 1.2
+  unknown-preset:
+    messages:
+      - "{prefix}&#FF0000Unknown preset '{preset}'. Available: {presets}"
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  skin-set:
+    messages:
+      - "{prefix}&7Skin of &#6293F0{id}&7 set from &#6293F0{skin}&7."
+    sound: "entity.player.levelup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+
+dialog:
+  kinds:
+    hologram:
+      singular: "ʜᴏʟᴏɢʀᴀᴍ"
+      plural: "ʜᴏʟᴏɢʀᴀᴍꜱ"
+    npc:
+      singular: "ɴᴘᴄ"
+      plural: "ɴᴘᴄꜱ"
+  empty-slot: "none"
+  preset-none: "None"
+  preview:
+    item: "[item]"
+    block: "[block]"
+    empty: "(empty)"
+    ellipsis: "…"
+  input:
+    id: "&fɪᴅ"
+    preset: "&fꜱᴛᴀʀᴛ ꜰʀᴏᴍ ᴘʀᴇꜱᴇᴛ"
+  title:
+    presets: "&#6293F0&lᴘʀᴇꜱᴇᴛꜱ &8» &7{id}"
+    main: "&#6293F0&lɴᴇxᴏʀᴀ &8» &7ᴍᴀɪɴ ᴍᴇɴᴜ"
+    list: "&#6293F0&l{kinds}"
+    create: "&#6293F0&lᴄʀᴇᴀᴛᴇ &8» &7{kind}"
+    editor: "&#6293F0&l{kind} &8» &7{id}"
+    section: "{section} &8» &7{id}"
+    line-section: "{section} &8» &7{id} #{index}"
+    lines: "&#6293F0&lʟɪɴᴇꜱ &8» &7{id}"
+    line: "&#6293F0&lʟɪɴᴇ #{index} &8» &7{id}"
+    equipment: "&#6293F0&lᴇQᴜɪᴘᴍᴇɴᴛ &8» &7{id}"
+    delete: "&#FF0000&lᴅᴇʟᴇᴛᴇ &8» &7{id}"
+  body:
+    main: "&7Create and manage packet-based holograms and NPCs."
+    list: "&7{count} {kinds}. Pick one to edit it."
+    list-empty: "&7No {kinds} yet. Create one to get started."
+    create: "&7Enter an id. The {kind} is created at your position."
+    editor: "&7World: &f{world}\n&7Position: &f{x} {y} {z}\n&7Path points: &f{points}"
+    lines: "&7{count} of {max} lines. Pick one to edit it."
+    line: "&7Line {index} of {size}: &f{preview}"
+    equipment: "&7Hold an item and pick a slot to equip it."
+    equipment-slot: "&8» &7{slot}: &f{item}"
+    delete: "&7Delete &f{id}&7? This cannot be undone."
+    presets: "&7Pick a style for &f{id}&7. Settings it defines are overwritten; tweak anything afterwards."
+  button:
+    presets: "&#B266FFᴘʀᴇꜱᴇᴛꜱ"
+    holograms: "&#6293F0ʜᴏʟᴏɢʀᴀᴍꜱ"
+    npcs: "&#6293F0ɴᴘᴄꜱ"
+    create-hologram: "&#00FF5Aᴄʀᴇᴀᴛᴇ ʜᴏʟᴏɢʀᴀᴍ"
+    create-npc: "&#00FF5Aᴄʀᴇᴀᴛᴇ ɴᴘᴄ"
+    web: "&#6293F0ᴡᴇʙ ᴇᴅɪᴛᴏʀ"
+    close: "&#FF0000ᴄʟᴏꜱᴇ"
+    back: "&7ʙᴀᴄᴋ"
+    create: "&#00FF5Aᴄʀᴇᴀᴛᴇ {kind}"
+    confirm-create: "&#00FF5Aᴄʀᴇᴀᴛᴇ"
+    save: "&#00FF5Aꜱᴀᴠᴇ"
+    object: "&f{id}"
+    lines: "&#6293F0ʟɪɴᴇꜱ"
+    equipment: "&#6293F0ᴇQᴜɪᴘᴍᴇɴᴛ"
+    move-here: "&fᴍᴏᴠᴇ ʜᴇʀᴇ"
+    teleport: "&fᴛᴇʟᴇᴘᴏʀᴛ"
+    path-add: "&fᴀᴅᴅ ᴘᴀᴛʜ ᴘᴏɪɴᴛ"
+    path-clear: "&fᴄʟᴇᴀʀ ᴘᴀᴛʜ"
+    delete: "&#FF0000ᴅᴇʟᴇᴛᴇ"
+    delete-confirm: "&#FF0000ᴅᴇʟᴇᴛᴇ"
+    delete-cancel: "&7ᴄᴀɴᴄᴇʟ"
+    line: "&f{index} &8» &7{preview}"
+    add-text: "&#00FF5Aᴀᴅᴅ ᴛᴇxᴛ ʟɪɴᴇ"
+    add-item: "&#00FF5Aᴀᴅᴅ ʜᴇʟᴅ ɪᴛᴇᴍ"
+    add-block: "&#00FF5Aᴀᴅᴅ ʜᴇʟᴅ ʙʟᴏᴄᴋ"
+    line-up: "&fᴍᴏᴠᴇ ᴜᴘ"
+    line-down: "&fᴍᴏᴠᴇ ᴅᴏᴡɴ"
+    line-delete: "&#FF0000ᴅᴇʟᴇᴛᴇ ʟɪɴᴇ"
+    equip-set: "&fꜱᴇᴛ {slot}"
+    equip-clear: "&#FF0000ᴄʟᴇᴀʀ {slot}"
+  tooltip:
+    holograms: "&7Browse and edit holograms."
+    npcs: "&7Browse and edit NPCs."
+    create-hologram: "&7Create a hologram at your position."
+    create-npc: "&7Create an NPC at your position."
+    web: "&7Get a link to the web editor."
+    object: "&7World: &f{world}\n&7Position: &f{x} {y} {z}"
+    create: "&7Create a new one at your position."
+    save: "&7Apply the values below."
+    move-here: "&7Move it to your position."
+    teleport: "&7Teleport to it."
+    path-add: "&7Add your position as a path point."
+    path-clear: "&7Remove every path point."
+    delete: "&7Delete it permanently."
+    line: "&7Edit this line."
+    add-text: "&7Add a new text line."
+    add-item: "&7Add the item in your main hand."
+    add-block: "&7Add the block in your main hand."
+    line-up: "&7Swap with the line above."
+    line-down: "&7Swap with the line below."
+    line-delete: "&7Remove this line."
+    equip-set: "&7Equip the item in your main hand."
+    equip-clear: "&7Remove the item from this slot."
+    presets: "&7Turn it into a ready-made style in one click."
+    preset: "&7Apply this preset. Matching settings are overwritten."
+  notice:
+    saved: "&#00FF5ASaved."
+    invalid: "&#FF0000Invalid values were ignored: {fields}"
+    invalid-id: "&#FF0000Invalid id '{id}'. Use 1-32 letters, numbers, - or _."
+    exists: "&#FF0000The id '{id}' is already in use."
+    moved: "&#00FF5AMoved to your position."
+    max-waypoints: "&#FF0000The path has reached the maximum number of points."
+    point-added: "&#00FF5APath point added ({count} total)."
+    point-cleared: "&#00FF5APath cleared."
+    line-added: "&#00FF5ALine added."
+    line-max: "&#FF0000A hologram can have at most {max} lines."
+    line-deleted: "&#00FF5ALine deleted."
+    no-item: "&#FF0000Hold an item in your main hand."
+    no-block: "&#FF0000The item in your main hand is not a block."
+    equipped: "&#00FF5AEquipped {slot}."
+    unequipped: "&#00FF5ACleared {slot}."
+    preset-applied: "&#00FF5AApplied preset {preset}&#00FF5A."
+
+web-link: "{prefix}&7Web editor ready &8(expires in {minutes} min)&7: &#6293F0&nᴄʟɪᴄᴋ ᴛᴏ ᴏᴘᴇɴ"
+web-link-hover: "&#6293F0ᴏᴘᴇɴ ᴛʜᴇ ɴᴇxᴏʀᴀ ᴡᴇʙ ᴇᴅɪᴛᴏʀ"
+
+web-no-permission:
+  overall-enabled: true
+  messages-enabled: true
+  messages:
+    - "{prefix}&#FF0000You do not have permission to use the web editor."
+  actionbar-enabled: false
+  Actionbar: ""
+  sound-enabled: true
+  sound: "entity.villager.no"
+  sound-volume: 1.0
+  sound-pitch: 1.0
+
+web-disabled:
+  overall-enabled: true
+  messages-enabled: true
+  messages:
+    - "{prefix}&#FF0000The web editor is disabled or failed to start."
+  actionbar-enabled: false
+  Actionbar: ""
+  sound-enabled: true
+  sound: "entity.villager.no"
+  sound-volume: 1.0
+  sound-pitch: 1.0
+
+web-bind-failed: "Web editor could not bind to {bind}:{port}."
+web-page-missing: "Web editor page resource is missing from the jar."
+web-error-unauthorized: "Session expired or invalid. Run the web command in game again."
+web-error-not-found: "Not found."
+web-error-method: "Method not allowed."
+web-error-too-large: "Request body is too large."
+web-error-bad-request: "Invalid request."
+web-error-invalid-kind: "Unknown object kind '{kind}'."
+web-error-invalid-id: "Invalid id '{id}'."
+web-error-unknown-object: "No {kind} named '{id}' exists."
+web-error-id-exists: "A {kind} named '{id}' already exists."
+web-error-offline: "You must be online in game to do this."
+web-error-timeout: "The server took too long to respond."
+web-error-gone: "That object no longer exists."
+web-error-internal: "Internal server error."
+web-error-waypoint-limit: "Waypoint limit of {limit} reached."
+web-error-teleport: "Teleport failed."
+web-error-world-missing: "The object's world is not loaded."
+web-error-bad-action: "Unknown action '{action}'."
+web-error-unknown-preset: "Unknown preset '{preset}'."
+web-error-bad-material: "'{material}' is not an item."

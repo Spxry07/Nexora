@@ -1,0 +1,339 @@
+debug: false
+
+permissions:
+  admin: "nexora.admin"
+  web: "nexora.web"
+
+ids:
+  pattern: "[a-zA-Z0-9_-]{1,32}"
+
+animation:
+  interval-ticks: 2
+  frame-separator: "||"
+
+tracker:
+  interval-ticks: 5
+  reset-distance: 32
+
+display:
+  view-range-unit: 64
+  fallback-material: "STONE"
+
+effects:
+  typewriter-hold-steps: 20
+  rainbow-step: 0.02
+  rainbow-spread: 0.06
+  rainbow-saturation: 0.85
+  rainbow-brightness: 1.0
+  wave-step: 0.25
+  wave-spread: 0.35
+  scroll-gap: "     "
+
+placeholders:
+  time-format: "HH:mm:ss"
+  date-format: "dd/MM/yyyy"
+
+actions:
+  console: "[console]"
+  player: "[player]"
+  message: "[message]"
+  actionbar: "[actionbar]"
+  sound: "[sound]"
+
+limits:
+  max-lines: 32
+  max-waypoints: 64
+
+npc:
+  default-type: "MANNEQUIN"
+  equipment-slots:
+    - HAND
+    - OFF_HAND
+    - HEAD
+    - CHEST
+    - LEGS
+    - FEET
+
+dialogs:
+  columns: 2
+  button-width: 150
+  input-width: 300
+  multiline-max-lines: 8
+  multiline-height: 96
+  callback-lifetime-minutes: 30
+  preview-length: 24
+
+web:
+  enabled: true
+  bind: "0.0.0.0"
+  port: 8155
+  public-url: ""
+  session-minutes: 60
+  max-body-bytes: 262144
+  request-timeout-seconds: 10
+
+storage:
+  shutdown-timeout-seconds: 10
+
+defaults:
+  hologram:
+    view-range: 48
+    line-spacing: 0.3
+    spin-speed: 0
+    bob-height: 0
+    bob-speed: 0.5
+    orbit-radius: 0
+    orbit-speed: 0.25
+    pulse-amount: 0
+    pulse-speed: 0.5
+    sway-angle: 0
+    sway-speed: 0.5
+    path-speed: 0
+    particle: "NONE"
+    particle-count: 3
+    particle-radius: 0.5
+    particle-interval: 10
+  line:
+    type: "TEXT"
+    text: "&#6293F0&lɴᴇxᴏʀᴀ\n&7Edit me with &f/nexora"
+    material: "DIAMOND"
+    frame-interval: 40
+    effect: "NONE"
+    effect-speed: 2
+    color-a: "#6293F0"
+    color-b: "#FFFFFF"
+    scroll-width: 16
+    scale: 1
+    offset-y: 0
+    billboard: "CENTER"
+    background-default: true
+    background: "#40000000"
+    shadow: true
+    see-through: false
+    alignment: "CENTER"
+    line-width: 200
+    opacity: 255
+    glow: false
+    glow-color: "#6293F0"
+    brightness: -1
+    item-transform: "FIXED"
+  npc:
+    entity-type: "MANNEQUIN"
+    name: "&#6293F0&lɴᴇxᴏʀᴀ ɴᴘᴄ"
+    name-visible: true
+    description: "&7Right-click me"
+    skin-name: ""
+    skin-value: ""
+    skin-signature: ""
+    pose: "STANDING"
+    glow: false
+    glow-color: "blue"
+    scale: 1
+    look-at: true
+    look-range: 8
+    actions: "[message] &fHello &#6293F0{player}&f!"
+    click-type: "ANY"
+    cooldown: 20
+    swing-interval: 0
+    sneak-interval: 0
+    hurt-interval: 0
+    spin-speed: 0
+    view-range: 48
+    path-speed: 0
+    particle: "NONE"
+    particle-count: 3
+    particle-radius: 0.5
+    particle-interval: 10
+
+presets:
+  npc:
+    knight:
+      label: "&#FFD700&lᴋɴɪɢʜᴛ"
+      props:
+        entity-type: "MANNEQUIN"
+        name: "&#FFD700&lᴛʜᴇ ᴋɴɪɢʜᴛ"
+        description: "&7Sworn protector of the realm"
+        pose: "STANDING"
+        glow: true
+        glow-color: "gold"
+        look-at: true
+        look-range: 12
+        swing-interval: 80
+        particle: "ENCHANT"
+        particle-count: 6
+        particle-radius: 0.6
+        particle-interval: 10
+      equipment:
+        HAND: "NETHERITE_SWORD"
+        OFF_HAND: "SHIELD"
+        HEAD: "DIAMOND_HELMET"
+        CHEST: "DIAMOND_CHESTPLATE"
+        LEGS: "DIAMOND_LEGGINGS"
+        FEET: "DIAMOND_BOOTS"
+    wizard:
+      label: "&#B266FF&lᴡɪᴢᴀʀᴅ"
+      props:
+        entity-type: "MANNEQUIN"
+        name: "&#B266FF&lᴀʀᴄʜᴍᴀɢᴇ"
+        description: "&7Master of the arcane"
+        glow: true
+        glow-color: "dark_purple"
+        look-at: true
+        swing-interval: 40
+        particle: "WITCH"
+        particle-count: 8
+        particle-radius: 0.8
+        particle-interval: 4
+      equipment:
+        HAND: "BLAZE_ROD"
+        OFF_HAND: "ENCHANTED_BOOK"
+        HEAD: "LEATHER_HELMET"
+    dancer:
+      label: "&#FF66CC&lᴅᴀɴᴄᴇʀ"
+      props:
+        entity-type: "MANNEQUIN"
+        name: "&#FF66CC&lᴅᴀɴᴄᴇʀ"
+        description: "&7Can't stop, won't stop"
+        look-at: false
+        spin-speed: 180
+        sneak-interval: 6
+        swing-interval: 10
+        particle: "NOTE"
+        particle-count: 2
+        particle-radius: 1
+        particle-interval: 6
+    ghost:
+      label: "&#7FDBFF&lɢʜᴏꜱᴛ"
+      props:
+        entity-type: "MANNEQUIN"
+        name: "&#7FDBFF&lᴡᴀɴᴅᴇʀɪɴɢ ꜱᴘɪʀɪᴛ"
+        description: "&8...boo"
+        glow: true
+        glow-color: "aqua"
+        look-at: true
+        look-range: 6
+        particle: "SOUL"
+        particle-count: 4
+        particle-radius: 0.5
+        particle-interval: 3
+    sleeper:
+      label: "&#AAAAAA&lꜱʟᴇᴇᴘᴇʀ"
+      props:
+        entity-type: "MANNEQUIN"
+        name: "&7Zzz..."
+        description: ""
+        pose: "SLEEPING"
+        look-at: false
+        particle: "CLOUD"
+        particle-count: 1
+        particle-radius: 0.2
+        particle-interval: 30
+    shopkeeper:
+      label: "&#00FF3B&lꜱʜᴏᴘᴋᴇᴇᴘᴇʀ"
+      props:
+        entity-type: "VILLAGER"
+        name: "&#00FF3B&lꜱʜᴏᴘ &8» &fʀɪɢʜᴛ-ᴄʟɪᴄᴋ"
+        look-at: true
+        look-range: 10
+        click-type: "RIGHT"
+        cooldown: 20
+        actions: "[sound] entity.villager.trade\n[message] &#00FF3BWelcome, {player}! &7Have a look around."
+        particle: "HAPPY_VILLAGER"
+        particle-count: 3
+        particle-radius: 0.6
+        particle-interval: 40
+    titan:
+      label: "&#FF0000&lᴛɪᴛᴀɴ"
+      props:
+        entity-type: "IRON_GOLEM"
+        name: "&#FF0000&lᴛʜᴇ ᴛɪᴛᴀɴ"
+        scale: 2.5
+        glow: true
+        glow-color: "red"
+        look-at: true
+        look-range: 20
+        hurt-interval: 60
+        swing-interval: 60
+        particle: "FLAME"
+        particle-count: 5
+        particle-radius: 1.5
+        particle-interval: 5
+    guide:
+      label: "&#6293F0&lɢᴜɪᴅᴇ"
+      props:
+        entity-type: "MANNEQUIN"
+        name: "&#6293F0&lꜱᴇʀᴠᴇʀ ɢᴜɪᴅᴇ"
+        description: "&7Right-click for help"
+        look-at: true
+        look-range: 16
+        swing-interval: 100
+        click-type: "RIGHT"
+        actions: "[sound] entity.experience_orb.pickup\n[message] &#6293F0&lɢᴜɪᴅᴇ &7» &fHey {player}! Type &#6293F0/help &fto get started."
+      equipment:
+        HAND: "COMPASS"
+
+  hologram:
+    welcome:
+      label: "&#6293F0&lᴡᴇʟᴄᴏᴍᴇ ʙᴀɴɴᴇʀ"
+      props:
+        line-spacing: 0.35
+        bob-height: 0.08
+        bob-speed: 0.4
+        particle: "END_ROD"
+        particle-count: 2
+        particle-radius: 1.2
+        particle-interval: 8
+      lines:
+        - {type: "TEXT", text: "&lᴡᴇʟᴄᴏᴍᴇ", effect: "RAINBOW", effect-speed: 1, scale: 1.6}
+        - {type: "TEXT", text: "to the server", effect: "WAVE", effect-speed: 1, color-a: "#6293F0", color-b: "#FFFFFF"}
+        - {type: "TEXT", text: "&7{online}&8/&7{max} &fplayers online", scale: 0.8}
+    showcase:
+      label: "&#40CEFC&lꜱᴘɪɴɴɪɴɢ ꜱʜᴏᴡᴄᴀꜱᴇ"
+      props:
+        line-spacing: 0.6
+        spin-speed: 90
+        bob-height: 0.15
+        bob-speed: 0.3
+        particle: "ELECTRIC_SPARK"
+        particle-count: 3
+        particle-radius: 0.6
+        particle-interval: 6
+      lines:
+        - {type: "TEXT", text: "&#40CEFC&lʟᴇɢᴇɴᴅᴀʀʏ ʟᴏᴏᴛ", effect: "TYPEWRITER", effect-speed: 2}
+        - {type: "ITEM", material: "NETHERITE_SWORD", scale: 1.4, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
+    crystal:
+      label: "&#B266FF&lꜰʟᴏᴀᴛɪɴɢ ᴄʀʏꜱᴛᴀʟ"
+      props:
+        line-spacing: 0.7
+        spin-speed: 45
+        pulse-amount: 0.15
+        pulse-speed: 0.5
+        bob-height: 0.2
+        bob-speed: 0.25
+        particle: "PORTAL"
+        particle-count: 8
+        particle-radius: 0.5
+        particle-interval: 3
+      lines:
+        - {type: "TEXT", text: "&#B266FF&lᴍʏꜱᴛɪᴄ ᴄʀʏꜱᴛᴀʟ", effect: "WAVE", color-a: "#B266FF", color-b: "#40CEFC"}
+        - {type: "BLOCK", material: "AMETHYST_BLOCK", scale: 0.6, billboard: "FIXED", glow: true, glow-color: "#B266FF"}
+    clock:
+      label: "&#FFD700&lʟɪᴠᴇ ᴄʟᴏᴄᴋ"
+      props:
+        line-spacing: 0.4
+      lines:
+        - {type: "TEXT", text: "&#FFD700&l{time}", scale: 2}
+        - {type: "TEXT", text: "&7{date}"}
+    announcement:
+      label: "&#FF66CC&lꜱᴄʀᴏʟʟɪɴɢ ɴᴇᴡꜱ"
+      props:
+        line-spacing: 0.3
+      lines:
+        - {type: "TEXT", text: "&#FF66CC&lɴᴇᴡꜱ"}
+        - {type: "TEXT", text: "Season 2 is live! New ranks, new crates and a brand new spawn. Go check it out!", effect: "SCROLL", effect-speed: 2, scroll-width: 28, color-a: "#FFFFFF", background-default: false, background: "#80000000"}
+    slideshow:
+      label: "&#00FF5A&lꜱʟɪᴅᴇꜱʜᴏᴡ"
+      props:
+        line-spacing: 0.3
+      lines:
+        - {type: "TEXT", text: "&#00FF5A&lᴛɪᴘ #1 &f» Use /spawn to get home || &#00FF5A&lᴛɪᴘ #2 &f» Vote daily for crate keys || &#00FF5A&lᴛɪᴘ #3 &f» Read the rules with /rules", frame-interval: 80, effect: "TYPEWRITER", effect-speed: 1}

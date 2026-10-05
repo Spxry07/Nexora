@@ -1,0 +1,20 @@
+name: Nexora
+version: '1.0'
+main: net.spxry.nexora.Nexora
+description: Packet-based animated holograms and NPCs with in-game and web editors
+api-version: '1.21'
+author: Spxry Studios
+folia-supported: true
+commands:
+  nexora:
+    usage: /<command> [holo|npc|web|reload|help]
+    description: Nexora holograms and NPCs
+    aliases:
+      - nx
+permissions:
+  nexora.admin:
+    default: op
+    description: Create and edit holograms and NPCs
+  nexora.web:
+    default: op
+    description: Open the web editor

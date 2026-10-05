@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Nexora Editor</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--panel2:#171d2b;--line:#252d40;--text:#e6e9f0;--muted:#8b94a8;--accent:#6293F0;--accent-d:#4a78d6;--danger:#e5484d;--ok:#3ecf8e;--r:10px;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+#app{display:grid;grid-template-columns:290px minmax(0,1fr);height:100vh}
+.topbar{display:none;align-items:center;gap:12px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.brand{font-weight:700;letter-spacing:.04em;color:var(--accent)}
+#side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.side-head{padding:16px 16px 8px;display:flex;align-items:center;justify-content:space-between}
+.side-head .brand{font-size:18px}
+.tabs{display:flex;gap:6px;padding:8px 12px}
+.tab{flex:1;padding:8px 10px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
+.tab.on{border-color:var(--accent);color:var(--text);background:rgba(98,147,240,.12)}
+.tab .n{font-variant-numeric:tabular-nums;opacity:.8}
+.search-row{display:flex;gap:6px;padding:4px 12px 10px}
+.search-row input{flex:1;min-width:0}
+#list{list-style:none;margin:0;padding:0 8px 12px;overflow:auto;flex:1}
+#list button{width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:8px;padding:8px 10px;display:block}
+#list button:hover{background:var(--panel2)}
+#list button.on{background:rgba(98,147,240,.14);border-color:var(--accent)}
+#list .id{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#list .pos{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.muted{color:var(--muted)}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+main{overflow:auto;padding:20px;min-width:0}
+input[type=text],input[type=number],select,textarea{width:100%;background:#0e1320;border:1px solid var(--line);border-radius:8px;padding:7px 10px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:70px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=color]{width:38px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;background:none;flex:none}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#07101f;font-weight:600}
+.btn.primary:hover{background:var(--accent-d)}
+.btn.danger{color:var(--danger)}
+.btn.danger:hover{border-color:var(--danger)}
+.btn.sm{padding:3px 8px;font-size:12px}
+.icon-btn{background:none;border:1px solid var(--line);border-radius:8px;width:34px;height:34px;display:grid;place-items:center}
+.head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.head h1{margin:0;font-size:22px;word-break:break-all}
+.chip{display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:99px;background:rgba(98,147,240,.16);color:var(--accent);margin-right:8px;vertical-align:middle}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+.preview{position:sticky;top:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
+.card>h2{margin:0;padding:10px 14px;font-size:14px;color:var(--accent);letter-spacing:.04em;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card .body{padding:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px 14px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field.wide{grid-column:1/-1}
+.field>label{font-size:12px;color:var(--muted)}
+.row2{display:flex;gap:8px;align-items:center}
+.row2 input[type=number]{width:92px;flex:none}
+.row2 input[type=range]{flex:1;min-width:0}
+.switch{position:relative;display:inline-block;width:42px;height:24px}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch span{position:absolute;inset:0;background:#2a3348;border-radius:99px;transition:.15s}
+.switch span:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
+.switch input:checked+span{background:var(--accent)}
+.switch input:checked+span:before{transform:translateX(18px)}
+.switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.color-row input[type=text]{width:112px}
+.color-row input[type=range]{flex:1;min-width:80px}
+.line{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;background:var(--panel2)}
+.line-head{display:flex;gap:6px;align-items:center;padding:6px 8px}
+.line-toggle{flex:1;min-width:0;background:none;border:0;text-align:left;display:flex;gap:8px;align-items:center;padding:4px}
+.line-toggle .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.line-toggle .i{font-weight:700;color:var(--accent);flex:none}
+.line-body{padding:4px 12px 12px;border-top:1px solid var(--line)}
+.sub{margin:12px 0 8px;font-size:12px;color:var(--accent);letter-spacing:.05em}
+.note{font-size:12px;color:var(--muted);margin:8px 0 0}
+.slot{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}
+.slot:last-child{border:0}
+.slot{align-items:center;gap:8px}
+.slot .slot-name{min-width:78px;font-weight:600}
+.slot input{flex:1;min-width:0}
+.preset-pick{display:inline-flex;gap:6px;align-items:center}
+.preset-pick select{width:auto;min-width:140px}
+.stage{min-height:240px;border-radius:var(--r);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:28px 12px;overflow:auto;background:radial-gradient(circle at 50% 30%,#1c2438,#0a0d14 70%),#0a0d14;position:relative}
+.stage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
+.stack{display:flex;flex-direction:column;align-items:center;gap:var(--gap,6px);position:relative;max-width:100%}
+.pv-line{position:relative;max-width:100%}
+.box{padding:2px 5px;border-radius:2px;font-family:ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word;line-height:1.25}
+.box .r{min-height:1.25em}
+.tile{width:34px;height:34px;border-radius:6px;background:linear-gradient(135deg,#3a4968,#27324a);border:1px solid #4c5d82;display:grid;place-items:center;font-size:9px;color:#cfd8ee;text-align:center;overflow:hidden;padding:2px;word-break:break-all}
+.npc-fig{display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+.npc-fig .head-b{width:34px;height:34px;background:#8d6b52;border-radius:4px;margin-top:6px}
+.npc-fig .body-b{width:46px;height:62px;background:#3b6aa0;border-radius:4px}
+.npc-fig .legs{display:flex;gap:2px}
+.npc-fig .legs i{width:22px;height:46px;background:#3a3f78;border-radius:3px;display:block}
+.pv-meta{font-size:12px;color:var(--muted);margin-top:6px;text-align:center}
+#toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:100;max-width:calc(100vw - 32px)}
+.toast{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:10px 14px;box-shadow:0 8px 24px #0008;max-width:380px;word-break:break-word}
+.toast.err{border-left-color:var(--danger)}
+.toast.ok{border-left-color:var(--ok)}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:18px;width:min(92vw,380px)}
+dialog::backdrop{background:#000a}
+dialog h3{margin:0 0 12px}
+dialog .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+#scrim{display:none}
+#gate{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;text-align:center;padding:24px;z-index:200}
+#gate div{max-width:420px}
+#gate h2{color:var(--accent);margin:0 0 8px}
+@media (max-width:1180px){.layout{grid-template-columns:minmax(0,1fr)}.preview{order:-1;position:static}}
+@media (max-width:860px){
+#app{display:block;height:auto;min-height:100vh}
+.topbar{display:flex}
+#side{position:fixed;top:0;bottom:0;left:0;width:min(86vw,320px);transform:translateX(-102%);transition:transform .2s;z-index:40}
+#side.open{transform:none}
+#scrim.on{display:block;position:fixed;inset:0;background:#0009;z-index:35}
+main{padding:12px 16px;overflow:visible}
+.head h1{font-size:18px}
+.actions .btn{flex:1 1 auto}
+}
+</style>
+</head>
+<body>
+<div class="topbar"><button class="icon-btn" id="menuBtn" aria-label="Menu">&#9776;</button><span class="brand">ɴᴇxᴏʀᴀ</span></div>
+<div id="app">
+  <aside id="side">
+    <div class="side-head"><span class="brand">ɴᴇxᴏʀᴀ</span><button class="btn sm" id="refreshBtn">Refresh</button></div>
+    <div class="tabs">
+      <button class="tab on" data-tab="hologram">Holograms <span class="n" id="cnt-hologram">0</span></button>
+      <button class="tab" data-tab="npc">NPCs <span class="n" id="cnt-npc">0</span></button>
+    </div>
+    <div class="search-row"><input type="text" id="search" placeholder="Search..." aria-label="Search"><button class="btn primary" id="newBtn">+ New</button></div>
+    <ul id="list"></ul>
+  </aside>
+  <main id="main">
+    <div class="empty" id="empty">Select an object from the list or create a new one.</div>
+    <div id="editor" hidden>
+      <div class="head">
+        <div><h1><span class="chip" id="kindChip"></span><span id="title"></span></h1><div class="muted" id="coords"></div></div>
+        <div class="actions">
+          <span class="preset-pick" id="presetWrap"><select id="presetSel" aria-label="Preset"></select><button class="btn" id="aPreset">Apply preset</button></span>
+          <button class="btn" id="aTp">Teleport</button>
+          <button class="btn" id="aMove">Move here</button>
+          <button class="btn" id="aPathAdd">Path add</button>
+          <button class="btn" id="aPathClear">Path clear</button>
+          <button class="btn danger" id="aDelete">Delete</button>
+          <button class="btn primary" id="aSave">Save</button>
+        </div>
+      </div>
+      <div class="layout">
+        <div id="cards"></div>
+        <div class="preview"><div class="card"><h2>Live preview</h2><div class="body"><div class="stage" id="stage"></div><div class="pv-meta" id="pvMeta"></div></div></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+<div id="scrim"></div>
+<div id="toasts" aria-live="polite"></div>
+<dialog id="newDlg">
+  <form method="dialog" id="newForm">
+    <h3 id="newTitle">New</h3>
+    <div class="field"><label for="newId">Id</label><input type="text" id="newId" autocomplete="off" maxlength="64"></div>
+    <div class="field" id="newTypeWrap" style="margin-top:10px"><label for="newType">Entity type</label><select id="newType"></select></div>
+    <div class="field" id="newPresetWrap" style="margin-top:10px"><label for="newPreset">Start from preset</label><select id="newPreset"></select></div>
+    <p class="note">Created at your current position in game.</p>
+    <div class="foot"><button type="button" class="btn" id="newCancel">Cancel</button><button type="submit" class="btn primary" id="newOk">Create</button></div>
+  </form>
+</dialog>
+<div id="gate" hidden><div><h2>Session required</h2><p class="muted" id="gateMsg">Run the web command in game to get a fresh link.</p></div></div>
+<script>
+(() => {
+'use strict';
+
+const $ = s => document.querySelector(s);
+const TOKEN_KEY = 'nexora.token';
+const TICK_MS = 50;
+const COLORS = {'0':'#000000','1':'#0000AA','2':'#00AA00','3':'#00AAAA','4':'#AA0000','5':'#AA00AA','6':'#FFAA00','7':'#AAAAAA','8':'#555555','9':'#5555FF','a':'#55FF55','b':'#55FFFF','c':'#FF5555','d':'#FF55FF','e':'#FFFF55','f':'#FFFFFF'};
+const RESET = {c:'#FFFFFF',b:false,i:false,u:false,s:false,k:false};
+const PX_BLOCK = 70;
+const FONT_PX = 14;
+const WIDTH_PX = 1.75;
+const OFFSET_PX = 40;
+const SAMPLE_PLAYER = 'Steve';
+
+let token = null;
+try {
+  const hash = location.hash.slice(1);
+  if (hash) sessionStorage.setItem(TOKEN_KEY, hash);
+  token = sessionStorage.getItem(TOKEN_KEY);
+  if (!token && hash) token = hash;
+} catch (e) {
+  token = location.hash.slice(1) || null;
+}
+if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+
+const S = {schema: null, cfg: null, objects: [], tab: 'hologram', search: '', cur: null, props: {}, lines: [], dirty: false};
+let uid = 0;
+let T0 = performance.now();
+
+function el(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (v === false || v == null) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'text') e.textContent = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? '' : String(v));
+  }
+  for (const c of kids.flat()) if (c != null) e.append(c);
+  return e;
+}
+
+function toast(msg, kind) {
+  const t = el('div', {class: 'toast ' + (kind || ''), text: msg});
+  $('#toasts').append(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+function gate(msg) {
+  if (msg) $('#gateMsg').textContent = msg;
+  $('#gate').hidden = false;
+}
+
+async function api(path, body) {
+  const post = body !== undefined;
+  const res = await fetch(path, {
+    method: post ? 'POST' : 'GET',
+    headers: Object.assign({Authorization: 'Bearer ' + token}, post ? {'Content-Type': 'application/json'} : {}),
+    body: post ? JSON.stringify(body) : undefined
+  });
+  let data = null;
+  try { data = await res.json(); } catch (e) { data = null; }
+  if (res.status === 401) {
+    gate(data && data.error);
+    throw new Error(data && data.error || 'Unauthorized');
+  }
+  if (!res.ok) throw new Error(data && data.error || res.statusText);
+  return data;
+}
+
+const hex2 = n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0').toUpperCase();
+function parseColor(v, fb) {
+  const m = /^#?([0-9a-f]{2})?([0-9a-f]{6})$/i.exec(String(v || '').trim());
+  if (!m) return {rgb: fb || '#FFFFFF', a: 255};
+  return {rgb: '#' + m[2].toUpperCase(), a: m[1] ? parseInt(m[1], 16) : 255};
+}
+function rgba(c) {
+  const r = parseInt(c.rgb.substr(1, 2), 16), g = parseInt(c.rgb.substr(3, 2), 16), b = parseInt(c.rgb.substr(5, 2), 16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + (c.a / 255).toFixed(3) + ')';
+}
+function hsv(h, s, v) {
+  const i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+  const m = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][((i % 6) + 6) % 6];
+  return '#' + m.map(x => hex2(x * 255)).join('');
+}
+function mix(a, b, t) {
+  const pa = parseColor(a).rgb, pb = parseColor(b).rgb;
+  const ch = k => parseInt(pa.substr(1 + k * 2, 2), 16) * (1 - t) + parseInt(pb.substr(1 + k * 2, 2), 16) * t;
+  return '#' + [0, 1, 2].map(k => hex2(ch(k))).join('');
+}
+
+function parseText(text) {
+  const out = [];
+  let st = Object.assign({}, RESET);
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '&' && i + 1 < text.length) {
+      const n = text[i + 1];
+      const lower = n.toLowerCase();
+      if (n === '#' && /^[0-9a-fA-F]{6}$/.test(text.slice(i + 2, i + 8))) {
+        st = Object.assign({}, RESET, {c: '#' + text.slice(i + 2, i + 8).toUpperCase()});
+        i += 7;
+        continue;
+      }
+      if (COLORS[lower]) { st = Object.assign({}, RESET, {c: COLORS[lower]}); i++; continue; }
+      if (lower === 'r') { st = Object.assign({}, RESET); i++; continue; }
+      const flag = {l: 'b', o: 'i', n: 'u', m: 's', k: 'k'}[lower];
+      if (flag) { st = Object.assign({}, st); st[flag] = true; i++; continue; }
+    }
+    out.push({ch, st});
+  }
+  return out;
+}
+
+function fmtDate(pattern, d) {
+  const p = n => String(n).padStart(2, '0');
+  return String(pattern || '').replace(/yyyy|MM|dd|HH|mm|ss/g, t => ({yyyy: d.getFullYear(), MM: p(d.getMonth() + 1), dd: p(d.getDate()), HH: p(d.getHours()), mm: p(d.getMinutes()), ss: p(d.getSeconds())})[t]);
+}
+
+function placeholders(text) {
+  const ph = S.cfg.placeholders, now = new Date();
+  return text.replace(/\{(online|max|time|date|player)\}/g, (m, k) => ({online: ph.online, max: ph.max, time: fmtDate(ph.timeFormat, now), date: fmtDate(ph.dateFormat, now), player: SAMPLE_PLAYER})[k]);
+}
+
+function applyEffect(chars, line, tick) {
+  const fx = S.cfg.effects;
+  const step = Math.floor(tick / Math.max(1, Number(line['effect-speed']) || 1));
+  switch (line.effect) {
+    case 'TYPEWRITER': {
+      const total = chars.filter(c => c.ch !== '\n').length;
+      const n = step % (total + fx.typewriterHold);
+      const out = [];
+      let seen = 0;
+      for (const c of chars) {
+        if (c.ch !== '\n') { if (seen >= n) break; seen++; }
+        out.push(c);
+      }
+      return out;
+    }
+    case 'RAINBOW':
+      return chars.map((c, i) => ({ch: c.ch, st: Object.assign({}, c.st, {c: hsv((step * fx.rainbowStep + i * fx.rainbowSpread) % 1, fx.rainbowSaturation, fx.rainbowBrightness)})}));
+    case 'WAVE':
+      return chars.map((c, i) => ({ch: c.ch, st: Object.assign({}, c.st, {c: mix(line['color-a'], line['color-b'], (Math.sin(step * fx.waveStep + i * fx.waveSpread) + 1) / 2)})}));
+    case 'SCROLL': {
+      const width = Math.max(1, Number(line['scroll-width']) || 16);
+      const flat = chars.map(c => c.ch === '\n' ? {ch: ' ', st: c.st} : c);
+      if (flat.length <= width) return flat;
+      const gap = Array.from(fx.scrollGap || ' ', () => ({ch: ' ', st: RESET}));
+      const padded = flat.concat(gap);
+      const offset = step % padded.length;
+      return Array.from({length: width}, (_, i) => padded[(offset + i) % padded.length]);
+    }
+    case 'BLINK':
+      return step % 2 === 1 ? [] : chars;
+    default:
+      return chars;
+  }
+}
+
+function sameStyle(a, b) {
+  return a.c === b.c && a.b === b.b && a.i === b.i && a.u === b.u && a.s === b.s && a.k === b.k;
+}
+
+const OBF = 'abcdefghijklmnopqrstuvwxyz0123456789';
+function charsToRows(chars) {
+  const rows = [el('div', {class: 'r'})];
+  let run = null;
+  for (const c of chars) {
+    if (c.ch === '\n') { rows.push(el('div', {class: 'r'})); run = null; continue; }
+    const row = rows[rows.length - 1];
+    const ch = c.st.k ? OBF[Math.floor(Math.random() * OBF.length)] : c.ch;
+    if (run && sameStyle(run.st, c.st)) { run.node.textContent += ch; continue; }
+    const node = el('span', {text: ch});
+    node.style.color = c.st.c;
+    if (c.st.b) node.style.fontWeight = '700';
+    if (c.st.i) node.style.fontStyle = 'italic';
+    const deco = [c.st.u ? 'underline' : '', c.st.s ? 'line-through' : ''].filter(Boolean).join(' ');
+    if (deco) node.style.textDecoration = deco;
+    row.append(node);
+    run = {node, st: c.st};
+  }
+  return rows;
+}
+
+function renderText(text, line, tick) {
+  let frame = String(text || '');
+  const sep = S.cfg.frameSeparator;
+  if (sep && frame.includes(sep)) {
+    const frames = frame.split(sep);
+    frame = frames[Math.floor(tick / Math.max(1, Number(line['frame-interval']) || 1)) % frames.length];
+  }
+  return charsToRows(applyEffect(parseText(placeholders(frame)), line, tick));
+}
+
+function isAnimated(l) {
+  if (l.type !== 'TEXT') return false;
+  const sep = S.cfg.frameSeparator;
+  const text = String(l.text || '');
+  return (sep && text.includes(sep)) || l.effect !== 'NONE' || /\{(time|online|max|date)\}|&k/i.test(text);
+}
+
+function lineNode(l, spacingPx) {
+  const root = el('div', {class: 'pv-line'});
+  const scale = Math.max(0.1, Number(l.scale) || 1);
+  const offset = Number(l['offset-y']) || 0;
+  if (offset) { root.style.position = 'relative'; root.style.top = (-offset * OFFSET_PX) + 'px'; }
+  const box = el('div', {class: 'box'});
+  if (l.type === 'TEXT') {
+    box.style.fontSize = (FONT_PX * scale) + 'px';
+    box.style.textAlign = String(l.alignment || 'CENTER').toLowerCase();
+    box.style.maxWidth = ((Number(l['line-width']) || 200) * WIDTH_PX * scale) + 'px';
+    box.style.background = l['background-default'] === 'true' ? 'rgba(0,0,0,.25)' : rgba(parseColor(l.background, '#000000'));
+    box.style.opacity = String(Math.max(30, Math.min(255, Number(l.opacity) || 255)) / 255);
+    if (l.shadow === 'true') box.style.textShadow = '1px 1px 0 rgba(0,0,0,.65)';
+  } else {
+    const size = Math.round(34 * scale);
+    const tile = el('div', {class: 'tile', text: String(l.material || '').toLowerCase().replace(/_/g, ' ')});
+    tile.style.width = tile.style.height = size + 'px';
+    box.append(tile);
+    box.style.background = 'transparent';
+  }
+  if (l.glow === 'true') box.style.filter = 'drop-shadow(0 0 5px ' + rgba(Object.assign(parseColor(l['glow-color']), {a: 255})) + ')';
+  root.append(box);
+  return {root, box, line: l, animated: l.type === 'TEXT' && isAnimated(l)};
+}
+
+function paintLine(n, tick) {
+  if (n.line.type !== 'TEXT') return;
+  n.box.replaceChildren(...renderText(n.line.text, n.line, tick));
+}
+
+let pv = [];
+function buildPreview() {
+  const stage = $('#stage');
+  stage.replaceChildren();
+  pv = [];
+  if (!S.cur) return;
+  const kind = S.cur.kind;
+  if (kind === 'hologram') {
+    const spacing = Number(S.props['line-spacing']) || 0.3;
+    const stack = el('div', {class: 'stack'});
+    stack.style.setProperty('--gap', Math.max(2, (spacing - 0.2) * PX_BLOCK) + 'px');
+    for (const l of S.lines) {
+      const n = lineNode(l.props);
+      stack.append(n.root);
+      pv.push(n);
+    }
+    if (!S.lines.length) stack.append(el('div', {class: 'muted', text: 'No lines'}));
+    stage.append(stack);
+    $('#pvMeta').textContent = S.lines.length + ' line(s)';
+  } else {
+    const p = S.props;
+    const fig = el('div', {class: 'npc-fig'});
+    const plate = el('div', {class: 'box'});
+    plate.style.background = 'rgba(0,0,0,.25)';
+    plate.style.textShadow = '1px 1px 0 rgba(0,0,0,.65)';
+    const plain = {effect: 'NONE'};
+    const nameVisible = p['name-visible'] !== 'false';
+    if (nameVisible) plate.replaceChildren(...renderText(p.name, plain, 0));
+    if (nameVisible) fig.append(plate);
+    if (p['entity-type'] === 'MANNEQUIN' && p.description) {
+      const desc = el('div', {class: 'box'});
+      desc.style.background = 'rgba(0,0,0,.25)';
+      desc.replaceChildren(...renderText(p.description, plain, 0));
+      fig.append(desc);
+    }
+    fig.append(el('div', {class: 'head-b'}), el('div', {class: 'body-b'}), el('div', {class: 'legs'}, el('i'), el('i')));
+    stage.append(fig);
+    $('#pvMeta').textContent = String(p['entity-type'] || '');
+  }
+  tickPreview(true);
+}
+
+function tickPreview(force) {
+  const tick = Math.floor((performance.now() - T0) / TICK_MS);
+  for (const n of pv) if (force || n.animated) paintLine(n, tick);
+}
+setInterval(() => { if (!document.hidden && S.cur) tickPreview(false); }, TICK_MS);
+
+function markDirty() {
+  S.dirty = true;
+  $('#aSave').textContent = 'Save *';
+}
+
+function clean() {
+  S.dirty = false;
+  $('#aSave').textContent = 'Save';
+}
+
+function field(prop, id, node, wide) {
+  return el('div', {class: 'field' + (wide ? ' wide' : '')}, el('label', {for: id, text: prop.label}), node);
+}
+
+function stepOf(prop) {
+  return prop.step > 0 ? prop.step : (prop.type === 'integer' ? 1 : 'any');
+}
+
+function control(prop, value, set) {
+  const id = 'f' + (++uid);
+  const t = prop.type;
+  if (t === 'text') {
+    const i = el('input', {type: 'text', id, maxlength: prop.max > 0 ? prop.max : false});
+    i.value = value == null ? '' : value;
+    i.addEventListener('input', () => set(i.value));
+    return field(prop, id, i);
+  }
+  if (t === 'multiline') {
+    const a = el('textarea', {id, rows: 3, maxlength: prop.max > 0 ? prop.max : false});
+    a.value = value == null ? '' : value;
+    a.addEventListener('input', () => set(a.value));
+    return field(prop, id, a, true);
+  }
+  if (t === 'number' || t === 'integer') {
+    const ranged = prop.max > prop.min;
+    const step = stepOf(prop);
+    const lim = ranged ? {min: prop.min, max: prop.max} : {};
+    const num = el('input', Object.assign({type: 'number', id, step}, lim));
+    const rng = ranged ? el('input', Object.assign({type: 'range', step, 'aria-label': prop.label}, lim)) : null;
+    num.value = value;
+    if (rng) {
+      rng.value = value;
+      rng.addEventListener('input', () => { num.value = rng.value; set(rng.value); });
+    }
+    num.addEventListener('input', () => { if (num.value !== '' && Number.isFinite(Number(num.value))) { if (rng) rng.value = num.value; set(num.value); } });
+    num.addEventListener('change', () => {
+      let v = Number(num.value);
+      if (!Number.isFinite(v)) v = Number(value) || 0;
+      if (ranged) v = Math.max(prop.min, Math.min(prop.max, v));
+      if (t === 'integer') v = Math.round(v);
+      num.value = v;
+      if (rng) rng.value = v;
+      set(String(v));
+    });
+    return field(prop, id, el('div', {class: 'row2'}, rng, num));
+  }
+  if (t === 'bool') {
+    const c = el('input', {type: 'checkbox', id});
+    c.checked = String(value) === 'true';
+    c.addEventListener('change', () => set(c.checked ? 'true' : 'false'));
+    return field(prop, id, el('label', {class: 'switch'}, c, el('span')));
+  }
+  if (t === 'choice') {
+    const s = el('select', {id}, prop.options.map(o => el('option', {value: o.id, text: o.label})));
+    s.value = value;
+    if (s.value !== value && value) s.append(el('option', {value, text: value}));
+    s.value = value;
+    s.addEventListener('change', () => set(s.value));
+    return field(prop, id, s);
+  }
+  if (t === 'color') return colorControl(prop, id, value, set);
+  return el('div');
+}
+
+function colorControl(prop, id, value, set) {
+  const alpha = /AARRGGBB/i.test(prop.label) || /^#?[0-9a-f]{8}$/i.test(String(value || ''));
+  const cur = parseColor(value, '#FFFFFF');
+  const picker = el('input', {type: 'color', 'aria-label': prop.label});
+  const hex = el('input', {type: 'text', id, maxlength: 9, spellcheck: 'false'});
+  const a = alpha ? el('input', {type: 'range', min: 0, max: 255, step: 1, 'aria-label': prop.label}) : null;
+  const out = () => alpha ? '#' + hex2(cur.a) + cur.rgb.slice(1) : cur.rgb;
+  const sync = () => {
+    picker.value = cur.rgb.toLowerCase();
+    if (a) a.value = cur.a;
+    hex.value = out();
+  };
+  const emit = () => { sync(); set(out()); };
+  picker.addEventListener('input', () => { cur.rgb = picker.value.toUpperCase(); emit(); });
+  if (a) a.addEventListener('input', () => { cur.a = Number(a.value); emit(); });
+  hex.addEventListener('input', () => {
+    if (!/^#?([0-9a-f]{6}|[0-9a-f]{8})$/i.test(hex.value.trim())) return;
+    const p = parseColor(hex.value);
+    cur.rgb = p.rgb;
+    if (alpha) cur.a = p.a;
+    picker.value = cur.rgb.toLowerCase();
+    if (a) a.value = cur.a;
+    set(out());
+  });
+  sync();
+  return field(prop, id, el('div', {class: 'color-row'}, picker, hex, a), alpha);
+}
+
+function sectionCard(sec, store, onChange, nested) {
+  const grid = el('div', {class: 'grid'});
+  for (const prop of sec.props) {
+    grid.append(control(prop, store[prop.id], v => { store[prop.id] = v; markDirty(); onChange(prop.id); }));
+  }
+  if (nested) return el('div', {}, el('div', {class: 'sub', text: sec.title}), grid);
+  return el('section', {class: 'card'}, el('h2', {text: sec.title}), el('div', {class: 'body'}, grid));
+}
+
+function lineSummary(l) {
+  if (l.props.type !== 'TEXT') return l.props.type + ' ' + (l.props.material || '');
+  const first = String(l.props.text || '').split(S.cfg.frameSeparator)[0];
+  return parseText(first).map(c => c.ch).join('').replace(/\s+/g, ' ').trim() || '(empty)';
+}
+
+function lineCard(l, index, rerender) {
+  const summary = el('span', {class: 't', text: lineSummary(l)});
+  const body = el('div', {class: 'line-body', hidden: !l.open});
+  let built = false;
+  const build = () => {
+    if (built) return;
+    built = true;
+    for (const sec of S.schema.kinds.line.sections) {
+      body.append(sectionCard(sec, l.props, id => {
+        summary.textContent = lineSummary(l);
+        buildPreview();
+      }, true));
+    }
+    if (l.hasItem) body.append(el('p', {class: 'note', text: 'This line has an item set in game. It is kept when you save.'}));
+  };
+  if (l.open) build();
+  const toggle = el('button', {class: 'line-toggle', type: 'button', 'aria-expanded': l.open ? 'true' : 'false', onclick: ev => {
+    l.open = !l.open;
+    if (l.open) build();
+    body.hidden = !l.open;
+    ev.currentTarget.setAttribute('aria-expanded', l.open ? 'true' : 'false');
+  }}, el('span', {class: 'i', text: '#' + (index + 1)}), summary);
+  const move = (d, label, glyph) => el('button', {class: 'btn sm', type: 'button', 'aria-label': label, text: glyph, onclick: () => {
+    const j = index + d;
+    if (j < 0 || j >= S.lines.length) return;
+    [S.lines[index], S.lines[j]] = [S.lines[j], S.lines[index]];
+    markDirty();
+    rerender();
+    buildPreview();
+  }});
+  const del = el('button', {class: 'btn sm danger', type: 'button', 'aria-label': 'Delete line', text: '✕', onclick: () => {
+    S.lines.splice(index, 1);
+    markDirty();
+    rerender();
+    buildPreview();
+  }});
+  return el('div', {class: 'line'}, el('div', {class: 'line-head'}, toggle, move(-1, 'Move up', '↑'), move(1, 'Move down', '↓'), del), body);
+}
+
+function linesPanel() {
+  const list = el('div');
+  const count = el('span', {class: 'muted'});
+  const render = () => {
+    list.replaceChildren(...S.lines.map((l, i) => lineCard(l, i, render)));
+    count.textContent = S.lines.length + ' / ' + S.cfg.maxLines;
+    add.disabled = S.lines.length >= S.cfg.maxLines;
+  };
+  const add = el('button', {class: 'btn sm', type: 'button', text: '+ Add line', onclick: () => {
+    if (S.lines.length >= S.cfg.maxLines) return;
+    S.lines.push({ref: -1, props: Object.assign({}, S.cfg.lineDefaults), hasItem: false, open: true});
+    markDirty();
+    render();
+    buildPreview();
+  }});
+  render();
+  return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Lines'}), el('span', {class: 'row2'}, count, add)), el('div', {class: 'body'}, list));
+}
+
+function equipmentCard() {
+  const rows = (S.cur.equipment || []).map(s => {
+    const input = el('input', {type: 'text', value: s.material || '', placeholder: 'empty (e.g. diamond_sword)', 'aria-label': s.slot + ' material'});
+    const set = el('button', {class: 'btn sm', type: 'button', text: 'Set', onclick: ev => run(ev.currentTarget, () => equip(s.slot, input.value))});
+    const clear = el('button', {class: 'btn sm danger', type: 'button', text: 'Clear', onclick: ev => run(ev.currentTarget, () => equip(s.slot, ''))});
+    return el('div', {class: 'slot'}, el('span', {class: 'slot-name', text: s.slot.toLowerCase().replace(/_/g, ' ')}), input, set, clear);
+  });
+  return el('section', {class: 'card'}, el('h2', {text: 'Equipment'}), el('div', {class: 'body'}, rows, el('p', {class: 'note', text: 'Type a material id. Items with enchants or custom models can be equipped in game from your hand.'})));
+}
+
+async function equip(slot, material) {
+  if (S.dirty && !confirm('Unsaved changes will be discarded. Continue?')) return;
+  await api('/api/equip', Object.assign(ref(), {slot, material: material.trim()}));
+  await select(S.cur.kind, S.cur.id, []);
+  toast(material.trim() ? 'Equipped ' + slot.toLowerCase() : 'Cleared ' + slot.toLowerCase(), 'ok');
+}
+
+function presetOptions(kind) {
+  return (S.cfg.presets && S.cfg.presets[kind]) || [];
+}
+
+function renderPresets() {
+  const list = presetOptions(S.cur.kind);
+  $('#presetWrap').hidden = !list.length;
+  $('#presetSel').replaceChildren(...list.map(p => el('option', {value: p.id, text: p.label})));
+}
+
+async function applyPreset() {
+  const name = $('#presetSel').value;
+  if (!name) return;
+  if (!confirm('Apply preset "' + $('#presetSel').selectedOptions[0].textContent + '"? It overwrites matching settings' + (S.cur.kind === 'hologram' ? ' and lines.' : ' and equipment.'))) return;
+  await api('/api/preset', Object.assign(ref(), {preset: name}));
+  S.dirty = false;
+  await select(S.cur.kind, S.cur.id, []);
+  toast('Preset applied', 'ok');
+}
+
+function renderEditor() {
+  const c = S.cur;
+  $('#empty').hidden = true;
+  $('#editor').hidden = false;
+  $('#kindChip').textContent = c.kind === 'hologram' ? 'Hologram' : 'NPC';
+  $('#title').textContent = c.id;
+  $('#aPathAdd').hidden = $('#aPathClear').hidden = false;
+  renderMeta();
+  renderPresets();
+  const cards = $('#cards');
+  cards.replaceChildren();
+  for (const sec of S.schema.kinds[c.kind].sections) cards.append(sectionCard(sec, S.props, () => buildPreview()));
+  if (c.kind === 'hologram') cards.append(linesPanel());
+  else cards.append(equipmentCard());
+  buildPreview();
+}
+
+function renderMeta() {
+  const c = S.cur;
+  $('#coords').textContent = c.world + ' · ' + [c.x, c.y, c.z].map(v => Number(v).toFixed(1)).join(', ') + ' · path: ' + c.waypoints + ' pt';
+}
+
+function adopt(data, keepOpen) {
+  S.cur = {kind: data.kind, id: data.id, world: data.world, x: data.x, y: data.y, z: data.z, waypoints: data.waypoints, equipment: data.equipment};
+  const ids = new Set(S.schema.kinds[data.kind].sections.flatMap(s => s.props.map(p => p.id)));
+  S.props = {};
+  for (const [k, v] of Object.entries(data.props || {})) if (ids.has(k)) S.props[k] = v;
+  S.lines = (data.lines || []).map((l, i) => ({ref: i, props: Object.assign({}, l.props), hasItem: !!l.hasItem, open: keepOpen ? !!keepOpen[i] : false}));
+  clean();
+}
+
+async function select(kind, id, keepOpen) {
+  if (S.dirty && !keepOpen && !confirm('Discard unsaved changes?')) return;
+  try {
+    const data = await api('/api/object', {kind, id});
+    adopt(data, keepOpen);
+    T0 = performance.now();
+    renderEditor();
+    renderList();
+    closeSide();
+  } catch (e) {
+    toast(e.message, 'err');
+  }
+}
+
+async function refreshList() {
+  const data = await api('/api/objects');
+  S.objects = data.objects;
+  renderList();
+}
+
+function renderList() {
+  for (const k of ['hologram', 'npc']) $('#cnt-' + k).textContent = S.objects.filter(o => o.kind === k).length;
+  for (const t of document.querySelectorAll('.tab')) t.classList.toggle('on', t.dataset.tab === S.tab);
+  const q = S.search.trim().toLowerCase();
+  const items = S.objects.filter(o => o.kind === S.tab && o.id.toLowerCase().includes(q));
+  const list = $('#list');
+  list.replaceChildren();
+  if (!items.length) { list.append(el('li', {class: 'empty', text: 'Nothing here yet.'})); return; }
+  for (const o of items) {
+    const on = S.cur && S.cur.kind === o.kind && S.cur.id === o.id;
+    list.append(el('li', {}, el('button', {class: on ? 'on' : '', type: 'button', onclick: () => select(o.kind, o.id)},
+      el('div', {class: 'id', text: o.id}),
+      el('div', {class: 'pos', text: o.world + ' ' + [o.x, o.y, o.z].map(v => Math.round(v)).join(' ')}))));
+  }
+}
+
+async function run(btn, fn) {
+  btn.disabled = true;
+  try { await fn(); } catch (e) { toast(e.message, 'err'); } finally { btn.disabled = false; }
+}
+
+function ref() { return {kind: S.cur.kind, id: S.cur.id}; }
+
+async function refreshMeta() {
+  const data = await api('/api/object', ref());
+  Object.assign(S.cur, {world: data.world, x: data.x, y: data.y, z: data.z, waypoints: data.waypoints});
+  renderMeta();
+  await refreshList();
+}
+
+async function save() {
+  const known = new Set(S.schema.kinds[S.cur.kind].sections.flatMap(s => s.props.map(p => p.id)));
+  const props = {};
+  for (const [k, v] of Object.entries(S.props)) if (known.has(k)) props[k] = v;
+  const body = Object.assign(ref(), {props});
+  if (S.cur.kind === 'hologram') body.lines = S.lines.map(l => ({ref: l.ref, props: l.props}));
+  const res = await api('/api/save', body);
+  const open = S.lines.map(l => l.open);
+  const data = await api('/api/object', ref());
+  adopt(data, open);
+  renderEditor();
+  if (res.invalid && res.invalid.length) toast('Saved. Invalid values reset: ' + res.invalid.join(', '), 'err');
+  else toast('Saved', 'ok');
+}
+
+function bind() {
+  $('#aSave').addEventListener('click', ev => run(ev.currentTarget, save));
+  $('#aPreset').addEventListener('click', ev => run(ev.currentTarget, applyPreset));
+  $('#aTp').addEventListener('click', ev => run(ev.currentTarget, async () => { await api('/api/teleport', ref()); toast('Teleported', 'ok'); }));
+  $('#aMove').addEventListener('click', ev => run(ev.currentTarget, async () => { await api('/api/movehere', ref()); await refreshMeta(); toast('Moved to your position', 'ok'); }));
+  $('#aPathAdd').addEventListener('click', ev => run(ev.currentTarget, async () => {
+    const r = await api('/api/path', Object.assign(ref(), {action: 'add'}));
+    S.cur.waypoints = r.waypoints;
+    renderMeta();
+    toast('Waypoint added (' + r.waypoints + ')', 'ok');
+  }));
+  $('#aPathClear').addEventListener('click', ev => run(ev.currentTarget, async () => {
+    if (!confirm('Clear all waypoints?')) return;
+    const r = await api('/api/path', Object.assign(ref(), {action: 'clear'}));
+    S.cur.waypoints = r.waypoints;
+    renderMeta();
+    toast('Path cleared', 'ok');
+  }));
+  $('#aDelete').addEventListener('click', ev => run(ev.currentTarget, async () => {
+    if (!confirm('Delete ' + S.cur.id + '? This cannot be undone.')) return;
+    await api('/api/delete', ref());
+    S.cur = null;
+    clean();
+    $('#editor').hidden = true;
+    $('#empty').hidden = false;
+    buildPreview();
+    await refreshList();
+    toast('Deleted', 'ok');
+  }));
+  for (const t of document.querySelectorAll('.tab')) t.addEventListener('click', () => { S.tab = t.dataset.tab; renderList(); });
+  $('#search').addEventListener('input', ev => { S.search = ev.target.value; renderList(); });
+  $('#refreshBtn').addEventListener('click', ev => run(ev.currentTarget, refreshList));
+  $('#menuBtn').addEventListener('click', () => { $('#side').classList.add('open'); $('#scrim').classList.add('on'); });
+  $('#scrim').addEventListener('click', closeSide);
+  $('#newBtn').addEventListener('click', openNew);
+  $('#newCancel').addEventListener('click', () => $('#newDlg').close());
+  $('#newForm').addEventListener('submit', ev => { ev.preventDefault(); submitNew(); });
+  document.addEventListener('keydown', ev => {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's' && S.cur) { ev.preventDefault(); run($('#aSave'), save); }
+  });
+  window.addEventListener('beforeunload', ev => { if (S.dirty) { ev.preventDefault(); ev.returnValue = ''; } });
+}
+
+function closeSide() {
+  $('#side').classList.remove('open');
+  $('#scrim').classList.remove('on');
+}
+
+function openNew() {
+  const npc = S.tab === 'npc';
+  $('#newTitle').textContent = npc ? 'New NPC' : 'New hologram';
+  $('#newTypeWrap').hidden = !npc;
+  $('#newId').value = '';
+  if (npc) {
+    const prop = S.schema.kinds.npc.sections.flatMap(s => s.props).find(p => p.id === 'entity-type');
+    const sel = $('#newType');
+    sel.replaceChildren(...(prop ? prop.options : []).map(o => el('option', {value: o.id, text: o.label})));
+    sel.value = S.cfg.defaultNpcType;
+  }
+  const presets = presetOptions(S.tab);
+  $('#newPresetWrap').hidden = !presets.length;
+  $('#newPreset').replaceChildren(el('option', {value: '', text: 'None'}), ...presets.map(p => el('option', {value: p.id, text: p.label})));
+  $('#newDlg').showModal();
+  $('#newId').focus();
+}
+
+async function submitNew() {
+  const id = $('#newId').value.trim();
+  const kind = S.tab;
+  let ok = true;
+  try { ok = new RegExp('^(?:' + S.cfg.idPattern + ')$').test(id); } catch (e) { ok = id.length > 0; }
+  if (!ok) { toast('Invalid id', 'err'); return; }
+  if (S.dirty && !confirm('Discard unsaved changes?')) return;
+  const body = {kind, id};
+  if (kind === 'npc') body.entityType = $('#newType').value;
+  if ($('#newPreset').value) body.preset = $('#newPreset').value;
+  const btn = $('#newOk');
+  await run(btn, async () => {
+    await api('/api/create', body);
+    $('#newDlg').close();
+    clean();
+    await refreshList();
+    toast('Created', 'ok');
+    await select(kind, id, []);
+  });
+}
+
+async function boot() {
+  bind();
+  if (!token) { gate(); return; }
+  try {
+    const schema = await api('/api/schema');
+    S.schema = schema;
+    S.cfg = schema.config;
+    await refreshList();
+  } catch (e) {
+    if (!$('#gate').hidden) return;
+    toast(e.message, 'err');
+  }
+}
+
+boot();
+})();
+</script>
+</body>
+</html>
