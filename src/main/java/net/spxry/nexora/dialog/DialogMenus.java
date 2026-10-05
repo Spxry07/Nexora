@@ -203,7 +203,10 @@ public final class DialogMenus {
             actions.add(nav(player, ColorUtil.colorize(section.title()), null, p -> openSection(p, objectTarget(obj), section, null)));
         }
         if (obj instanceof Hologram holo) actions.add(nav(player, "lines", p -> openLines(p, holo, null)));
-        if (obj instanceof Npc npc) actions.add(nav(player, "equipment", p -> openEquipment(p, npc, null)));
+        if (obj instanceof Npc npc) {
+            actions.add(nav(player, "equipment", p -> openEquipment(p, npc, null)));
+            actions.add(nav(player, "nameplate", p -> openNameplate(p, npc)));
+        }
         actions.add(nav(player, "move-here", p -> moveHere(p, obj)));
         actions.add(nav(player, "teleport", p -> teleport(p, obj)));
         actions.add(nav(player, "path-add", p -> addPoint(p, obj)));
@@ -212,6 +215,10 @@ public final class DialogMenus {
         var ph = info(obj);
         show(player, text("dialog.title.editor", ph), notice, List.of(text("dialog.body.editor", ph)), List.of(),
             DialogType.multiAction(actions, nav(player, "back", p -> openList(p, obj.kind())), columns()));
+    }
+
+    private void openNameplate(Player player, Npc npc) {
+        query(player, npc, plugin.objects()::ensureNameplate, holo -> openLines(player, holo, null));
     }
 
     private void moveHere(Player player, NexoraObject obj) {

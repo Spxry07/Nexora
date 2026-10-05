@@ -48,6 +48,9 @@ public final class Hologram extends NexoraObject {
     private static final String LAYOUT_TORNADO = "TORNADO";
     private static final double GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
     private static final double TORNADO_MIN_RADIUS = 0.15;
+    private static final String NAMEPLATE_BASE_HEIGHT_KEY = "npc.nameplate.base-height";
+    private static final double DEFAULT_NAMEPLATE_BASE_HEIGHT = 1.8;
+    private static final String SCALE_KEY = "scale";
 
     private static final class LineState {
         final HoloLine line;
@@ -97,8 +100,8 @@ public final class Hologram extends NexoraObject {
     double helixStep;
     double waveHeight;
     double waveSpeed;
-    String attachTo = "";
-    double attachHeight;
+    volatile String attachTo = "";
+    volatile double attachHeight;
     private volatile double attachScale = 1;
 
     public Hologram(Nexora plugin, String id, Location anchor) {
@@ -123,7 +126,29 @@ public final class Hologram extends NexoraObject {
         map.put("helix-step", Binding.number(h -> h.helixStep, (h, v) -> h.helixStep = v));
         map.put("wave-height", Binding.number(h -> h.waveHeight, (h, v) -> h.waveHeight = v));
         map.put("wave-speed", Binding.number(h -> h.waveSpeed, (h, v) -> h.waveSpeed = v));
+        map.put("attach-to", Binding.text(h -> h.attachTo, (h, v) -> h.attachTo = v == null ? "" : v.trim()));
+        map.put("attach-height", Binding.number(h -> h.attachHeight, (h, v) -> h.attachHeight = v));
         return Collections.unmodifiableMap(map);
+    }
+
+    private double[] attachedCenter() {
+        if (attachTo.isEmpty()) return null;
+        var found = plugin.objects().get(NPC, attachTo);
+        if (found.isEmpty() || found.get().isRemoved()) return null;
+        var npc = found.get();
+        double base = plugin.getConfig().getDouble(NAMEPLATE_BASE_HEIGHT_KEY, DEFAULT_NAMEPLATE_BASE_HEIGHT);
+        return new double[]{npc.x(), npc.y() + base * attachScale + attachHeight, npc.z()};
+    }
+
+    private void refreshAttachScale() {
+        if (attachTo.isEmpty()) return;
+        var found = plugin.objects().get(NPC, attachTo);
+        if (found.isEmpty()) return;
+        try {
+            attachScale = Double.parseDouble(found.get().values().getOrDefault(SCALE_KEY, "1"));
+        } catch (NumberFormatException e) {
+            attachScale = 1;
+        }
     }
 
     public List<HoloLine> lines() {
@@ -183,9 +208,12 @@ public final class Hologram extends NexoraObject {
         int interval = Math.max(1, config.getInt("animation.interval-ticks"));
         float range = (float) (viewRange / config.getDouble("display.view-range-unit"));
         var fallback = fallbackMaterial(config);
-        baseX = anchor.getX();
-        baseY = anchor.getY();
-        baseZ = anchor.getZ();
+        refreshAttachScale();
+        var attached = attachedCenter();
+        baseX = attached == null ? anchor.getX() : attached[0];
+        baseY = attached == null ? anchor.getY() : attached[1];
+        baseZ = attached == null ? anchor.getZ() : attached[2];
+        if (attached != null) setPosition(baseX, baseY, baseZ);
         baseYaw = anchor.getYaw();
         var source = List.copyOf(lines);
         int count = source.size();
@@ -221,9 +249,11 @@ public final class Hologram extends NexoraObject {
         var config = plugin.getConfig();
         double seconds = ticks / TICKS_PER_SECOND;
         var path = pathPoint(seconds);
-        double centerX = path == null ? baseX : path[0];
-        double centerY = path == null ? baseY : path[1];
-        double centerZ = path == null ? baseZ : path[2];
+        var attached = attachedCenter();
+        var origin = attached != null ? attached : path;
+        double centerX = origin == null ? baseX : origin[0];
+        double centerY = origin == null ? baseY : origin[1];
+        double centerZ = origin == null ? baseZ : origin[2];
         if (bobHeight > 0) centerY += bobHeight * Math.sin(Math.TAU * bobSpeed * seconds);
         if (orbitRadius > 0) {
             double angle = Math.TAU * orbitSpeed * seconds;
@@ -231,7 +261,7 @@ public final class Hologram extends NexoraObject {
             centerZ += orbitRadius * Math.sin(angle);
         }
         boolean shaped = !LAYOUT_STACK.equals(layout) && layoutSpeed != 0;
-        boolean moving = path != null || bobHeight > 0 || orbitRadius > 0 || waveHeight > 0 || shaped;
+        boolean moving = path != null || attached != null || bobHeight > 0 || orbitRadius > 0 || waveHeight > 0 || shaped;
         boolean transforming = spinSpeed != 0 || swayAngle > 0 || pulseAmount > 0;
         float spin = (float) Math.toRadians((spinSpeed * seconds) % FULL_TURN);
         float sway = (float) Math.toRadians(swayAngle * Math.sin(Math.TAU * swaySpeed * seconds));

@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +32,21 @@ public final class ObjectManager {
     private final Map<String, NexoraObject> objects = new ConcurrentHashMap<>();
     private final Map<Integer, NexoraObject> byEntity = new ConcurrentHashMap<>();
     private static final String DEMOS_FILE = "demos.yml";
+    private static final String NAMEPLATE_SUFFIX_KEY = "npc.nameplate.id-suffix";
+    private static final String DEFAULT_NAMEPLATE_SUFFIX = "-tag";
+    private static final String NAMEPLATE_SPACING_KEY = "npc.nameplate.line-spacing";
+    private static final double DEFAULT_NAMEPLATE_SPACING = 0.28;
+    private static final String NAMEPLATE_KEY = "nameplate";
+    private static final String NAMEPLATE_HEIGHT_KEY = "nameplate-height";
+    private static final String ATTACH_TO_KEY = "attach-to";
+    private static final String ATTACH_HEIGHT_KEY = "attach-height";
+    private static final String LINE_SPACING_KEY = "line-spacing";
+    private static final String VIEW_RANGE_KEY = "view-range";
+    private static final String NAME_KEY = "name";
+    private static final String DESCRIPTION_KEY = "description";
+    private static final String SCALE_KEY = "scale";
+    private static final String LINE_TYPE_KEY = "type";
+    private static final String LINE_TEXT_KEY = "text";
     private volatile Pattern idPattern;
     private volatile YamlConfiguration demos = new YamlConfiguration();
 
@@ -114,6 +130,7 @@ public final class ObjectManager {
                 }
             }
             register(object);
+            if (object instanceof Npc npc && Boolean.parseBoolean(npc.values().get(NAMEPLATE_KEY))) ensureNameplate(npc);
             created.add(id);
         }
         return created;
@@ -124,7 +141,7 @@ public final class ObjectManager {
         if (prefix.isEmpty()) return 0;
         int count = 0;
         for (var object : List.copyOf(objects.values())) {
-            if (!object.id().startsWith(prefix)) continue;
+            if (!object.id().startsWith(prefix) || object.isRemoved()) continue;
             delete(object);
             count++;
         }
@@ -182,6 +199,48 @@ public final class ObjectManager {
         return npc;
     }
 
+    public Optional<Hologram> nameplate(Npc npc) {
+        return get(NexoraObject.HOLOGRAM, nameplateId(npc)).map(Hologram.class::cast);
+    }
+
+    public Hologram ensureNameplate(Npc npc) {
+        var existing = nameplate(npc);
+        if (existing.isPresent()) return existing.get();
+        var values = npc.values();
+        var hologram = new Hologram(plugin, nameplateId(npc), npc.anchor());
+        var seed = defaults(NexoraObject.HOLOGRAM);
+        seed.put(ATTACH_TO_KEY, npc.id());
+        seed.put(ATTACH_HEIGHT_KEY, values.getOrDefault(NAMEPLATE_HEIGHT_KEY, seed.getOrDefault(ATTACH_HEIGHT_KEY, "0")));
+        seed.put(LINE_SPACING_KEY, String.valueOf(plugin.getConfig().getDouble(NAMEPLATE_SPACING_KEY, DEFAULT_NAMEPLATE_SPACING)));
+        seed.put(VIEW_RANGE_KEY, String.valueOf(npc.viewRange()));
+        hologram.apply(seed);
+        for (var text : new String[]{values.getOrDefault(NAME_KEY, ""), values.getOrDefault(DESCRIPTION_KEY, "")}) {
+            if (text.isBlank() && !hologram.lines().isEmpty()) continue;
+            var line = newLine();
+            line.apply(plugin.schema(), Map.of(LINE_TYPE_KEY, HoloLine.TEXT, LINE_TEXT_KEY, text));
+            hologram.lines().add(line);
+        }
+        register(hologram);
+        return hologram;
+    }
+
+    private String nameplateId(Npc npc) {
+        return npc.id() + plugin.getConfig().getString(NAMEPLATE_SUFFIX_KEY, DEFAULT_NAMEPLATE_SUFFIX);
+    }
+
+    private void syncNameplate(Npc npc, Map<String, String> before) {
+        var after = npc.values();
+        if (!Boolean.parseBoolean(after.get(NAMEPLATE_KEY))) return;
+        var existing = nameplate(npc);
+        if (existing.isEmpty()) {
+            ensureNameplate(npc);
+            return;
+        }
+        var height = after.get(NAMEPLATE_HEIGHT_KEY);
+        boolean changed = !Objects.equals(before.get(NAMEPLATE_HEIGHT_KEY), height) || !Objects.equals(before.get(SCALE_KEY), after.get(SCALE_KEY));
+        if (changed && height != null) mutate(existing.get(), h -> h.apply(Map.of(ATTACH_HEIGHT_KEY, height)));
+    }
+
     private void register(NexoraObject object) {
         objects.put(key(object.kind(), object.id()), object);
         plugin.store().save(object.kind(), object.id(), object.snapshot());
@@ -196,9 +255,12 @@ public final class ObjectManager {
                 return;
             }
             try {
+                var npc = object instanceof Npc n ? n : null;
+                var before = npc == null ? Map.<String, String>of() : npc.values();
                 change.accept(object);
                 object.restart();
                 plugin.store().save(object.kind(), object.id(), object.snapshot());
+                if (npc != null) syncNameplate(npc, before);
                 future.complete(null);
             } catch (RuntimeException e) {
                 future.completeExceptionally(e);
@@ -220,6 +282,7 @@ public final class ObjectManager {
     }
 
     public void delete(NexoraObject object) {
+        if (object instanceof Npc npc) nameplate(npc).ifPresent(this::delete);
         objects.remove(key(object.kind(), object.id()));
         object.remove();
         for (var id : object.entityIds()) byEntity.remove(id, object);
