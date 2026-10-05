@@ -95,6 +95,8 @@ final class SkinnedModel {
     private static final float PIXELS_PER_BLOCK = 16f;
     private static final float HAND_PITCH = -90f;
     private static final float HAND_YAW = 180f;
+    private static final float HAND_ITEM_PITCH = 90f;
+    private static final double DISPLAY_FLIP = 180.0;
     private static final int MAX_TELEPORT_DURATION = 59;
     private static final int RGB_MASK = 0xFFFFFF;
     private static final float HALF_TURN = 180f;
@@ -151,6 +153,8 @@ final class SkinnedModel {
         .rotateX((float) Math.toRadians(HAND_PITCH))
         .rotateY((float) Math.toRadians(HAND_YAW));
 
+    private static final Quaternionf HAND_ROTATION = new Quaternionf().rotationX((float) Math.toRadians(HAND_ITEM_PITCH));
+
     private final float unit;
     private final float cubeSize;
     private final float cubeOffset;
@@ -192,7 +196,7 @@ final class SkinnedModel {
         unit = scale / PIXELS_PER_BLOCK;
         cubeSize = (float) config.getDouble(CUBE_SIZE_KEY, DEFAULT_CUBE_SIZE);
         cubeOffset = (float) config.getDouble(CUBE_OFFSET_KEY, DEFAULT_CUBE_OFFSET);
-        faceFix = new Quaternionf().rotationY((float) Math.toRadians(config.getDouble(PART_YAW_KEY, 0)));
+        faceFix = new Quaternionf().rotationY((float) Math.toRadians(DISPLAY_FLIP + config.getDouble(PART_YAW_KEY, 0)));
         handOffset = new Vector3f(
             (float) config.getDouble(HAND_X_KEY, DEFAULT_HAND_X),
             (float) config.getDouble(HAND_Y_KEY, DEFAULT_HAND_Y),
@@ -476,7 +480,7 @@ final class SkinnedModel {
         var offset = new Vector3f(left ? -handOffset.x : handOffset.x, handOffset.y, handOffset.z);
         total.transform(offset);
         shoulder.add(offset);
-        apply(hand, shoulder, total, new Vector3f(scale, scale, scale));
+        apply(hand, shoulder, new Quaternionf(yaw).mul(locals[index]).mul(HAND_ROTATION), new Vector3f(scale, scale, scale));
     }
 
     private static void apply(Node node, Vector3f translation, Quaternionf rotation, Vector3f size) {

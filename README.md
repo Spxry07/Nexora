@@ -31,4 +31,4 @@ CI (`.github/workflows/build.yml`) runs `mvn paper-nms:init` (Mojang-mapped Pape
 2. In game: `/nexora mineskin <key>`
 3. Set an NPC's type to **Skinned Model (posable)** (web editor → Pose tab → "Switch to Skinned Model").
 The NPC's skin is cut into 10 part textures and uploaded once through MineSkin (cached in `skin-parts.yml`; takes a minute or two per new skin). Until then it shows as a normal skinned NPC. Pose every limb in the web Pose tab or use the animation presets (Walk, Dance, Salute, Dab, ...).
-If parts look misaligned or face backwards, tune `model.cube-size`, `model.cube-offset-y` and `model.part-yaw` (0 or 180) in `config.yml`, then `/nexora reload`.
+The 180° item-display flip is handled automatically. If parts still look off in your client, `model.part-yaw` adds an extra turn (default 0), and `model.cube-size` / `model.cube-offset-y` adjust size and height; apply with `/nexora reload`.
