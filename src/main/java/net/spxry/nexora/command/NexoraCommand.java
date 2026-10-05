@@ -41,6 +41,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private static final String DEMO = "demo";
     private static final String MINESKIN = "mineskin";
     private static final String MINESKIN_KEY_PATH = "model.mineskin.api-key";
+    private static final String MINESKIN_STATUS = "status";
     private static final String ENTITY_TYPE = "entity-type";
     private static final String ADD = "add";
     private static final String CLEAR = "clear";
@@ -159,10 +160,30 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
             plugin.messages().send(player, "cmd.mineskin-usage");
             return;
         }
-        plugin.getConfig().set(MINESKIN_KEY_PATH, args[1].trim());
-        plugin.scheduler().runAsync(plugin::saveConfig);
-        plugin.objects().restartAll();
-        plugin.messages().send(player, "cmd.mineskin-set");
+        boolean status = MINESKIN_STATUS.equalsIgnoreCase(args[1]);
+        var key = status ? plugin.getConfig().getString(MINESKIN_KEY_PATH, "") : args[1].trim();
+        if (key.isBlank()) {
+            plugin.messages().send(player, "cmd.mineskin-usage");
+            return;
+        }
+        plugin.messages().send(player, "cmd.mineskin-checking");
+        plugin.skinParts().verifyKey(key).thenAccept(check -> plugin.scheduler().runAtEntity(player, () -> {
+            if (!check.valid()) {
+                plugin.messages().send(player, "cmd.mineskin-invalid", Map.of("reason", check.message().isBlank() ? "-" : check.message()));
+                return;
+            }
+            Map<String, String> ph = Map.of("plan", check.plan().isBlank() ? "-" : check.plan(),
+                "minute", String.valueOf(check.perMinute()), "hour", String.valueOf(check.perHour()));
+            if (status) {
+                plugin.messages().send(player, "cmd.mineskin-valid", ph);
+                return;
+            }
+            plugin.getConfig().set(MINESKIN_KEY_PATH, key);
+            plugin.scheduler().runAsync(plugin::saveConfig);
+            plugin.skinParts().keyChanged();
+            plugin.objects().restartAll();
+            plugin.messages().send(player, "cmd.mineskin-set", ph);
+        }));
     }
 
     private void help(Player player) {

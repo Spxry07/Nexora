@@ -34,7 +34,7 @@ cmd:
       - "&8» &f/nexora npc skin <id> <player|name> &7- set the skin"
       - "&8» &f/nexora demo &7- spawn demo NPCs and holograms in front of you"
       - "&8» &f/nexora demo clear &7- remove the demo objects"
-      - "&8» &f/nexora mineskin <key> &7- enable Skinned Model NPCs (posable skinned limbs)"
+      - "&8» &f/nexora mineskin <key|status> &7- set and verify the MineSkin key for Skinned Model NPCs"
   reloaded:
     messages:
       - "{prefix}&#00FF5AConfiguration reloaded."
@@ -162,9 +162,25 @@ cmd:
     sound: "entity.villager.no"
     sound-volume: 0.8
     sound-pitch: 1.0
+  mineskin-checking:
+    messages:
+      - "{prefix}&7Checking MineSkin key..."
+    sound-enabled: false
+  mineskin-invalid:
+    messages:
+      - "{prefix}&#FF0000MineSkin rejected the key: {reason}"
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  mineskin-valid:
+    messages:
+      - "{prefix}&#00FF5AMineSkin key works &7(plan &f{plan}&7, &f{minute}&7/min, &f{hour}&7/hour)."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
   mineskin-set:
     messages:
-      - "{prefix}&#00FF5AMineSkin key saved. Skinned Model NPCs will now generate their limbs."
+      - "{prefix}&#00FF5AMineSkin key verified and saved &7(plan &f{plan}&7, &f{minute}&7/min, &f{hour}&7/hour). Skinned Model NPCs will now generate their limbs."
     sound: "entity.player.levelup"
     sound-volume: 1.0
     sound-pitch: 1.0

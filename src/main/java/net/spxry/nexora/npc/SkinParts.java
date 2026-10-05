@@ -20,10 +20,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Locale;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -42,11 +44,13 @@ public final class SkinParts {
         RIGHT_LEG_UPPER, RIGHT_LEG_LOWER, LEFT_LEG_UPPER, LEFT_LEG_LOWER
     }
 
-    public enum Status { READY, GENERATING, FAILED, NO_KEY, NO_SKIN }
+    public enum Status { READY, GENERATING, FAILED, NO_KEY, NO_SKIN, INVALID_KEY }
 
     private record Cached(Map<Part, ProfileProperty> parts, boolean slim) {}
 
     private record Reply(int status, JsonObject body) {}
+
+    public record KeyCheck(boolean valid, String message, String plan, int perMinute, int perHour) {}
 
     private static final String THREAD_NAME = "nexora-mineskin";
     private static final String CACHE_FILE = "skin-parts.yml";
@@ -90,6 +94,16 @@ public final class SkinParts {
     private static final String KEY_MODEL = "model";
     private static final String JOB_COMPLETED = "completed";
     private static final String JOB_FAILED = "failed";
+    private static final String KEY_ERRORS = "errors";
+    private static final String KEY_MESSAGE = "message";
+    private static final String KEY_CODE = "code";
+    private static final String KEY_GRANTS = "grants";
+    private static final String KEY_PER_MINUTE = "per_minute";
+    private static final String KEY_PER_HOUR = "per_hour";
+    private static final String KEY_PLAN = "plan";
+    private static final String CODE_VISIBILITY = "visibility";
+    private static final String VISIBILITY_PUBLIC = "public";
+    private static final String ERROR_JOIN = "; ";
 
     private static final String CFG_API_KEY = "model.mineskin.api-key";
     private static final String CFG_USER_AGENT = "model.mineskin.user-agent";
@@ -102,6 +116,8 @@ public final class SkinParts {
 
     private static final String DEFAULT_USER_AGENT = "Nexora/1.0";
     private static final String DEFAULT_QUEUE_URL = "https://api.mineskin.org/v2/queue";
+    private static final String DEFAULT_ME_URL = "https://api.mineskin.org/v2/me";
+    private static final String CFG_ME_URL = "model.mineskin.me-url";
     private static final String DEFAULT_VISIBILITY = "unlisted";
     private static final String DEFAULT_SKIN_HASH = "http://textures.minecraft.net/texture/{hash}";
     private static final String DEFAULT_SKIN_NAME = "https://mc-heads.net/skin/{name}";
@@ -113,6 +129,8 @@ public final class SkinParts {
     private static final int HTTP_ACCEPTED = 202;
     private static final int HTTP_RATE_LIMITED = 429;
     private static final int HTTP_ERROR_FLOOR = 400;
+    private static final int HTTP_UNAUTHORIZED = 401;
+    private static final int HTTP_FORBIDDEN = 403;
     private static final int MAX_SOURCE_BYTES = 64 * 1024;
     private static final int MAX_RATE_RETRIES = 10;
     private static final long DEFAULT_RATE_WAIT_MS = 5_000L;
@@ -131,6 +149,8 @@ public final class SkinParts {
     private final Set<String> warned = ConcurrentHashMap.newKeySet();
     private final Map<String, Map<Part, ProfileProperty>> partials = new ConcurrentHashMap<>();
     private long nextPostAt;
+    private volatile String invalidKey = "";
+    private volatile String checkedKey = "";
 
     public SkinParts(Nexora plugin) {
         this.plugin = plugin;
@@ -145,6 +165,7 @@ public final class SkinParts {
             .followRedirects(HttpClient.Redirect.NORMAL)
             .build();
         executor.execute(this::loadCache);
+        executor.execute(this::checkConfiguredKey);
     }
 
     public CompletableFuture<Optional<Map<Part, ProfileProperty>>> request(String skinId) {
@@ -152,6 +173,7 @@ public final class SkinParts {
         Cached hit = ready.get(skinId);
         if (hit != null) return CompletableFuture.completedFuture(Optional.of(hit.parts()));
         if (apiKey().isEmpty()) return CompletableFuture.completedFuture(Optional.empty());
+        if (invalidKey.equals(apiKey())) return CompletableFuture.completedFuture(Optional.empty());
         Long failedAt = failures.get(skinId);
         if (failedAt != null) {
             if (System.currentTimeMillis() - failedAt < RETRY_AFTER_FAILURE_MS) {
@@ -181,6 +203,7 @@ public final class SkinParts {
         if (!validId(skinId)) return Status.NO_SKIN;
         if (ready.containsKey(skinId)) return Status.READY;
         if (apiKey().isEmpty()) return Status.NO_KEY;
+        if (invalidKey.equals(apiKey())) return Status.INVALID_KEY;
         if (inflight.containsKey(skinId)) return Status.GENERATING;
         if (failures.containsKey(skinId)) return Status.FAILED;
         return Status.GENERATING;
@@ -287,12 +310,26 @@ public final class SkinParts {
     }
 
     private ProfileProperty upload(byte[] png, String name, String variant) throws IOException, InterruptedException {
+        String visibility = config(CFG_VISIBILITY, DEFAULT_VISIBILITY);
+        Reply reply = exchange(uploadRequest(png, name, variant, visibility), true);
+        if (reply.status() >= HTTP_ERROR_FLOOR && !VISIBILITY_PUBLIC.equals(visibility)
+            && errorText(reply.body()).toLowerCase(Locale.ROOT).contains(CODE_VISIBILITY)) {
+            reply = exchange(uploadRequest(png, name, variant, VISIBILITY_PUBLIC), true);
+        }
+        if (reply.status() == HTTP_OK) return propertyOf(reply.body());
+        if (reply.status() != HTTP_ACCEPTED) throw failure("upload", reply);
+        String jobId = text(reply.body(), KEY_JOB, KEY_ID);
+        if (jobId == null) throw new IOException("mineskin job id missing");
+        return await(jobId);
+    }
+
+    private HttpRequest uploadRequest(byte[] png, String name, String variant, String visibility) {
         JsonObject payload = new JsonObject();
         payload.addProperty(KEY_URL, DATA_URL_PREFIX + Base64.getEncoder().encodeToString(png));
-        payload.addProperty(KEY_VISIBILITY, config(CFG_VISIBILITY, DEFAULT_VISIBILITY));
+        payload.addProperty(KEY_VISIBILITY, visibility);
         payload.addProperty(KEY_VARIANT, variant);
         payload.addProperty(KEY_NAME, name);
-        HttpRequest post = HttpRequest.newBuilder(URI.create(queueUrl()))
+        return HttpRequest.newBuilder(URI.create(queueUrl()))
             .timeout(timeout())
             .header(HEADER_AUTH, BEARER + apiKey())
             .header(HEADER_AGENT, config(CFG_USER_AGENT, DEFAULT_USER_AGENT))
@@ -300,12 +337,87 @@ public final class SkinParts {
             .header(HEADER_ACCEPT, MEDIA_JSON)
             .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
             .build();
-        Reply reply = exchange(post, true);
-        if (reply.status() == HTTP_OK) return propertyOf(reply.body());
-        if (reply.status() != HTTP_ACCEPTED) throw new IOException("mineskin upload status " + reply.status());
-        String jobId = text(reply.body(), KEY_JOB, KEY_ID);
-        if (jobId == null) throw new IOException("mineskin job id missing");
-        return await(jobId);
+    }
+
+    public CompletableFuture<KeyCheck> verifyKey(String key) {
+        var future = new CompletableFuture<KeyCheck>();
+        if (!plugin.isEnabled()) {
+            future.complete(new KeyCheck(false, "", "", 0, 0));
+            return future;
+        }
+        plugin.scheduler().runAsync(() -> future.complete(checkKey(key == null ? "" : key.trim())));
+        return future;
+    }
+
+    public void keyChanged() {
+        failures.clear();
+        warned.clear();
+        invalidKey = "";
+        checkedKey = "";
+    }
+
+    private KeyCheck checkKey(String key) {
+        if (key.isEmpty()) return new KeyCheck(false, "", "", 0, 0);
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(config(CFG_ME_URL, DEFAULT_ME_URL)))
+                .timeout(timeout())
+                .header(HEADER_AUTH, BEARER + key)
+                .header(HEADER_AGENT, config(CFG_USER_AGENT, DEFAULT_USER_AGENT))
+                .header(HEADER_ACCEPT, MEDIA_JSON)
+                .GET()
+                .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            JsonObject body = parse(response.body());
+            if (response.statusCode() != HTTP_OK) {
+                if (response.statusCode() == HTTP_UNAUTHORIZED || response.statusCode() == HTTP_FORBIDDEN) invalidKey = key;
+                return new KeyCheck(false, errorText(body), "", 0, 0);
+            }
+            if (invalidKey.equals(key)) invalidKey = "";
+            checkedKey = key;
+            JsonElement grants = walk(body, KEY_GRANTS);
+            JsonObject grant = grants != null && grants.isJsonObject() ? grants.getAsJsonObject() : new JsonObject();
+            return new KeyCheck(true, "", stringOr(grant, KEY_PLAN), intOr(grant, KEY_PER_MINUTE), intOr(grant, KEY_PER_HOUR));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return new KeyCheck(false, e.getClass().getSimpleName(), "", 0, 0);
+        } catch (IOException | IllegalArgumentException e) {
+            return new KeyCheck(false, e.getClass().getSimpleName() + (e.getMessage() == null ? "" : ": " + e.getMessage()), "", 0, 0);
+        }
+    }
+
+    private void checkConfiguredKey() {
+        String key = apiKey();
+        if (key.isEmpty() || key.equals(checkedKey)) return;
+        KeyCheck check = checkKey(key);
+        if (!check.valid()) plugin.getLogger().warning("MineSkin API key rejected: " + check.message());
+    }
+
+    private IOException failure(String stage, Reply reply) {
+        if (reply.status() == HTTP_UNAUTHORIZED || reply.status() == HTTP_FORBIDDEN) invalidKey = apiKey();
+        return new IOException("mineskin " + stage + " status " + reply.status() + ": " + errorText(reply.body()));
+    }
+
+    private static String errorText(JsonObject body) {
+        JsonElement errors = walk(body, KEY_ERRORS);
+        if (errors == null || !errors.isJsonArray()) return "";
+        List<String> parts = new ArrayList<>();
+        for (JsonElement error : errors.getAsJsonArray()) {
+            if (!error.isJsonObject()) continue;
+            String message = text(error.getAsJsonObject(), KEY_MESSAGE);
+            String code = text(error.getAsJsonObject(), KEY_CODE);
+            if (message != null) parts.add(code == null ? message : message + " (" + code + ")");
+        }
+        return String.join(ERROR_JOIN, parts);
+    }
+
+    private static String stringOr(JsonObject node, String key) {
+        String value = text(node, key);
+        return value == null ? "" : value;
+    }
+
+    private static int intOr(JsonObject node, String key) {
+        JsonElement element = node.get(key);
+        return element != null && element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber() ? element.getAsInt() : 0;
     }
 
     private ProfileProperty await(String jobId) throws IOException, InterruptedException {
@@ -321,7 +433,7 @@ public final class SkinParts {
                 .GET()
                 .build();
             Reply reply = exchange(poll, false);
-            if (reply.status() >= HTTP_ERROR_FLOOR) throw new IOException("mineskin poll status " + reply.status());
+            if (reply.status() >= HTTP_ERROR_FLOOR) throw failure("poll", reply);
             String state = text(reply.body(), KEY_JOB, KEY_STATUS);
             if (JOB_COMPLETED.equals(state)) return propertyOf(reply.body());
             if (JOB_FAILED.equals(state)) throw new IOException("mineskin job failed");

@@ -236,6 +236,7 @@ model:
     api-key: ""
     user-agent: "Nexora/1.0"
     queue-url: "https://api.mineskin.org/v2/queue"
+    me-url: "https://api.mineskin.org/v2/me"
     poll-ms: 1500
     timeout-seconds: 20
     max-concurrent-skins: 2

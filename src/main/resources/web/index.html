@@ -3541,6 +3541,12 @@ function bannerNode(c) {
         el('a', {href: 'https://account.mineskin.org', target: '_blank', rel: 'noopener noreferrer', text: 'account.mineskin.org'}),
         ', then run ', el('code', {text: '/nexora mineskin <key>'}), ' in game.'), again);
   }
+  if (st === 'INVALID_KEY') {
+    return el('div', {class: 'hintbox bad'},
+      el('span', {}, 'MineSkin rejected the configured API key, so this NPC shows as a normal skinned NPC. Create a key at ',
+        el('a', {href: 'https://account.mineskin.org/keys', target: '_blank', rel: 'noopener noreferrer', text: 'account.mineskin.org/keys'}),
+        ' and run ', el('code', {text: '/nexora mineskin <key>'}), ' in game. It is checked before it is saved.'), again);
+  }
   if (st === 'FAILED') {
     return el('div', {class: 'hintbox bad'},
       el('span', {}, 'Generating the skinned limbs failed, so the NPC shows as a normal skinned NPC. This is usually a MineSkin rate limit or a wrong key. Check the key with ', el('code', {text: '/nexora mineskin <key>'}), ', then retry.'),
