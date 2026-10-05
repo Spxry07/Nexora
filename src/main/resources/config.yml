@@ -77,6 +77,16 @@ web:
   session-minutes: 60
   max-body-bytes: 262144
   request-timeout-seconds: 10
+  terrain-max-radius: 48
+  max-move-distance: 64
+  assets:
+    texture: "https://assets.mcasset.cloud/1.21.11/assets/minecraft/textures/{type}/{name}.png"
+    skin: "https://mc-heads.net/skin/{id}"
+    head: "https://mc-heads.net/avatar/{id}/{size}"
+    body: "https://mc-heads.net/body/{id}/{size}"
+    viewer: "https://cdn.jsdelivr.net/npm/skinview3d@3.1.0/bundles/skinview3d.bundle.js"
+    font: "https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap"
+    font-files-host: "https://fonts.gstatic.com"
 
 storage:
   shutdown-timeout-seconds: 10

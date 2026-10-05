@@ -120,6 +120,17 @@ public abstract class NexoraObject {
 
     public final void clearWaypoints() { waypoints.clear(); }
 
+    public final List<Vector> waypoints() { return List.copyOf(waypoints); }
+
+    public final void setWaypoints(List<Vector> points) {
+        int max = plugin.getConfig().getInt("limits.max-waypoints", 64);
+        waypoints.clear();
+        for (var point : points) {
+            if (waypoints.size() >= max) break;
+            waypoints.add(point.clone());
+        }
+    }
+
     public final boolean inRange(Location location) {
         var world = anchor.getWorld();
         if (world == null || location.getWorld() == null || !world.getUID().equals(location.getWorld().getUID())) return false;

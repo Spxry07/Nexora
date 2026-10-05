@@ -20,7 +20,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -28,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 public final class Npc extends NexoraObject {
     private enum ClickType { ANY, RIGHT, LEFT }
@@ -39,6 +42,7 @@ public final class Npc extends NexoraObject {
     private static final float NO_PITCH = 0F;
     private static final String TEAM_PREFIX = "nx";
     private static final String TEXTURES = "textures";
+    private static final Pattern TEXTURE_HASH = Pattern.compile("texture/([0-9a-fA-F]{32,})");
     private static final String EXTRA_EQUIPMENT = "equipment";
     private static final String DEFAULT_TYPE_KEY = "npc.default-type";
 
@@ -120,6 +124,20 @@ public final class Npc extends NexoraObject {
     public List<String> apply(Map<String, String> values) { return plugin.schema().apply(kind(), BINDINGS, this, values); }
 
     public Map<EquipmentSlot, ItemStack> equipment() { return equipment; }
+
+    public String entityType() { return entityType; }
+
+    public String skinId() {
+        if (!skinValue.isBlank()) {
+            try {
+                var json = new String(Base64.getDecoder().decode(skinValue.trim()), StandardCharsets.UTF_8);
+                var matcher = TEXTURE_HASH.matcher(json);
+                if (matcher.find()) return matcher.group(1);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        return skinName.isBlank() ? "" : skinName;
+    }
 
     @Override
     protected Built build(Location anchor) {

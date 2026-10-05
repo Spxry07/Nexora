@@ -2,18 +2,246 @@ file-version: 2
 id-prefix: "demo-"
 skin-property: "textures"
 objects:
+  title:
+    kind: hologram
+    offset: {forward: 16, right: 0, up: 3.0, yaw: 180}
+    props:
+      line-spacing: 0.4
+      bob-height: 0.08
+      bob-speed: 0.3
+      view-range: 64
+      particle: "ELECTRIC_SPARK"
+      particle-count: 3
+      particle-radius: 2.2
+      particle-interval: 6
+    lines:
+      - {type: "TEXT", text: "&lNEXORA", effect: "RAINBOW", effect-speed: 2, scale: 2.2, offset-y: 0.35, background-default: false}
+      - {type: "TEXT", text: "&lᴘᴀᴄᴋᴇᴛ ʜᴏʟᴏɢʀᴀᴍꜱ & ɴᴘᴄꜱ", effect: "WAVE", effect-speed: 2, color-a: "#6293F0", color-b: "#FFFFFF", scale: 1.1, offset-y: 0.1, background-default: false}
+      - {type: "TEXT", text: "&7Typing out text one letter at a time...", effect: "TYPEWRITER", effect-speed: 2}
+      - {type: "TEXT", text: "&#FFD700Scrolling marquee with {online} players online   ", effect: "SCROLL", effect-speed: 2, scroll-width: 28}
+      - {type: "TEXT", text: "&aᴏɴʟɪɴᴇ &f{online}||&eᴍᴀx &f{max}||&bᴛɪᴍᴇ &f{time}", frame-interval: 30}
+      - {type: "TEXT", text: "&#FF0000&l● ʟɪᴠᴇ", effect: "BLINK", effect-speed: 10}
+      - {type: "TEXT", text: "&7{online}&8/&7{max} &8• &7{time}"}
+  wizard:
+    kind: npc
+    offset: {forward: 8.5, right: -4.5, up: 0, yaw: 180}
+    props:
+      entity-type: "MANNEQUIN"
+      name: "&#B455F0&lᴀʀᴄᴀɴᴇ ᴡɪᴢᴀʀᴅ"
+      description: "&7Levitating blocks"
+      view-range: 64
+      skin-name: ""
+      skin-value: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzkyOGNlM2Y2YzY0NTE2ZGI2MDY5ODUwM2EwMGM2MDBlNzVhOWVhM2M1NmNlZjA4ODM4OWZiNjQ3YTI2OGRmYyJ9fX0="
+      skin-signature: ""
+      glow: true
+      glow-color: "dark_purple"
+      look-at: true
+      look-range: 16
+      swing-interval: 25
+      particle: "ENCHANT"
+      particle-count: 8
+      particle-radius: 0.8
+      particle-interval: 4
+      actions: "[sound] block.enchantment_table.use\n[message] &#B455F0&lᴡɪᴢᴀʀᴅ &7» &fBehold my levitating blocks, &#B455F0{player}&f!"
+    equipment:
+      HAND: "BLAZE_ROD"
+      OFF_HAND: "ENCHANTED_BOOK"
+  wizard-blocks:
+    kind: hologram
+    offset: {forward: 8.5, right: -4.5, up: 1.2, yaw: 180}
+    props:
+      layout: "RING"
+      layout-radius: 1.3
+      layout-speed: 160
+      spin-speed: 220
+      wave-height: 0.4
+      wave-speed: 0.7
+      view-range: 64
+      particle: "WITCH"
+      particle-count: 3
+      particle-radius: 1.3
+      particle-interval: 6
+    lines:
+      - {type: "BLOCK", material: "AMETHYST_BLOCK", scale: 0.3, billboard: "FIXED", glow: true, glow-color: "#B455F0"}
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "DIAMOND_BLOCK", scale: 0.3, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
+      - {type: "BLOCK", material: "OBSIDIAN", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "EMERALD_BLOCK", scale: 0.3, billboard: "FIXED", glow: true, glow-color: "#00FF5A"}
+      - {type: "BLOCK", material: "CRYING_OBSIDIAN", scale: 0.3, billboard: "FIXED", glow: true, glow-color: "#7A1FD6"}
+      - {type: "BLOCK", material: "PURPUR_BLOCK", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LAPIS_BLOCK", scale: 0.3, billboard: "FIXED", glow: true, glow-color: "#2E4FFF"}
+  solar-sun:
+    kind: hologram
+    offset: {forward: 13, right: -4.5, up: 3.0, yaw: 180}
+    props:
+      spin-speed: 45
+      pulse-amount: 0.12
+      pulse-speed: 0.6
+      view-range: 64
+      particle: "FLAME"
+      particle-count: 4
+      particle-radius: 0.8
+      particle-interval: 4
+    lines:
+      - {type: "BLOCK", material: "SHROOMLIGHT", scale: 1.1, billboard: "FIXED", glow: true, glow-color: "#FFB020"}
+  solar-ring-1:
+    kind: hologram
+    offset: {forward: 13, right: -4.5, up: 3.0, yaw: 180}
+    props:
+      layout: "RING"
+      layout-radius: 1.3
+      layout-speed: 110
+      spin-speed: 180
+      view-range: 64
+    lines:
+      - {type: "BLOCK", material: "ORANGE_CONCRETE", scale: 0.22, billboard: "FIXED", glow: true, glow-color: "#FF9A3C"}
+      - {type: "BLOCK", material: "YELLOW_CONCRETE", scale: 0.2, billboard: "FIXED"}
+  solar-ring-2:
+    kind: hologram
+    offset: {forward: 13, right: -4.5, up: 3.0, yaw: 180}
+    props:
+      layout: "RING"
+      layout-radius: 1.9
+      layout-speed: -70
+      spin-speed: -120
+      wave-height: 0.1
+      wave-speed: 0.3
+      view-range: 64
+    lines:
+      - {type: "BLOCK", material: "LAPIS_BLOCK", scale: 0.34, billboard: "FIXED", glow: true, glow-color: "#2E6BFF"}
+      - {type: "ITEM", material: "SNOWBALL", scale: 0.2}
+      - {type: "BLOCK", material: "RED_CONCRETE", scale: 0.26, billboard: "FIXED", glow: true, glow-color: "#FF3B3B"}
+  solar-ring-3:
+    kind: hologram
+    offset: {forward: 13, right: -4.5, up: 3.0, yaw: 180}
+    props:
+      layout: "RING"
+      layout-radius: 2.5
+      layout-speed: 40
+      spin-speed: 90
+      wave-height: 0.15
+      wave-speed: 0.25
+      view-range: 64
+      particle: "END_ROD"
+      particle-count: 3
+      particle-radius: 2.5
+      particle-interval: 6
+    lines:
+      - {type: "BLOCK", material: "BROWN_TERRACOTTA", scale: 0.5, billboard: "FIXED"}
+      - {type: "BLOCK", material: "YELLOW_TERRACOTTA", scale: 0.4, billboard: "FIXED", glow: true, glow-color: "#FFD700"}
+      - {type: "BLOCK", material: "CYAN_CONCRETE", scale: 0.3, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
+      - {type: "BLOCK", material: "BLUE_CONCRETE", scale: 0.3, billboard: "FIXED", glow: true, glow-color: "#2E4FFF"}
+  solar-label:
+    kind: hologram
+    offset: {forward: 13, right: -4.5, up: 4.9, yaw: 180}
+    props:
+      line-spacing: 0.3
+      view-range: 64
+    lines:
+      - {type: "TEXT", text: "&lꜱᴏʟᴀʀ ꜱʏꜱᴛᴇᴍ", effect: "WAVE", effect-speed: 2, color-a: "#FFB020", color-b: "#FFFFFF", scale: 1.2, background-default: false}
+      - {type: "TEXT", text: "&7ᴏʀʙɪᴛꜱ ɪɴ ᴏᴘᴘᴏꜱɪᴛᴇ ᴅɪʀᴇᴄᴛɪᴏɴꜱ", background-default: false}
+  globe:
+    kind: hologram
+    offset: {forward: 8, right: 0, up: 3.8, yaw: 180}
+    props:
+      layout: "SPHERE"
+      layout-radius: 1.3
+      layout-speed: 28
+      bob-height: 0.15
+      bob-speed: 0.3
+      view-range: 64
+    lines:
+      - {type: "BLOCK", material: "LIGHT_BLUE_STAINED_GLASS", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GREEN_CONCRETE", scale: 0.3, billboard: "FIXED", glow: true, glow-color: "#00B050"}
+      - {type: "BLOCK", material: "LIGHT_BLUE_STAINED_GLASS", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LIME_WOOL", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LIGHT_BLUE_STAINED_GLASS", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "EMERALD_ORE", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LIGHT_BLUE_STAINED_GLASS", scale: 0.3, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
+      - {type: "BLOCK", material: "GREEN_WOOL", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LAPIS_BLOCK", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LIGHT_BLUE_STAINED_GLASS", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GREEN_CONCRETE", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LIGHT_BLUE_STAINED_GLASS", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LIME_WOOL", scale: 0.3, billboard: "FIXED", glow: true, glow-color: "#7CFC00"}
+      - {type: "BLOCK", material: "LIGHT_BLUE_STAINED_GLASS", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "EMERALD_ORE", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LIGHT_BLUE_STAINED_GLASS", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GREEN_WOOL", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LAPIS_BLOCK", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LIGHT_BLUE_STAINED_GLASS", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GREEN_CONCRETE", scale: 0.3, billboard: "FIXED"}
+  ferris-wheel:
+    kind: hologram
+    offset: {forward: 11.5, right: 0, up: 2.7, yaw: 180}
+    props:
+      layout: "WHEEL"
+      layout-radius: 1.4
+      layout-speed: 45
+      spin-speed: 90
+      view-range: 64
+    lines:
+      - {type: "BLOCK", material: "RED_CONCRETE", scale: 0.4, billboard: "FIXED", glow: true, glow-color: "#FF3B3B"}
+      - {type: "BLOCK", material: "ORANGE_CONCRETE", scale: 0.4, billboard: "FIXED", glow: true, glow-color: "#FF9A3C"}
+      - {type: "BLOCK", material: "YELLOW_CONCRETE", scale: 0.4, billboard: "FIXED", glow: true, glow-color: "#FFD700"}
+      - {type: "BLOCK", material: "LIME_CONCRETE", scale: 0.4, billboard: "FIXED", glow: true, glow-color: "#7CFC00"}
+      - {type: "BLOCK", material: "CYAN_CONCRETE", scale: 0.4, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
+      - {type: "BLOCK", material: "BLUE_CONCRETE", scale: 0.4, billboard: "FIXED", glow: true, glow-color: "#2E4FFF"}
+      - {type: "BLOCK", material: "PURPLE_CONCRETE", scale: 0.4, billboard: "FIXED", glow: true, glow-color: "#B455F0"}
+      - {type: "BLOCK", material: "MAGENTA_CONCRETE", scale: 0.4, billboard: "FIXED", glow: true, glow-color: "#FF55CC"}
+  ferris-label:
+    kind: hologram
+    offset: {forward: 11.5, right: 0, up: 0.2, yaw: 180}
+    props:
+      line-spacing: 0.3
+      view-range: 64
+    lines:
+      - {type: "TEXT", text: "&lꜰᴇʀʀɪꜱ ᴡʜᴇᴇʟ", effect: "RAINBOW", effect-speed: 2, background-default: false}
+      - {type: "TEXT", text: "&7ᴡʜᴇᴇʟ ʟᴀʏᴏᴜᴛ ꜰᴀᴄɪɴɢ ʏᴏᴜ", background-default: false}
+  tornado:
+    kind: hologram
+    offset: {forward: 13.8, right: 4.5, up: 0.3, yaw: 180}
+    props:
+      layout: "TORNADO"
+      layout-radius: 1.7
+      layout-speed: 220
+      helix-step: 55
+      line-spacing: 0.28
+      view-range: 64
+      particle: "CLOUD"
+      particle-count: 4
+      particle-radius: 1.5
+      particle-interval: 4
+    lines:
+      - {type: "BLOCK", material: "WHITE_WOOL", scale: 0.4, billboard: "FIXED"}
+      - {type: "ITEM", material: "FEATHER", scale: 0.5}
+      - {type: "BLOCK", material: "LIGHT_GRAY_CONCRETE", scale: 0.36, billboard: "FIXED"}
+      - {type: "ITEM", material: "PAPER", scale: 0.5}
+      - {type: "BLOCK", material: "WHITE_WOOL", scale: 0.34, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GRAY_CONCRETE", scale: 0.32, billboard: "FIXED"}
+      - {type: "ITEM", material: "FEATHER", scale: 0.45}
+      - {type: "BLOCK", material: "LIGHT_GRAY_CONCRETE", scale: 0.3, billboard: "FIXED"}
+      - {type: "BLOCK", material: "WHITE_WOOL", scale: 0.3, billboard: "FIXED"}
+      - {type: "ITEM", material: "PAPER", scale: 0.4}
+      - {type: "BLOCK", material: "GRAY_CONCRETE", scale: 0.28, billboard: "FIXED"}
+      - {type: "BLOCK", material: "LIGHT_GRAY_CONCRETE", scale: 0.26, billboard: "FIXED"}
+      - {type: "ITEM", material: "FEATHER", scale: 0.35}
+      - {type: "BLOCK", material: "WHITE_WOOL", scale: 0.24, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GRAY_CONCRETE", scale: 0.22, billboard: "FIXED"}
+      - {type: "ITEM", material: "PAPER", scale: 0.3}
   clone:
     kind: npc
-    offset: {forward: 5, right: -9.5, up: 0, yaw: 180}
+    offset: {forward: 5, right: -4.5, up: 0, yaw: 180}
     copy-skin: true
     props:
       entity-type: "MANNEQUIN"
       name: "&#6293F0&lʏᴏᴜʀ ᴄʟᴏɴᴇ"
       description: "&7Right-click me"
+      view-range: 64
       glow: true
       glow-color: "blue"
       look-at: true
-      look-range: 12
+      look-range: 14
       swing-interval: 40
       sneak-interval: 60
       cooldown: 20
@@ -25,131 +253,15 @@ objects:
     equipment:
       HAND: "DIAMOND_SWORD"
       HEAD: "GOLDEN_HELMET"
-  wizard:
-    kind: npc
-    offset: {forward: 7, right: -6, up: 0, yaw: 180}
-    props:
-      entity-type: "MANNEQUIN"
-      name: "&#B455F0&lᴀʀᴄᴀɴᴇ ᴡɪᴢᴀʀᴅ"
-      description: "&7Levitating blocks"
-      skin-name: ""
-      skin-value: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzkyOGNlM2Y2YzY0NTE2ZGI2MDY5ODUwM2EwMGM2MDBlNzVhOWVhM2M1NmNlZjA4ODM4OWZiNjQ3YTI2OGRmYyJ9fX0="
-      skin-signature: ""
-      glow: true
-      glow-color: "dark_purple"
-      look-at: true
-      look-range: 14
-      swing-interval: 50
-      particle: "ENCHANT"
-      particle-count: 6
-      particle-radius: 0.7
-      particle-interval: 6
-      actions: "[sound] block.enchantment_table.use\n[message] &#B455F0&lᴡɪᴢᴀʀᴅ &7» &fBehold my levitating blocks, &#B455F0{player}&f!"
-    equipment:
-      HAND: "BLAZE_ROD"
-      OFF_HAND: "ENCHANTED_BOOK"
-  wizard-orbit:
-    kind: hologram
-    offset: {forward: 7, right: -6, up: 1.1, yaw: 180}
-    props:
-      layout: "RING"
-      layout-radius: 1.6
-      layout-speed: 90
-      spin-speed: 180
-      wave-height: 0.25
-      wave-speed: 0.6
-      view-range: 64
-      particle: "WITCH"
-      particle-count: 3
-      particle-radius: 1.6
-      particle-interval: 8
-    lines:
-      - {type: "BLOCK", material: "AMETHYST_BLOCK", scale: 0.35, billboard: "FIXED", glow: true, glow-color: "#B455F0"}
-      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.35, billboard: "FIXED"}
-      - {type: "BLOCK", material: "DIAMOND_BLOCK", scale: 0.35, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
-      - {type: "BLOCK", material: "EMERALD_BLOCK", scale: 0.35, billboard: "FIXED"}
-      - {type: "BLOCK", material: "OBSIDIAN", scale: 0.35, billboard: "FIXED", glow: true, glow-color: "#7A1FD6"}
-      - {type: "BLOCK", material: "CRYING_OBSIDIAN", scale: 0.35, billboard: "FIXED"}
-  row:
-    kind: hologram
-    offset: {forward: 4.5, right: -2.5, up: 1.0, yaw: 180}
-    props:
-      layout: "ROW"
-      line-spacing: 0.8
-      wave-height: 0.4
-      wave-speed: 0.8
-      view-range: 64
-    lines:
-      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.45, billboard: "FIXED", glow: true, glow-color: "#FFD700"}
-      - {type: "TEXT", text: "&lʀᴏᴡ", effect: "WAVE", effect-speed: 2, color-a: "#6293F0", color-b: "#FFFFFF", background-default: false}
-      - {type: "BLOCK", material: "DIAMOND_BLOCK", scale: 0.45, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
-      - {type: "TEXT", text: "&lʀɪᴘᴘʟᴇ", effect: "RAINBOW", effect-speed: 2, background-default: false}
-      - {type: "BLOCK", material: "EMERALD_BLOCK", scale: 0.45, billboard: "FIXED", glow: true, glow-color: "#00FF5A"}
-  board:
-    kind: hologram
-    offset: {forward: 4.5, right: 2, up: 1.0, yaw: 180}
-    props:
-      line-spacing: 0.3
-      bob-height: 0.05
-      bob-speed: 0.35
-      view-range: 64
-      particle: "ELECTRIC_SPARK"
-      particle-count: 2
-      particle-radius: 1.2
-      particle-interval: 8
-    lines:
-      - {type: "TEXT", text: "&lʟɪᴠᴇ ʙᴏᴀʀᴅ", effect: "WAVE", effect-speed: 2, color-a: "#6293F0", color-b: "#FFFFFF", scale: 1.3}
-      - {type: "TEXT", text: "&7Typing out text one letter at a time...", effect: "TYPEWRITER", effect-speed: 2}
-      - {type: "TEXT", text: "&#FFD700Scrolling marquee with {online} players online   ", effect: "SCROLL", effect-speed: 2, scroll-width: 24}
-      - {type: "TEXT", text: "&aᴏɴʟɪɴᴇ &f{online}||&eᴍᴀx &f{max}||&bᴛɪᴍᴇ &f{time}", frame-interval: 30}
-      - {type: "TEXT", text: "&#FF0000&l● ʟɪᴠᴇ", effect: "BLINK", effect-speed: 10}
-      - {type: "TEXT", text: "&7{online}&8/&7{max} &8• &7{time}"}
-  carousel:
-    kind: hologram
-    offset: {forward: 9.5, right: -1, up: 2.0, yaw: 180}
-    props:
-      layout: "RING"
-      layout-radius: 1.6
-      layout-speed: 45
-      bob-height: 0.1
-      bob-speed: 0.3
-      view-range: 64
-    lines:
-      - {type: "TEXT", text: "&lN", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
-      - {type: "TEXT", text: "&lE", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
-      - {type: "TEXT", text: "&lX", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
-      - {type: "TEXT", text: "&lO", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
-      - {type: "TEXT", text: "&lR", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
-      - {type: "TEXT", text: "&lA", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
-  helix:
-    kind: hologram
-    offset: {forward: 7, right: 5, up: 0.5, yaw: 180}
-    props:
-      layout: "HELIX"
-      layout-radius: 1.0
-      layout-speed: 60
-      helix-step: 50
-      line-spacing: 0.35
-      bob-height: 0.1
-      bob-speed: 0.4
-      view-range: 64
-    lines:
-      - {type: "ITEM", material: "DIAMOND", scale: 0.5, glow: true, glow-color: "#40CEFC"}
-      - {type: "ITEM", material: "EMERALD", scale: 0.5, glow: true, glow-color: "#00FF5A"}
-      - {type: "ITEM", material: "GOLD_INGOT", scale: 0.5, glow: true, glow-color: "#FFD700"}
-      - {type: "ITEM", material: "NETHERITE_INGOT", scale: 0.5, glow: true, glow-color: "#7A5C6E"}
-      - {type: "ITEM", material: "NETHER_STAR", scale: 0.5, glow: true, glow-color: "#FFFFFF"}
-      - {type: "ITEM", material: "HEART_OF_THE_SEA", scale: 0.5, glow: true, glow-color: "#40CEFC"}
-      - {type: "ITEM", material: "AMETHYST_SHARD", scale: 0.5, glow: true, glow-color: "#B455F0"}
-      - {type: "ITEM", material: "ECHO_SHARD", scale: 0.5, glow: true, glow-color: "#0B3D4A"}
   walker:
     kind: npc
-    offset: {forward: 7, right: 10, up: 0, yaw: 180}
-    path-radius: 2.5
+    offset: {forward: 5, right: 4.5, up: 0, yaw: 180}
+    path-radius: 2
     props:
       entity-type: "MANNEQUIN"
       name: "&#00FF5A&lᴘᴀᴛʀᴏʟ"
       description: "&7Walking a square path"
+      view-range: 64
       look-at: false
       path-speed: 2
       particle: "HAPPY_VILLAGER"
@@ -161,49 +273,19 @@ objects:
       HEAD: "IRON_HELMET"
   titan:
     kind: npc
-    offset: {forward: 10.5, right: 4.5, up: 0, yaw: 180}
+    offset: {forward: 9.5, right: 5, up: 0, yaw: 180}
     props:
       entity-type: "IRON_GOLEM"
       name: "&#FF3B3B&lᴛɪᴛᴀɴ"
-      scale: 2.2
+      scale: 2
+      view-range: 64
       glow: true
       glow-color: "red"
       look-at: true
       look-range: 16
-      hurt-interval: 60
+      hurt-interval: 50
       particle: "FLAME"
-      particle-count: 4
-      particle-radius: 1.5
+      particle-count: 5
+      particle-radius: 1.8
       particle-interval: 6
       actions: "[sound] entity.iron_golem.hurt\n[message] &#FF3B3B&lᴛɪᴛᴀɴ &7» &fAny entity type, any scale."
-  dancer:
-    kind: npc
-    offset: {forward: 11.5, right: -6, up: 0, yaw: 180}
-    props:
-      entity-type: "MANNEQUIN"
-      name: "&#FFD700&lᴅᴀɴᴄᴇʀ"
-      description: "&7Spin and sneak combo"
-      glow: true
-      glow-color: "gold"
-      look-at: false
-      spin-speed: 180
-      sneak-interval: 8
-      particle: "NOTE"
-      particle-count: 2
-      particle-radius: 0.6
-      particle-interval: 10
-    equipment:
-      HEAD: "GOLDEN_HELMET"
-  sleeper:
-    kind: npc
-    offset: {forward: 11.5, right: -9.5, up: 0, yaw: 180}
-    props:
-      entity-type: "MANNEQUIN"
-      name: "&#8A8AA0&lꜱʟᴇᴇᴘᴇʀ"
-      description: "&7Zzz..."
-      pose: "SLEEPING"
-      look-at: false
-      particle: "CLOUD"
-      particle-count: 1
-      particle-radius: 0.4
-      particle-interval: 20

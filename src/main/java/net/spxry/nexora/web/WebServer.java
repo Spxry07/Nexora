@@ -19,11 +19,14 @@ import net.spxry.nexora.object.NexoraObject;
 import net.spxry.nexora.object.Npc;
 import net.spxry.nexora.util.ColorUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -42,6 +45,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -77,7 +81,26 @@ public final class WebServer {
     private static final String POST = "POST";
     private static final String TYPE_HTML = "text/html; charset=utf-8";
     private static final String TYPE_JSON = "application/json; charset=utf-8";
-    private static final String CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+    private static final String CSP_DEFAULT = "default-src 'none'";
+    private static final String CSP_TAIL = "base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+    private static final String CSP_SEPARATOR = "; ";
+    private static final String CSP_INLINE = "'unsafe-inline'";
+    private static final String CSP_SELF = "'self'";
+    private static final String CSP_DATA = "data:";
+    private static final String CSP_NONE = " 'none'";
+    private static final String ASSET_PATH = "web.assets.";
+    private static final String ASSET_FONT_HOST = "web.assets.font-files-host";
+    private static final String A_TEXTURE = "texture";
+    private static final String A_SKIN = "skin";
+    private static final String A_HEAD = "head";
+    private static final String A_BODY = "body";
+    private static final String A_VIEWER = "viewer";
+    private static final String A_FONT = "font";
+    private static final List<String> ASSET_KEYS = List.of(A_TEXTURE, A_SKIN, A_HEAD, A_BODY, A_VIEWER, A_FONT);
+    private static final Set<String> ASSET_SCHEMES = Set.of("http", "https");
+    private static final Pattern URL_PLACEHOLDER = Pattern.compile("\\{[^}]*}");
+    private static final String URL_PLACEHOLDER_VALUE = "x";
+    private static final String SCHEME_SEPARATOR = "://";
     private static final int TOKEN_BYTES = 24;
     private static final long MS_PER_MINUTE = 60_000L;
     public static final int MIN_PORT = 1024;
@@ -96,6 +119,14 @@ public final class WebServer {
     private static final int DEFAULT_TIMEOUT_SECONDS = 10;
     private static final int DEFAULT_MAX_LINES = 32;
     private static final int DEFAULT_MAX_WAYPOINTS = 64;
+    private static final int DEFAULT_TERRAIN_RADIUS = 48;
+    private static final double DEFAULT_MOVE_DISTANCE = 64.0;
+    private static final double MAX_COORD = 3.0E7;
+    private static final int CHUNK_SHIFT = 4;
+    private static final int NO_COLOR = -1;
+    private static final int NO_HEIGHT = Short.MIN_VALUE;
+    private static final int POINT_SIZE = 3;
+    private static final int CLAMP_FLOOR = 1;
     private static final String DEFAULT_BIND = "0.0.0.0";
     private static final String DEFAULT_HOST = "localhost";
     private static final String HTTP_SCHEME = "http://";
@@ -116,6 +147,14 @@ public final class WebServer {
     private static final String K_ACTION = "action";
     private static final String K_ENTITY = "entityType";
     private static final String K_OK = "ok";
+    private static final String K_WORLD = "world";
+    private static final String K_X = "x";
+    private static final String K_Y = "y";
+    private static final String K_Z = "z";
+    private static final String K_YAW = "yaw";
+    private static final String K_RADIUS = "radius";
+    private static final String K_POINTS = "points";
+    private static final String K_WAYPOINTS = "waypoints";
     private static final String K_ERROR = "error";
     private static final String K_LABEL = "label";
     private static final String ACTION_ADD = "add";
@@ -130,7 +169,11 @@ public final class WebServer {
         Object handle(Session session, JsonObject body) throws Exception;
     }
 
-    private record Session(UUID uuid, long expiresAt) {}
+    private static Map.Entry<String, Route> entry(String path, Route route) {
+        return Map.entry(path, route);
+    }
+
+    private record Session(UUID uuid, String name, long expiresAt) {}
 
     private static final class ApiException extends RuntimeException {
         private final int status;
@@ -154,19 +197,25 @@ public final class WebServer {
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
     private final Map<String, Route> gets = Map.of(
         "/api/schema", this::schema,
-        "/api/objects", this::list);
-    private final Map<String, Route> posts = Map.of(
-        "/api/object", this::detail,
-        "/api/save", this::save,
-        "/api/create", this::create,
-        "/api/delete", this::delete,
-        "/api/movehere", this::moveHere,
-        "/api/teleport", this::teleport,
-        "/api/path", this::path,
-        "/api/equip", this::equip);
+        "/api/objects", this::list,
+        "/api/me", this::me,
+        "/api/materials", this::materials);
+    private final Map<String, Route> posts = Map.ofEntries(
+        entry("/api/object", this::detail),
+        entry("/api/save", this::save),
+        entry("/api/create", this::create),
+        entry("/api/delete", this::delete),
+        entry("/api/movehere", this::moveHere),
+        entry("/api/teleport", this::teleport),
+        entry("/api/path", this::path),
+        entry("/api/equip", this::equip),
+        entry("/api/terrain", this::terrain),
+        entry("/api/move", this::move),
+        entry("/api/waypoints", this::waypoints));
     private volatile HttpServer server;
     private volatile ExecutorService executor;
     private volatile byte[] page = new byte[0];
+    private volatile Map<String, List<String>> materialCache;
     private volatile String autoHost = DEFAULT_HOST;
     private boolean lookupStarted;
 
@@ -377,7 +426,7 @@ public final class WebServer {
         purgeExpired();
         var token = newToken();
         var minutes = Math.max(1, cfgInt("web.session-minutes", DEFAULT_SESSION_MINUTES));
-        sessions.put(token, new Session(player.getUniqueId(), System.currentTimeMillis() + minutes * MS_PER_MINUTE));
+        sessions.put(token, new Session(player.getUniqueId(), player.getName(), System.currentTimeMillis() + minutes * MS_PER_MINUTE));
         var url = publicUrl() + LINK_SUFFIX + token;
         var component = messages.component("web-link", Map.of("minutes", String.valueOf(minutes)))
             .clickEvent(ClickEvent.openUrl(url))
@@ -414,6 +463,41 @@ public final class WebServer {
         return plugin.getConfig().getInt(path, fallback);
     }
 
+    private String csp() {
+        return String.join(CSP_SEPARATOR,
+            CSP_DEFAULT,
+            directive("script-src", CSP_INLINE, assetOrigin(A_VIEWER)),
+            directive("style-src", CSP_INLINE, assetOrigin(A_FONT)),
+            directive("font-src", originOf(plugin.getConfig().getString(ASSET_FONT_HOST, ""))),
+            directive("connect-src", CSP_SELF, assetOrigin(A_SKIN)),
+            directive("img-src", CSP_DATA, assetOrigin(A_TEXTURE), assetOrigin(A_SKIN), assetOrigin(A_HEAD), assetOrigin(A_BODY)),
+            CSP_TAIL);
+    }
+
+    private static String directive(String name, String... sources) {
+        var unique = new LinkedHashSet<String>();
+        for (var source : sources) {
+            if (source != null) unique.add(source);
+        }
+        return unique.isEmpty() ? name + CSP_NONE : name + " " + String.join(" ", unique);
+    }
+
+    private String assetOrigin(String key) {
+        return originOf(plugin.getConfig().getString(ASSET_PATH + key, ""));
+    }
+
+    private static String originOf(String url) {
+        if (url == null || url.isBlank()) return null;
+        try {
+            var uri = URI.create(URL_PLACEHOLDER.matcher(url.trim()).replaceAll(URL_PLACEHOLDER_VALUE));
+            var scheme = uri.getScheme();
+            if (scheme == null || uri.getHost() == null || !ASSET_SCHEMES.contains(scheme.toLowerCase(Locale.ROOT))) return null;
+            return scheme.toLowerCase(Locale.ROOT) + SCHEME_SEPARATOR + uri.getHost() + (uri.getPort() < 0 ? "" : PORT_MARK + uri.getPort());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     private String text(String key, Map<String, String> placeholders) {
         var template = ColorUtil.plain(plugin.messages().raw(key));
         return template.isEmpty() ? key : MessageManager.apply(template, placeholders);
@@ -426,7 +510,7 @@ public final class WebServer {
             headers.set("X-Content-Type-Options", "nosniff");
             headers.set("X-Frame-Options", "DENY");
             headers.set("Referrer-Policy", "no-referrer");
-            headers.set("Content-Security-Policy", CSP);
+            headers.set("Content-Security-Policy", csp());
             var path = exchange.getRequestURI().getPath();
             if (ROUTE_ROOT.equals(path)) servePage(exchange);
             else if (path.startsWith(ROUTE_API)) serveApi(exchange, path);
@@ -586,11 +670,14 @@ public final class WebServer {
         return player;
     }
 
-    private Location playerLocation(Session session) throws Exception {
-        var player = onlinePlayer(session);
+    private Location locationOf(Player player) throws Exception {
         var future = new CompletableFuture<Location>();
         plugin.scheduler().runAtEntity(player, () -> future.complete(player.getLocation()), () -> future.complete(null));
-        var location = await(future);
+        return await(future);
+    }
+
+    private Location playerLocation(Session session) throws Exception {
+        var location = locationOf(onlinePlayer(session));
         if (location == null) throw new ApiException(HTTP_CONFLICT, "web-error-offline");
         return location;
     }
@@ -651,6 +738,7 @@ public final class WebServer {
         Map<String, Object> view = new LinkedHashMap<>();
         view.put("maxLines", cfgInt("limits.max-lines", DEFAULT_MAX_LINES));
         view.put("maxWaypoints", cfgInt("limits.max-waypoints", DEFAULT_MAX_WAYPOINTS));
+        view.put("assets", assetView());
         view.put("frameSeparator", config.getString("animation.frame-separator", ""));
         view.put("effects", effects);
         view.put("placeholders", placeholders);
@@ -659,6 +747,12 @@ public final class WebServer {
         view.put("defaultNpcType", config.getString("npc.default-type", DEFAULT_NPC_TYPE));
         view.put("lineDefaults", plugin.objects().defaults(NexoraObject.LINE));
         return view;
+    }
+
+    private Map<String, String> assetView() {
+        Map<String, String> assets = new LinkedHashMap<>();
+        for (var key : ASSET_KEYS) assets.put(key, plugin.getConfig().getString(ASSET_PATH + key, ""));
+        return assets;
     }
 
     private Object equip(Session session, JsonObject body) throws Exception {
@@ -687,10 +781,17 @@ public final class WebServer {
         Map<String, Object> view = new LinkedHashMap<>();
         view.put(K_KIND, object.kind());
         view.put(K_ID, object.id());
-        view.put("world", world == null ? "" : world.getName());
-        view.put("x", object.x());
-        view.put("y", object.y());
-        view.put("z", object.z());
+        view.put(K_WORLD, world == null ? "" : world.getName());
+        view.put(K_X, object.x());
+        view.put(K_Y, object.y());
+        view.put(K_Z, object.z());
+        view.put(K_YAW, object.anchor().getYaw());
+        view.put("pathPoints", object.waypointCount());
+        if (object instanceof Npc npc) {
+            view.put(K_ENTITY, npc.entityType());
+            view.put("skinId", npc.skinId());
+        }
+        if (object instanceof Hologram hologram) view.put(K_LINES, hologram.lines().size());
         return view;
     }
 
@@ -709,7 +810,8 @@ public final class WebServer {
 
     private Map<String, Object> describe(NexoraObject object) {
         var view = summary(object);
-        view.put("waypoints", object.waypointCount());
+        view.put(K_WAYPOINTS, object.waypointCount());
+        view.put("waypointList", object.waypoints().stream().map(point -> new double[]{point.getX(), point.getY(), point.getZ()}).toList());
         view.put(K_PROPS, object.values());
         if (object instanceof Hologram hologram) view.put(K_LINES, hologram.lines().stream().map(this::lineView).toList());
         if (object instanceof Npc npc) view.put("equipment", equipment(npc));
@@ -847,6 +949,172 @@ public final class WebServer {
             default -> throw new ApiException(HTTP_BAD_REQUEST, "web-error-bad-action", Map.of("action", action));
         }
         var count = await(object, plugin.objects().<NexoraObject, Integer>query(object, NexoraObject::waypointCount));
-        return Map.of(K_OK, true, "waypoints", count);
+        return Map.of(K_OK, true, K_WAYPOINTS, count);
+    }
+
+    private Object me(Session session, JsonObject body) throws Exception {
+        Map<String, Object> view = new LinkedHashMap<>();
+        view.put("name", session.name());
+        view.put("uuid", session.uuid().toString());
+        var player = Bukkit.getPlayer(session.uuid());
+        var location = player == null ? null : locationOf(player);
+        var online = location != null && location.getWorld() != null;
+        view.put("online", online);
+        if (online) {
+            view.put(K_WORLD, location.getWorld().getName());
+            view.put(K_X, location.getX());
+            view.put(K_Y, location.getY());
+            view.put(K_Z, location.getZ());
+            view.put(K_YAW, location.getYaw());
+        }
+        return view;
+    }
+
+    private Object materials(Session session, JsonObject body) {
+        var cached = materialCache;
+        if (cached != null) return cached;
+        List<String> items = new ArrayList<>();
+        List<String> blocks = new ArrayList<>();
+        for (var material : Material.values()) {
+            if (material.isLegacy() || material.isAir() || !material.isItem()) continue;
+            var name = material.name().toLowerCase(Locale.ROOT);
+            items.add(name);
+            if (material.isBlock()) blocks.add(name);
+        }
+        Map<String, List<String>> built = Map.of("items", List.copyOf(items), "blocks", List.copyOf(blocks));
+        materialCache = built;
+        return built;
+    }
+
+    private static Double optNumber(JsonObject body, String key) {
+        var element = body.get(key);
+        if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isNumber()) return null;
+        var value = element.getAsDouble();
+        if (!Double.isFinite(value)) throw new ApiException(HTTP_BAD_REQUEST, "web-error-bad-request");
+        return value;
+    }
+
+    private static double number(JsonObject body, String key) {
+        var value = optNumber(body, key);
+        if (value == null) throw new ApiException(HTTP_BAD_REQUEST, "web-error-bad-request");
+        return value;
+    }
+
+    private static double coord(double value) {
+        return Math.clamp(value, -MAX_COORD, MAX_COORD);
+    }
+
+    private World world(String name) {
+        var world = Bukkit.getWorld(name);
+        if (world == null) throw new ApiException(HTTP_NOT_FOUND, "web-error-unknown-world", Map.of(K_WORLD, name));
+        return world;
+    }
+
+    private Object terrain(Session session, JsonObject body) throws Exception {
+        var world = world(str(body, K_WORLD));
+        var centerX = (int) Math.floor(coord(number(body, K_X)));
+        var centerZ = (int) Math.floor(coord(number(body, K_Z)));
+        var maxRadius = Math.max(CLAMP_FLOOR, cfgInt("web.terrain-max-radius", DEFAULT_TERRAIN_RADIUS));
+        var radius = (int) Math.clamp(Math.round(coord(number(body, K_RADIUS))), CLAMP_FLOOR, maxRadius);
+        var done = new CompletableFuture<Map<String, Object>>();
+        plugin.scheduler().runAtLocation(new Location(world, centerX, world.getMinHeight(), centerZ), () -> {
+            try {
+                done.complete(sampleTerrain(world, centerX - radius, centerZ - radius, radius * 2 + 1));
+            } catch (RuntimeException e) {
+                done.completeExceptionally(e);
+            }
+        });
+        return await(done);
+    }
+
+    private Map<String, Object> sampleTerrain(World world, int x0, int z0, int size) {
+        var colors = new int[size * size];
+        var heights = new int[size * size];
+        var chunkX0 = x0 >> CHUNK_SHIFT;
+        var chunkZ0 = z0 >> CHUNK_SHIFT;
+        var chunksX = ((x0 + size - 1) >> CHUNK_SHIFT) - chunkX0 + 1;
+        var chunksZ = ((z0 + size - 1) >> CHUNK_SHIFT) - chunkZ0 + 1;
+        var readable = new boolean[chunksX * chunksZ];
+        for (var cz = 0; cz < chunksZ; cz++) {
+            for (var cx = 0; cx < chunksX; cx++) {
+                var chunkX = chunkX0 + cx;
+                var chunkZ = chunkZ0 + cz;
+                readable[cz * chunksX + cx] = world.isChunkLoaded(chunkX, chunkZ) && Bukkit.isOwnedByCurrentRegion(world, chunkX, chunkZ);
+            }
+        }
+        for (var dz = 0; dz < size; dz++) {
+            for (var dx = 0; dx < size; dx++) {
+                var index = dz * size + dx;
+                var blockX = x0 + dx;
+                var blockZ = z0 + dz;
+                var chunkIndex = ((blockZ >> CHUNK_SHIFT) - chunkZ0) * chunksX + ((blockX >> CHUNK_SHIFT) - chunkX0);
+                if (!readable[chunkIndex]) {
+                    colors[index] = NO_COLOR;
+                    heights[index] = NO_HEIGHT;
+                    continue;
+                }
+                var block = world.getHighestBlockAt(blockX, blockZ, HeightMap.WORLD_SURFACE);
+                colors[index] = block.getBlockData().getMapColor().asRGB();
+                heights[index] = block.getY();
+            }
+        }
+        Map<String, Object> view = new LinkedHashMap<>();
+        view.put("x0", x0);
+        view.put("z0", z0);
+        view.put("size", size);
+        view.put("colors", colors);
+        view.put("heights", heights);
+        return view;
+    }
+
+    private Object move(Session session, JsonObject body) throws Exception {
+        var object = find(body);
+        var current = object.anchor();
+        var world = current.getWorld();
+        if (world == null) throw new ApiException(HTTP_CONFLICT, "web-error-world-missing");
+        var requested = optStr(body, K_WORLD);
+        if (requested != null && !requested.equals(world.getName())) {
+            throw new ApiException(HTTP_BAD_REQUEST, "web-error-world-mismatch", Map.of(K_WORLD, world.getName()));
+        }
+        var x = coord(number(body, K_X));
+        var z = coord(number(body, K_Z));
+        var y = optNumber(body, K_Y);
+        var yaw = optNumber(body, K_YAW);
+        var targetY = y == null ? current.getY() : Math.clamp(y, world.getMinHeight(), world.getMaxHeight());
+        var targetYaw = yaw == null ? current.getYaw() : Location.normalizeYaw(yaw.floatValue());
+        var limit = plugin.getConfig().getDouble("web.max-move-distance", DEFAULT_MOVE_DISTANCE);
+        if (new Vector(x, targetY, z).distance(current.toVector()) > limit) {
+            throw new ApiException(HTTP_BAD_REQUEST, "web-error-move-too-far", Map.of("max", String.valueOf(limit)));
+        }
+        var target = new Location(world, x, targetY, z, targetYaw, current.getPitch());
+        await(object, plugin.objects().<NexoraObject>mutate(object, moved -> moved.moveTo(target)));
+        return Map.of(K_OK, true);
+    }
+
+    private Object waypoints(Session session, JsonObject body) throws Exception {
+        var object = find(body);
+        var element = body.get(K_POINTS);
+        if (element == null || !element.isJsonArray()) throw new ApiException(HTTP_BAD_REQUEST, "web-error-bad-request");
+        var array = element.getAsJsonArray();
+        var limit = cfgInt("limits.max-waypoints", DEFAULT_MAX_WAYPOINTS);
+        if (array.size() > limit) throw new ApiException(HTTP_CONFLICT, "web-error-waypoint-limit", Map.of("limit", String.valueOf(limit)));
+        List<Vector> points = new ArrayList<>();
+        for (var entry : array) points.add(point(entry));
+        await(object, plugin.objects().<NexoraObject>mutate(object, target -> target.setWaypoints(points)));
+        var count = await(object, plugin.objects().<NexoraObject, Integer>query(object, NexoraObject::waypointCount));
+        return Map.of(K_OK, true, K_WAYPOINTS, count);
+    }
+
+    private static Vector point(JsonElement entry) {
+        if (!entry.isJsonArray() || entry.getAsJsonArray().size() != POINT_SIZE) throw new ApiException(HTTP_BAD_REQUEST, "web-error-bad-request");
+        var values = new double[POINT_SIZE];
+        for (var i = 0; i < POINT_SIZE; i++) {
+            var part = entry.getAsJsonArray().get(i);
+            if (!part.isJsonPrimitive() || !part.getAsJsonPrimitive().isNumber()) throw new ApiException(HTTP_BAD_REQUEST, "web-error-bad-request");
+            var value = part.getAsDouble();
+            if (!Double.isFinite(value)) throw new ApiException(HTTP_BAD_REQUEST, "web-error-bad-request");
+            values[i] = coord(value);
+        }
+        return new Vector(values[0], values[1], values[2]);
     }
 }
