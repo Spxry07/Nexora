@@ -5,6 +5,7 @@ import net.spxry.nexora.object.Hologram;
 import net.spxry.nexora.object.NexoraObject;
 import net.spxry.nexora.object.Npc;
 import net.spxry.nexora.util.ItemCodec;
+import net.spxry.nexora.web.WebServer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -56,6 +57,12 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private static final List<String> NPC_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, EQUIP, SKIN);
     private static final Set<String> ID_SUBS = Set.of(EDIT, DELETE, MOVE_HERE, TP, PATH, ADD_LINE, ADD_ITEM, EQUIP, SKIN);
     private static final List<String> PATH_ACTIONS = List.of(ADD, CLEAR);
+    private static final String WEB_PORT = "port";
+    private static final String WEB_INFO = "info";
+    private static final String WEB_RANDOM = "random";
+    private static final String WEB_PORT_PATH = "web.port";
+    private static final int WEB_PORT_RANDOM_VALUE = 0;
+    private static final List<String> WEB_SUBS = List.of(WEB_PORT, WEB_INFO);
 
     private final Nexora plugin;
 
@@ -83,7 +90,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
                 plugin.reloadAll();
                 plugin.messages().send(player, "cmd.reloaded");
             }
-            case WEB -> web(player);
+            case WEB -> web(player, args);
             case DEMO -> {
                 if (args.length > 1 && CLEAR.equalsIgnoreCase(args[1])) plugin.menus().clearDemo(player);
                 else plugin.menus().spawnDemo(player);
@@ -102,8 +109,8 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
         var sub = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
         List<String> options = switch (args.length) {
             case 1 -> ROOT;
-            case 2 -> DEMO.equalsIgnoreCase(args[0]) ? List.of(CLEAR) : kind == null ? List.of() : HOLO.equalsIgnoreCase(args[0]) ? HOLO_SUBS : NPC_SUBS;
-            case 3 -> kind != null && ID_SUBS.contains(sub) ? ids(kind) : List.of();
+            case 2 -> WEB.equalsIgnoreCase(args[0]) ? webSubs(player) : DEMO.equalsIgnoreCase(args[0]) ? List.of(CLEAR) : kind == null ? List.of() : HOLO.equalsIgnoreCase(args[0]) ? HOLO_SUBS : NPC_SUBS;
+            case 3 -> WEB.equalsIgnoreCase(args[0]) ? webValues(player, sub) : kind != null && ID_SUBS.contains(sub) ? ids(kind) : List.of();
             case 4 -> kind == null ? List.of() : fourth(kind, sub);
             default -> List.of();
         };
@@ -148,12 +155,73 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
         plugin.messages().send(player, "cmd.help");
     }
 
-    private void web(Player player) {
+    private boolean isAdmin(Player player) {
+        return player.hasPermission(plugin.getConfig().getString("permissions.admin", ""));
+    }
+
+    private List<String> webSubs(Player player) {
+        return isAdmin(player) ? WEB_SUBS : List.of();
+    }
+
+    private List<String> webValues(Player player, String sub) {
+        return isAdmin(player) && WEB_PORT.equals(sub) ? List.of(WEB_RANDOM) : List.of();
+    }
+
+    private void web(Player player, String[] args) {
         if (!plugin.getConfig().getBoolean("web.enabled")) {
             plugin.messages().send(player, "cmd.web-disabled");
             return;
         }
-        plugin.web().sendLink(player);
+        var action = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
+        var manage = WEB_PORT.equals(action) || WEB_INFO.equals(action);
+        if (manage && !isAdmin(player)) {
+            plugin.messages().send(player, "cmd.no-permission");
+            return;
+        }
+        switch (action) {
+            case WEB_PORT -> webPort(player, args.length > 2 ? args[2] : "");
+            case WEB_INFO -> webInfo(player);
+            default -> plugin.web().sendLink(player);
+        }
+    }
+
+    private void webPort(Player player, String raw) {
+        var random = WEB_RANDOM.equalsIgnoreCase(raw);
+        var port = random ? WEB_PORT_RANDOM_VALUE : parseWebPort(raw);
+        if (port < 0) {
+            plugin.messages().send(player, "web-port-invalid", Map.of("min", String.valueOf(WebServer.MIN_PORT), "max", String.valueOf(WebServer.MAX_PORT)));
+            return;
+        }
+        plugin.getConfig().set(WEB_PORT_PATH, port);
+        plugin.scheduler().runAsync(plugin::saveConfig);
+        plugin.web().restart(random).whenComplete((bound, error) ->
+            plugin.scheduler().runAtEntity(player, () -> webPortResult(player, bound, error)));
+    }
+
+    private void webPortResult(Player player, Integer bound, Throwable error) {
+        if (error != null || bound == null || bound < 0) {
+            plugin.messages().send(player, "web-port-failed");
+            return;
+        }
+        plugin.messages().send(player, "web-port-changed", Map.of("port", String.valueOf(bound), "host", plugin.web().host()));
+    }
+
+    private int parseWebPort(String raw) {
+        try {
+            var value = Integer.parseInt(raw.trim());
+            return value >= WebServer.MIN_PORT && value <= WebServer.MAX_PORT ? value : -1;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    private void webInfo(Player player) {
+        var port = plugin.web().port();
+        if (port < 0) {
+            plugin.messages().send(player, "web-disabled");
+            return;
+        }
+        plugin.messages().send(player, "web-info", Map.of("host", plugin.web().host(), "port", String.valueOf(port)));
     }
 
     private void object(Player player, String kind, String[] args) {

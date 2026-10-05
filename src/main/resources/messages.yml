@@ -19,6 +19,8 @@ cmd:
       - "&8» &f/nexora &7- open the main menu"
       - "&8» &f/nexora reload &7- reload all configuration"
       - "&8» &f/nexora web &7- get the web editor link"
+      - "&8» &f/nexora web port <port|random> &7- change the web editor port"
+      - "&8» &f/nexora web info &7- show the web editor address"
       - "&8» &f/nexora <holo|npc> create <id> &7- create at your position"
       - "&8» &f/nexora <holo|npc> edit [id] &7- open the editor"
       - "&8» &f/nexora <holo|npc> delete <id> &7- delete"
@@ -241,7 +243,7 @@ dialog:
     npcs: "&7Browse and edit NPCs."
     create-hologram: "&7Create a hologram at your position."
     create-npc: "&7Create an NPC at your position."
-    demo-spawn: "&7Spawn an animated NPC, a walking NPC and two holograms in front of you."
+    demo-spawn: "&7Spawn a full showcase in front of you: wizard with levitating blocks, carousel, helix, patrol, titan and more."
     demo-clear: "&7Remove every demo object."
     web: "&7Get a link to the web editor."
     object: "&7World: &f{world}\n&7Position: &f{x} {y} {z}"
@@ -305,7 +307,57 @@ web-disabled:
   sound-volume: 1.0
   sound-pitch: 1.0
 
+web-port-changed:
+  overall-enabled: true
+  messages-enabled: true
+  messages:
+    - "{prefix}&7Web editor restarted on port &#6293F0{port}&7. Run &f/nexora web &7for a fresh link."
+  actionbar-enabled: false
+  Actionbar: ""
+  sound-enabled: true
+  sound: "entity.player.levelup"
+  sound-volume: 1.0
+  sound-pitch: 1.0
+
+web-port-invalid:
+  overall-enabled: true
+  messages-enabled: true
+  messages:
+    - "{prefix}&#FF0000Use /nexora web port <{min}-{max}|random>."
+  actionbar-enabled: false
+  Actionbar: ""
+  sound-enabled: true
+  sound: "entity.villager.no"
+  sound-volume: 1.0
+  sound-pitch: 1.0
+
+web-port-failed:
+  overall-enabled: true
+  messages-enabled: true
+  messages:
+    - "{prefix}&#FF0000The web editor could not start on that port. Check the console."
+  actionbar-enabled: false
+  Actionbar: ""
+  sound-enabled: true
+  sound: "entity.villager.no"
+  sound-volume: 1.0
+  sound-pitch: 1.0
+
+web-info:
+  overall-enabled: true
+  messages-enabled: true
+  messages:
+    - "{prefix}&7Web editor address: &#6293F0{host}:{port}"
+  actionbar-enabled: false
+  Actionbar: ""
+  sound-enabled: true
+  sound: "entity.experience_orb.pickup"
+  sound-volume: 1.0
+  sound-pitch: 1.0
+
 web-bind-failed: "Web editor could not bind to {bind}:{port}."
+web-port-exhausted: "Web editor found no free port in {min}-{max} after {attempts} attempts."
+web-port-save-failed: "Web editor could not save its port to {file}."
 web-page-missing: "Web editor page resource is missing from the jar."
 web-error-unauthorized: "Session expired or invalid. Run the web command in game again."
 web-error-not-found: "Not found."

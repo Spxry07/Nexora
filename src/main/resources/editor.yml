@@ -4,6 +4,9 @@ kinds:
       general:
         title: "&#6293F0&lɢᴇɴᴇʀᴀʟ"
         properties: [view-range, line-spacing]
+      shape:
+        title: "&#6293F0&lꜱʜᴀᴘᴇ"
+        properties: [layout, layout-radius, layout-speed, helix-step, wave-height, wave-speed]
       motion:
         title: "&#6293F0&lᴍᴏᴛɪᴏɴ"
         properties: [spin-speed, bob-height, bob-speed, orbit-radius, orbit-speed]
@@ -19,6 +22,15 @@ kinds:
     properties:
       view-range: {label: "&fᴠɪᴇᴡ ʀᴀɴɢᴇ", type: number, min: 4, max: 160, step: 1}
       line-spacing: {label: "&fʟɪɴᴇ ꜱᴘᴀᴄɪɴɢ", type: number, min: 0.05, max: 2, step: 0.05}
+      layout:
+        label: "&fʟᴀʏᴏᴜᴛ"
+        type: choice
+        options: {STACK: "Stack (classic)", RING: "Ring (carousel)", HELIX: "Helix (spiral)", ROW: "Row (side by side)"}
+      layout-radius: {label: "&fʀɪɴɢ / ʜᴇʟɪx ʀᴀᴅɪᴜꜱ", type: number, min: 0, max: 10, step: 0.1}
+      layout-speed: {label: "&fʟᴀʏᴏᴜᴛ ʀᴏᴛᴀᴛɪᴏɴ (°/s)", type: number, min: -720, max: 720, step: 5}
+      helix-step: {label: "&fʜᴇʟɪx ᴛᴜʀɴ ᴘᴇʀ ʟɪɴᴇ (°)", type: number, min: 0, max: 180, step: 5}
+      wave-height: {label: "&fʟɪɴᴇ ᴡᴀᴠᴇ ʜᴇɪɢʜᴛ", type: number, min: 0, max: 2, step: 0.05}
+      wave-speed: {label: "&fʟɪɴᴇ ᴡᴀᴠᴇ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
       spin-speed: {label: "&fꜱᴘɪɴ ꜱᴘᴇᴇᴅ (°/s)", type: number, min: -720, max: 720, step: 5}
       bob-height: {label: "&fʙᴏʙ ʜᴇɪɢʜᴛ", type: number, min: 0, max: 3, step: 0.05}
       bob-speed: {label: "&fʙᴏʙ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: 0, max: 5, step: 0.05}

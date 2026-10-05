@@ -6,6 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+import java.io.File;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -28,7 +30,9 @@ public final class ObjectManager {
     private final Nexora plugin;
     private final Map<String, NexoraObject> objects = new ConcurrentHashMap<>();
     private final Map<Integer, NexoraObject> byEntity = new ConcurrentHashMap<>();
+    private static final String DEMOS_FILE = "demos.yml";
     private volatile Pattern idPattern;
+    private volatile YamlConfiguration demos = new YamlConfiguration();
 
     public ObjectManager(Nexora plugin) {
         this.plugin = plugin;
@@ -37,6 +41,9 @@ public final class ObjectManager {
 
     public void reload() {
         idPattern = Pattern.compile(plugin.getConfig().getString("ids.pattern", "[a-zA-Z0-9_-]{1,32}"));
+        var file = new File(plugin.getDataFolder(), DEMOS_FILE);
+        if (!file.exists()) plugin.saveResource(DEMOS_FILE, false);
+        demos = YamlConfiguration.loadConfiguration(file);
     }
 
     public Collection<NexoraObject> all() { return objects.values(); }
@@ -70,18 +77,18 @@ public final class ObjectManager {
     }
 
     public List<String> spawnDemo(Player player) {
-        var config = plugin.getConfig();
-        var root = config.getConfigurationSection("demo.objects");
+        var config = demos;
+        var root = config.getConfigurationSection("objects");
         if (root == null) return List.of();
         clearDemo();
-        var prefix = config.getString("demo.id-prefix", "");
+        var prefix = config.getString("id-prefix", "");
         var base = player.getLocation();
         double yaw = Math.toRadians(base.getYaw());
         double forwardX = -Math.sin(yaw), forwardZ = Math.cos(yaw);
         double rightX = -Math.cos(yaw), rightZ = -Math.sin(yaw);
         String skinValue = "", skinSignature = "";
         for (var property : player.getPlayerProfile().getProperties()) {
-            if (!config.getString("demo.skin-property", "").equals(property.getName())) continue;
+            if (!config.getString("skin-property", "").equals(property.getName())) continue;
             skinValue = property.getValue();
             skinSignature = property.getSignature() == null ? "" : property.getSignature();
         }
@@ -115,7 +122,7 @@ public final class ObjectManager {
     }
 
     public int clearDemo() {
-        var prefix = plugin.getConfig().getString("demo.id-prefix", "");
+        var prefix = demos.getString("id-prefix", "");
         if (prefix.isEmpty()) return 0;
         int count = 0;
         for (var object : List.copyOf(objects.values())) {

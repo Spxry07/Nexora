@@ -25,15 +25,27 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,6 +55,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_CONFLICT;
@@ -67,7 +80,17 @@ public final class WebServer {
     private static final String CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
     private static final int TOKEN_BYTES = 24;
     private static final long MS_PER_MINUTE = 60_000L;
-    private static final int DEFAULT_PORT = 8155;
+    public static final int MIN_PORT = 1024;
+    public static final int MAX_PORT = 65535;
+    private static final int DEFAULT_PORT = 0;
+    private static final int DEFAULT_RANDOM_MIN = 20000;
+    private static final int DEFAULT_RANDOM_MAX = 40000;
+    private static final int DEFAULT_RANDOM_ATTEMPTS = 20;
+    private static final int DEFAULT_LOOKUP_TIMEOUT_SECONDS = 5;
+    private static final String DEFAULT_LOOKUP_URL = "https://api.ipify.org";
+    private static final String PORT_FILE = "web-port.txt";
+    private static final Set<String> UNSPECIFIED_HOSTS = Set.of("0.0.0.0", "::", "[::]");
+    private static final Pattern ADDRESS = Pattern.compile("(?=.*[.:])[0-9a-fA-F:.]{2,45}");
     private static final int DEFAULT_SESSION_MINUTES = 60;
     private static final int DEFAULT_BODY_BYTES = 262144;
     private static final int DEFAULT_TIMEOUT_SECONDS = 10;
@@ -144,6 +167,8 @@ public final class WebServer {
     private volatile HttpServer server;
     private volatile ExecutorService executor;
     private volatile byte[] page = new byte[0];
+    private volatile String autoHost = DEFAULT_HOST;
+    private boolean lookupStarted;
 
     public WebServer(Nexora plugin) {
         this.plugin = plugin;
@@ -157,24 +182,176 @@ public final class WebServer {
             return;
         }
         page = bytes;
-        var bind = plugin.getConfig().getString("web.bind", DEFAULT_BIND);
-        var port = cfgInt("web.port", DEFAULT_PORT);
+        var http = bind(plugin.getConfig().getString("web.bind", DEFAULT_BIND));
+        if (http == null) return;
         var pool = Executors.newSingleThreadExecutor(runnable -> {
             var thread = new Thread(runnable, THREAD_NAME);
             thread.setDaemon(true);
             return thread;
         });
-        try {
-            var http = HttpServer.create(new InetSocketAddress(bind, port), 0);
-            http.createContext(ROUTE_ROOT, this::handle);
-            http.setExecutor(pool);
-            http.start();
-            server = http;
-            executor = pool;
-        } catch (IOException | RuntimeException e) {
-            pool.shutdownNow();
-            plugin.getLogger().log(Level.WARNING, text("web-bind-failed", Map.of("bind", String.valueOf(bind), "port", String.valueOf(port))), e);
+        http.createContext(ROUTE_ROOT, this::handle);
+        http.setExecutor(pool);
+        http.start();
+        server = http;
+        executor = pool;
+        startHostLookup();
+    }
+
+    public int port() {
+        var http = server;
+        return http == null ? -1 : http.getAddress().getPort();
+    }
+
+    public String host() {
+        var configured = plugin.getConfig().getString("web.host", "").trim();
+        if (!configured.isEmpty()) return bracket(configured);
+        var ip = Bukkit.getIp().trim();
+        return bracket(ip.isEmpty() || UNSPECIFIED_HOSTS.contains(ip) ? autoHost : ip);
+    }
+
+    public CompletableFuture<Integer> restart() {
+        return restart(false);
+    }
+
+    public CompletableFuture<Integer> restart(boolean forgetPort) {
+        var future = new CompletableFuture<Integer>();
+        plugin.scheduler().runAsync(() -> {
+            try {
+                stop();
+                if (forgetPort) Files.deleteIfExists(portFile());
+                start();
+                future.complete(port());
+            } catch (IOException | RuntimeException e) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
+    }
+
+    private HttpServer bind(String bind) {
+        var configured = cfgInt("web.port", DEFAULT_PORT);
+        if (configured > 0) return bindFixed(bind, configured);
+        var stored = storedPort();
+        if (stored > 0) {
+            try {
+                return HttpServer.create(new InetSocketAddress(bind, stored), 0);
+            } catch (IOException | RuntimeException ignored) {
+            }
         }
+        return bindRandom(bind);
+    }
+
+    private HttpServer bindFixed(String bind, int port) {
+        try {
+            return HttpServer.create(new InetSocketAddress(bind, port), 0);
+        } catch (IOException | RuntimeException e) {
+            plugin.getLogger().log(Level.WARNING, text("web-bind-failed", Map.of("bind", bind, "port", String.valueOf(port))), e);
+            return null;
+        }
+    }
+
+    private HttpServer bindRandom(String bind) {
+        var min = Math.max(MIN_PORT, cfgInt("web.random-port-min", DEFAULT_RANDOM_MIN));
+        var max = Math.min(MAX_PORT, cfgInt("web.random-port-max", DEFAULT_RANDOM_MAX));
+        if (min > max) {
+            min = DEFAULT_RANDOM_MIN;
+            max = DEFAULT_RANDOM_MAX;
+        }
+        var attempts = Math.max(1, cfgInt("web.random-port-attempts", DEFAULT_RANDOM_ATTEMPTS));
+        Exception last = null;
+        for (var i = 0; i < attempts; i++) {
+            var port = random.nextInt(min, max + 1);
+            try {
+                var http = HttpServer.create(new InetSocketAddress(bind, port), 0);
+                storePort(port);
+                return http;
+            } catch (IOException | RuntimeException e) {
+                last = e;
+            }
+        }
+        plugin.getLogger().log(Level.WARNING, text("web-port-exhausted", Map.of("min", String.valueOf(min), "max", String.valueOf(max), "attempts", String.valueOf(attempts))), last);
+        return null;
+    }
+
+    private Path portFile() {
+        return plugin.getDataFolder().toPath().resolve(PORT_FILE);
+    }
+
+    private int storedPort() {
+        var file = portFile();
+        if (!Files.isRegularFile(file)) return 0;
+        try {
+            var value = Integer.parseInt(Files.readString(file).trim());
+            return value >= MIN_PORT && value <= MAX_PORT ? value : 0;
+        } catch (IOException | NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private void storePort(int port) {
+        try {
+            var file = portFile();
+            Files.createDirectories(file.getParent());
+            Files.writeString(file, String.valueOf(port));
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, text("web-port-save-failed", Map.of("file", PORT_FILE)), e);
+        }
+    }
+
+    private void startHostLookup() {
+        if (lookupStarted) return;
+        lookupStarted = true;
+        plugin.scheduler().runAsync(() -> autoHost = discoverHost());
+    }
+
+    private String discoverHost() {
+        var publicIp = publicIp();
+        if (publicIp != null) return publicIp;
+        var local = siteLocalAddress();
+        return local != null ? local : DEFAULT_HOST;
+    }
+
+    private String publicIp() {
+        var url = plugin.getConfig().getString("web.ip-lookup-url", DEFAULT_LOOKUP_URL).trim();
+        if (url.isEmpty()) return null;
+        var timeout = Duration.ofSeconds(Math.max(1, cfgInt("web.ip-lookup-timeout-seconds", DEFAULT_LOOKUP_TIMEOUT_SECONDS)));
+        try (var client = HttpClient.newBuilder().connectTimeout(timeout).build()) {
+            var request = HttpRequest.newBuilder(URI.create(url)).timeout(timeout).GET().build();
+            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            var body = response.body().trim();
+            return response.statusCode() == HTTP_OK && ADDRESS.matcher(body).matches() ? body : null;
+        } catch (IOException | IllegalArgumentException e) {
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
+    }
+
+    private String siteLocalAddress() {
+        try {
+            return NetworkInterface.networkInterfaces()
+                .filter(this::usable)
+                .flatMap(NetworkInterface::inetAddresses)
+                .filter(address -> address instanceof Inet4Address && address.isSiteLocalAddress())
+                .map(InetAddress::getHostAddress)
+                .findFirst()
+                .orElse(null);
+        } catch (SocketException e) {
+            return null;
+        }
+    }
+
+    private boolean usable(NetworkInterface nic) {
+        try {
+            return nic.isUp() && !nic.isLoopback();
+        } catch (SocketException e) {
+            return false;
+        }
+    }
+
+    private static String bracket(String host) {
+        return host.contains(IPV6_MARK) && !host.startsWith(IPV6_OPEN) ? IPV6_OPEN + host + IPV6_CLOSE : host;
     }
 
     public synchronized void stop() {
@@ -201,7 +378,7 @@ public final class WebServer {
         var token = newToken();
         var minutes = Math.max(1, cfgInt("web.session-minutes", DEFAULT_SESSION_MINUTES));
         sessions.put(token, new Session(player.getUniqueId(), System.currentTimeMillis() + minutes * MS_PER_MINUTE));
-        var url = publicUrl(player) + LINK_SUFFIX + token;
+        var url = publicUrl() + LINK_SUFFIX + token;
         var component = messages.component("web-link", Map.of("minutes", String.valueOf(minutes)))
             .clickEvent(ClickEvent.openUrl(url))
             .hoverEvent(HoverEvent.showText(messages.component("web-link-hover")));
@@ -216,15 +393,9 @@ public final class WebServer {
         }
     }
 
-    private String publicUrl(Player player) {
+    private String publicUrl() {
         var url = plugin.getConfig().getString("web.public-url", "").trim();
-        if (url.isEmpty()) {
-            var virtual = player.getVirtualHost();
-            var host = virtual != null && !virtual.getHostString().isBlank() ? virtual.getHostString()
-                : Bukkit.getIp().isBlank() ? DEFAULT_HOST : Bukkit.getIp();
-            if (host.contains(IPV6_MARK) && !host.startsWith(IPV6_OPEN)) host = IPV6_OPEN + host + IPV6_CLOSE;
-            url = HTTP_SCHEME + host + PORT_MARK + cfgInt("web.port", DEFAULT_PORT);
-        }
+        if (url.isEmpty()) url = HTTP_SCHEME + host() + PORT_MARK + port();
         return url.endsWith(ROUTE_ROOT) ? url.substring(0, url.length() - 1) : url;
     }
 

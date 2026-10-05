@@ -1,0 +1,208 @@
+id-prefix: "demo-"
+skin-property: "textures"
+objects:
+  clone:
+    kind: npc
+    offset: {forward: 5, right: -9.5, up: 0, yaw: 180}
+    copy-skin: true
+    props:
+      entity-type: "MANNEQUIN"
+      name: "&#6293F0&lʏᴏᴜʀ ᴄʟᴏɴᴇ"
+      description: "&7Right-click me"
+      glow: true
+      glow-color: "blue"
+      look-at: true
+      look-range: 12
+      swing-interval: 40
+      sneak-interval: 60
+      cooldown: 20
+      particle: "END_ROD"
+      particle-count: 2
+      particle-radius: 0.5
+      particle-interval: 10
+      actions: "[sound] entity.player.levelup\n[message] &#6293F0&lɴᴇxᴏʀᴀ &7» &fNPC clicks work, &#6293F0{player}&f!\n[actionbar] &#6293F0Click registered &7» &f{player}"
+    equipment:
+      HAND: "DIAMOND_SWORD"
+      HEAD: "GOLDEN_HELMET"
+  wizard:
+    kind: npc
+    offset: {forward: 7, right: -6, up: 0, yaw: 180}
+    props:
+      entity-type: "MANNEQUIN"
+      name: "&#B455F0&lᴀʀᴄᴀɴᴇ ᴡɪᴢᴀʀᴅ"
+      description: "&7Levitating blocks"
+      skin-name: ""
+      skin-value: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzkyOGNlM2Y2YzY0NTE2ZGI2MDY5ODUwM2EwMGM2MDBlNzVhOWVhM2M1NmNlZjA4ODM4OWZiNjQ3YTI2OGRmYyJ9fX0="
+      skin-signature: ""
+      glow: true
+      glow-color: "dark_purple"
+      look-at: true
+      look-range: 14
+      swing-interval: 50
+      particle: "ENCHANT"
+      particle-count: 6
+      particle-radius: 0.7
+      particle-interval: 6
+      actions: "[sound] block.enchantment_table.use\n[message] &#B455F0&lᴡɪᴢᴀʀᴅ &7» &fBehold my levitating blocks, &#B455F0{player}&f!"
+    equipment:
+      HAND: "BLAZE_ROD"
+      OFF_HAND: "ENCHANTED_BOOK"
+  wizard-orbit:
+    kind: hologram
+    offset: {forward: 7, right: -6, up: 1.1, yaw: 180}
+    props:
+      layout: "RING"
+      layout-radius: 1.6
+      layout-speed: 90
+      spin-speed: 180
+      wave-height: 0.25
+      wave-speed: 0.6
+      view-range: 64
+      particle: "WITCH"
+      particle-count: 3
+      particle-radius: 1.6
+      particle-interval: 8
+    lines:
+      - {type: "BLOCK", material: "AMETHYST_BLOCK", scale: 0.35, billboard: "FIXED", glow: true, glow-color: "#B455F0"}
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.35, billboard: "FIXED"}
+      - {type: "BLOCK", material: "DIAMOND_BLOCK", scale: 0.35, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
+      - {type: "BLOCK", material: "EMERALD_BLOCK", scale: 0.35, billboard: "FIXED"}
+      - {type: "BLOCK", material: "OBSIDIAN", scale: 0.35, billboard: "FIXED", glow: true, glow-color: "#7A1FD6"}
+      - {type: "BLOCK", material: "CRYING_OBSIDIAN", scale: 0.35, billboard: "FIXED"}
+  row:
+    kind: hologram
+    offset: {forward: 4.5, right: -2.5, up: 1.0, yaw: 180}
+    props:
+      layout: "ROW"
+      line-spacing: 0.8
+      wave-height: 0.4
+      wave-speed: 0.8
+      view-range: 64
+    lines:
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.45, billboard: "FIXED", glow: true, glow-color: "#FFD700"}
+      - {type: "TEXT", text: "&lʀᴏᴡ", effect: "WAVE", effect-speed: 2, color-a: "#6293F0", color-b: "#FFFFFF", background-default: false}
+      - {type: "BLOCK", material: "DIAMOND_BLOCK", scale: 0.45, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
+      - {type: "TEXT", text: "&lʀɪᴘᴘʟᴇ", effect: "RAINBOW", effect-speed: 2, background-default: false}
+      - {type: "BLOCK", material: "EMERALD_BLOCK", scale: 0.45, billboard: "FIXED", glow: true, glow-color: "#00FF5A"}
+  board:
+    kind: hologram
+    offset: {forward: 4.5, right: 2, up: 1.0, yaw: 180}
+    props:
+      line-spacing: 0.3
+      bob-height: 0.05
+      bob-speed: 0.35
+      view-range: 64
+      particle: "ELECTRIC_SPARK"
+      particle-count: 2
+      particle-radius: 1.2
+      particle-interval: 8
+    lines:
+      - {type: "TEXT", text: "&lʟɪᴠᴇ ʙᴏᴀʀᴅ", effect: "WAVE", effect-speed: 2, color-a: "#6293F0", color-b: "#FFFFFF", scale: 1.3}
+      - {type: "TEXT", text: "&7Typing out text one letter at a time...", effect: "TYPEWRITER", effect-speed: 2}
+      - {type: "TEXT", text: "&#FFD700Scrolling marquee with {online} players online   ", effect: "SCROLL", effect-speed: 2, scroll-width: 24}
+      - {type: "TEXT", text: "&aᴏɴʟɪɴᴇ &f{online}||&eᴍᴀx &f{max}||&bᴛɪᴍᴇ &f{time}", frame-interval: 30}
+      - {type: "TEXT", text: "&#FF0000&l● ʟɪᴠᴇ", effect: "BLINK", effect-speed: 10}
+      - {type: "TEXT", text: "&7{online}&8/&7{max} &8• &7{time}"}
+  carousel:
+    kind: hologram
+    offset: {forward: 9.5, right: -1, up: 2.0, yaw: 180}
+    props:
+      layout: "RING"
+      layout-radius: 1.6
+      layout-speed: 45
+      bob-height: 0.1
+      bob-speed: 0.3
+      view-range: 64
+    lines:
+      - {type: "TEXT", text: "&lN", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
+      - {type: "TEXT", text: "&lE", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
+      - {type: "TEXT", text: "&lX", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
+      - {type: "TEXT", text: "&lO", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
+      - {type: "TEXT", text: "&lR", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
+      - {type: "TEXT", text: "&lA", effect: "RAINBOW", effect-speed: 2, scale: 1.6, background-default: false}
+  helix:
+    kind: hologram
+    offset: {forward: 7, right: 5, up: 0.5, yaw: 180}
+    props:
+      layout: "HELIX"
+      layout-radius: 1.0
+      layout-speed: 60
+      helix-step: 50
+      line-spacing: 0.35
+      bob-height: 0.1
+      bob-speed: 0.4
+      view-range: 64
+    lines:
+      - {type: "ITEM", material: "DIAMOND", scale: 0.5, glow: true, glow-color: "#40CEFC"}
+      - {type: "ITEM", material: "EMERALD", scale: 0.5, glow: true, glow-color: "#00FF5A"}
+      - {type: "ITEM", material: "GOLD_INGOT", scale: 0.5, glow: true, glow-color: "#FFD700"}
+      - {type: "ITEM", material: "NETHERITE_INGOT", scale: 0.5, glow: true, glow-color: "#7A5C6E"}
+      - {type: "ITEM", material: "NETHER_STAR", scale: 0.5, glow: true, glow-color: "#FFFFFF"}
+      - {type: "ITEM", material: "HEART_OF_THE_SEA", scale: 0.5, glow: true, glow-color: "#40CEFC"}
+      - {type: "ITEM", material: "AMETHYST_SHARD", scale: 0.5, glow: true, glow-color: "#B455F0"}
+      - {type: "ITEM", material: "ECHO_SHARD", scale: 0.5, glow: true, glow-color: "#0B3D4A"}
+  walker:
+    kind: npc
+    offset: {forward: 7, right: 10, up: 0, yaw: 180}
+    path-radius: 2.5
+    props:
+      entity-type: "MANNEQUIN"
+      name: "&#00FF5A&lᴘᴀᴛʀᴏʟ"
+      description: "&7Walking a square path"
+      look-at: false
+      path-speed: 2
+      particle: "HAPPY_VILLAGER"
+      particle-count: 1
+      particle-radius: 0.3
+      particle-interval: 6
+    equipment:
+      HAND: "IRON_SWORD"
+      HEAD: "IRON_HELMET"
+  titan:
+    kind: npc
+    offset: {forward: 10.5, right: 4.5, up: 0, yaw: 180}
+    props:
+      entity-type: "IRON_GOLEM"
+      name: "&#FF3B3B&lᴛɪᴛᴀɴ"
+      scale: 2.2
+      glow: true
+      glow-color: "red"
+      look-at: true
+      look-range: 16
+      hurt-interval: 60
+      particle: "FLAME"
+      particle-count: 4
+      particle-radius: 1.5
+      particle-interval: 6
+      actions: "[sound] entity.iron_golem.hurt\n[message] &#FF3B3B&lᴛɪᴛᴀɴ &7» &fAny entity type, any scale."
+  dancer:
+    kind: npc
+    offset: {forward: 11.5, right: -6, up: 0, yaw: 180}
+    props:
+      entity-type: "MANNEQUIN"
+      name: "&#FFD700&lᴅᴀɴᴄᴇʀ"
+      description: "&7Spin and sneak combo"
+      glow: true
+      glow-color: "gold"
+      look-at: false
+      spin-speed: 180
+      sneak-interval: 8
+      particle: "NOTE"
+      particle-count: 2
+      particle-radius: 0.6
+      particle-interval: 10
+    equipment:
+      HEAD: "GOLDEN_HELMET"
+  sleeper:
+    kind: npc
+    offset: {forward: 11.5, right: -9.5, up: 0, yaw: 180}
+    props:
+      entity-type: "MANNEQUIN"
+      name: "&#8A8AA0&lꜱʟᴇᴇᴘᴇʀ"
+      description: "&7Zzz..."
+      pose: "SLEEPING"
+      look-at: false
+      particle: "CLOUD"
+      particle-count: 1
+      particle-radius: 0.4
+      particle-interval: 20

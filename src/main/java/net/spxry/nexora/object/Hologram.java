@@ -39,23 +39,30 @@ public final class Hologram extends NexoraObject {
     private static final int MAX_TELEPORT_DURATION = 59;
     private static final float BLOCK_CENTER = -0.5f;
     private static final int RGB_MASK = 0xFFFFFF;
+    private static final String LAYOUT_STACK = "STACK";
+    private static final String LAYOUT_RING = "RING";
+    private static final String LAYOUT_HELIX = "HELIX";
+    private static final String LAYOUT_ROW = "ROW";
 
     private static final class LineState {
         final HoloLine line;
         final Display display;
         final net.minecraft.world.entity.Entity handle;
+        final int index;
         final double offset;
         final boolean block;
         final boolean dynamic;
         double x;
         double y;
         double z;
+        float yaw;
         String rendered;
 
-        LineState(HoloLine line, Display display, double offset, boolean dynamic, String rendered) {
+        LineState(HoloLine line, Display display, int index, double offset, boolean dynamic, String rendered) {
             this.line = line;
             this.display = display;
             this.handle = Packets.handle(display);
+            this.index = index;
             this.offset = offset;
             this.block = HoloLine.BLOCK.equalsIgnoreCase(line.type);
             this.dynamic = dynamic;
@@ -79,6 +86,12 @@ public final class Hologram extends NexoraObject {
     double pulseSpeed;
     double swayAngle;
     double swaySpeed;
+    String layout = LAYOUT_STACK;
+    double layoutRadius;
+    double layoutSpeed;
+    double helixStep;
+    double waveHeight;
+    double waveSpeed;
 
     public Hologram(Nexora plugin, String id, Location anchor) {
         super(plugin, id, anchor);
@@ -96,6 +109,12 @@ public final class Hologram extends NexoraObject {
         map.put("pulse-speed", Binding.number(h -> h.pulseSpeed, (h, v) -> h.pulseSpeed = v));
         map.put("sway-angle", Binding.number(h -> h.swayAngle, (h, v) -> h.swayAngle = v));
         map.put("sway-speed", Binding.number(h -> h.swaySpeed, (h, v) -> h.swaySpeed = v));
+        map.put("layout", Binding.text(h -> h.layout, (h, v) -> h.layout = v));
+        map.put("layout-radius", Binding.number(h -> h.layoutRadius, (h, v) -> h.layoutRadius = v));
+        map.put("layout-speed", Binding.number(h -> h.layoutSpeed, (h, v) -> h.layoutSpeed = v));
+        map.put("helix-step", Binding.number(h -> h.helixStep, (h, v) -> h.helixStep = v));
+        map.put("wave-height", Binding.number(h -> h.waveHeight, (h, v) -> h.waveHeight = v));
+        map.put("wave-speed", Binding.number(h -> h.waveSpeed, (h, v) -> h.waveSpeed = v));
         return Collections.unmodifiableMap(map);
     }
 
@@ -162,18 +181,21 @@ public final class Hologram extends NexoraObject {
         baseYaw = anchor.getYaw();
         var source = List.copyOf(lines);
         int count = source.size();
+        double seconds = ticks / TICKS_PER_SECOND;
         List<LineState> built = new ArrayList<>(count);
         int[] ids = new int[count];
         for (int i = 0; i < count; i++) {
             var line = source.get(i).copy();
             double offset = (count - 1 - i) * lineSpacing + line.offsetY;
-            var location = new Location(world, baseX, baseY + offset, baseZ, baseYaw, 0f);
+            var place = place(line, i, offset, count, baseX, baseY, baseZ, seconds);
+            var location = new Location(world, place[0], place[1], place[2], (float) place[3], 0f);
             var rendered = HoloLine.TEXT.equalsIgnoreCase(line.type) ? TextEffects.render(config, line, ticks) : "";
             var display = template(world, location, line, rendered, interval, range, fallback);
-            var state = new LineState(line, display, offset, TextEffects.dynamic(config, line), rendered);
-            state.x = baseX;
-            state.y = baseY + offset;
-            state.z = baseZ;
+            var state = new LineState(line, display, i, offset, TextEffects.dynamic(config, line), rendered);
+            state.x = place[0];
+            state.y = place[1];
+            state.z = place[2];
+            state.yaw = (float) place[3];
             built.add(state);
             ids[i] = display.getEntityId();
         }
@@ -200,14 +222,26 @@ public final class Hologram extends NexoraObject {
             centerX += orbitRadius * Math.cos(angle);
             centerZ += orbitRadius * Math.sin(angle);
         }
-        boolean moving = path != null || bobHeight > 0 || orbitRadius > 0;
+        boolean shaped = !LAYOUT_STACK.equals(layout) && layoutSpeed != 0;
+        boolean moving = path != null || bobHeight > 0 || orbitRadius > 0 || waveHeight > 0 || shaped;
         boolean transforming = spinSpeed != 0 || swayAngle > 0 || pulseAmount > 0;
         float spin = (float) Math.toRadians((spinSpeed * seconds) % FULL_TURN);
         float sway = (float) Math.toRadians(swayAngle * Math.sin(Math.TAU * swaySpeed * seconds));
         float pulse = (float) (1 + pulseAmount * Math.sin(Math.TAU * pulseSpeed * seconds));
+        int count = states.size();
         List<Packet<?>> packets = new ArrayList<>();
         for (var state : states) {
-            update(state, config, moving, transforming, centerX, centerY, centerZ, spin, sway, pulse, packets);
+            if (moving) {
+                var place = place(state.line, state.index, state.offset, count, centerX, centerY, centerZ, seconds);
+                if (place[0] != state.x || place[1] != state.y || place[2] != state.z || (float) place[3] != state.yaw) {
+                    state.x = place[0];
+                    state.y = place[1];
+                    state.z = place[2];
+                    state.yaw = (float) place[3];
+                    packets.add(Packets.teleport(state.handle.getId(), state.x, state.y, state.z, state.yaw, 0f));
+                }
+            }
+            update(state, config, transforming, spin, sway, pulse, packets);
         }
         setPosition(centerX, centerY, centerZ);
         if (!packets.isEmpty()) {
@@ -216,17 +250,29 @@ public final class Hologram extends NexoraObject {
         particles(centerX, centerY, centerZ, interval);
     }
 
-    private void update(LineState state, FileConfiguration config, boolean moving, boolean transforming, double centerX, double centerY, double centerZ, float spin, float sway, float pulse, List<Packet<?>> packets) {
+    private double[] place(HoloLine line, int index, double stackOffset, int count, double cx, double cy, double cz, double seconds) {
+        double y = cy;
+        if (waveHeight > 0) y += waveHeight * Math.sin(Math.TAU * waveSpeed * seconds + Math.TAU * index / Math.max(1, count));
+        double turn = Math.toRadians(layoutSpeed * seconds);
+        return switch (layout) {
+            case LAYOUT_RING -> circle(cx, y + line.offsetY, cz, Math.TAU * index / Math.max(1, count) + turn);
+            case LAYOUT_HELIX -> circle(cx, y + (count - 1 - index) * lineSpacing + line.offsetY, cz, Math.toRadians(helixStep) * index + turn);
+            case LAYOUT_ROW -> {
+                double yawRad = Math.toRadians(baseYaw);
+                double along = (index - (count - 1) / 2.0) * lineSpacing;
+                yield new double[]{cx - Math.cos(yawRad) * along, y + line.offsetY, cz - Math.sin(yawRad) * along, baseYaw};
+            }
+            default -> new double[]{cx, y + stackOffset, cz, baseYaw};
+        };
+    }
+
+    private double[] circle(double cx, double y, double cz, double angle) {
+        double dx = Math.cos(angle), dz = Math.sin(angle);
+        return new double[]{cx + layoutRadius * dx, y, cz + layoutRadius * dz, Math.toDegrees(Math.atan2(-dx, dz))};
+    }
+
+    private void update(LineState state, FileConfiguration config, boolean transforming, float spin, float sway, float pulse, List<Packet<?>> packets) {
         var handle = state.handle;
-        double nx = centerX;
-        double ny = centerY + state.offset;
-        double nz = centerZ;
-        if (moving && (nx != state.x || ny != state.y || nz != state.z)) {
-            state.x = nx;
-            state.y = ny;
-            state.z = nz;
-            packets.add(Packets.teleport(state.display.getEntityId(), nx, ny, nz, baseYaw, 0f));
-        }
         if (transforming) state.display.setTransformation(transformation(state.block, (float) state.line.scale * pulse, spin, sway));
         if (state.dynamic && state.display instanceof TextDisplay text) {
             var rendered = TextEffects.render(config, state.line, ticks);
@@ -243,7 +289,7 @@ public final class Hologram extends NexoraObject {
         List<Packet<?>> list = new ArrayList<>();
         for (var state : states) {
             var handle = state.handle;
-            list.add(Packets.spawn(handle, state.x, state.y, state.z, baseYaw, 0f));
+            list.add(Packets.spawn(handle, state.x, state.y, state.z, state.yaw, 0f));
             list.add(Packets.fullData(handle));
         }
         return list;
@@ -253,7 +299,7 @@ public final class Hologram extends NexoraObject {
     protected List<Packet<?>> catchUp() {
         List<Packet<?>> list = new ArrayList<>();
         for (var state : states) {
-            list.add(Packets.teleport(state.handle.getId(), state.x, state.y, state.z, baseYaw, 0f));
+            list.add(Packets.teleport(state.handle.getId(), state.x, state.y, state.z, state.yaw, 0f));
             var data = Packets.fullData(state.handle);
             if (data != null) list.add(data);
         }
