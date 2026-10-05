@@ -43,6 +43,7 @@ public final class Hologram extends NexoraObject {
     private static final class LineState {
         final HoloLine line;
         final Display display;
+        final net.minecraft.world.entity.Entity handle;
         final double offset;
         final boolean block;
         final boolean dynamic;
@@ -54,6 +55,7 @@ public final class Hologram extends NexoraObject {
         LineState(HoloLine line, Display display, double offset, boolean dynamic, String rendered) {
             this.line = line;
             this.display = display;
+            this.handle = Packets.handle(display);
             this.offset = offset;
             this.block = HoloLine.BLOCK.equalsIgnoreCase(line.type);
             this.dynamic = dynamic;
@@ -178,7 +180,9 @@ public final class Hologram extends NexoraObject {
         states = List.copyOf(built);
         List<Packet<?>> despawn = new ArrayList<>();
         if (count > 0) despawn.add(Packets.destroy(ids));
-        return new Built(spawnPackets(), despawn, ids);
+        var spawn = spawnPackets();
+        for (var state : built) Packets.clearDirty(state.handle);
+        return new Built(spawn, despawn, ids);
     }
 
     @Override
@@ -207,14 +211,13 @@ public final class Hologram extends NexoraObject {
         }
         setPosition(centerX, centerY, centerZ);
         if (!packets.isEmpty()) {
-            refreshSpawn(spawnPackets());
             broadcast(packets);
         }
         particles(centerX, centerY, centerZ, interval);
     }
 
     private void update(LineState state, FileConfiguration config, boolean moving, boolean transforming, double centerX, double centerY, double centerZ, float spin, float sway, float pulse, List<Packet<?>> packets) {
-        var handle = Packets.handle(state.display);
+        var handle = state.handle;
         double nx = centerX;
         double ny = centerY + state.offset;
         double nz = centerZ;
@@ -239,9 +242,20 @@ public final class Hologram extends NexoraObject {
     private List<Packet<?>> spawnPackets() {
         List<Packet<?>> list = new ArrayList<>();
         for (var state : states) {
-            var handle = Packets.handle(state.display);
+            var handle = state.handle;
             list.add(Packets.spawn(handle, state.x, state.y, state.z, baseYaw, 0f));
             list.add(Packets.fullData(handle));
+        }
+        return list;
+    }
+
+    @Override
+    protected List<Packet<?>> catchUp() {
+        List<Packet<?>> list = new ArrayList<>();
+        for (var state : states) {
+            list.add(Packets.teleport(state.handle.getId(), state.x, state.y, state.z, baseYaw, 0f));
+            var data = Packets.fullData(state.handle);
+            if (data != null) list.add(data);
         }
         return list;
     }

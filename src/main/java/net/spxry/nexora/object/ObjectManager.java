@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
@@ -68,19 +69,64 @@ public final class ObjectManager {
         return line;
     }
 
-    public List<String> presets(String kind) {
-        var section = plugin.getConfig().getConfigurationSection("presets." + kind);
-        return section == null ? List.of() : List.copyOf(section.getKeys(false));
+    public List<String> spawnDemo(Player player) {
+        var config = plugin.getConfig();
+        var root = config.getConfigurationSection("demo.objects");
+        if (root == null) return List.of();
+        clearDemo();
+        var prefix = config.getString("demo.id-prefix", "");
+        var base = player.getLocation();
+        double yaw = Math.toRadians(base.getYaw());
+        double forwardX = -Math.sin(yaw), forwardZ = Math.cos(yaw);
+        double rightX = -Math.cos(yaw), rightZ = -Math.sin(yaw);
+        String skinValue = "", skinSignature = "";
+        for (var property : player.getPlayerProfile().getProperties()) {
+            if (!config.getString("demo.skin-property", "").equals(property.getName())) continue;
+            skinValue = property.getValue();
+            skinSignature = property.getSignature() == null ? "" : property.getSignature();
+        }
+        List<String> created = new ArrayList<>();
+        for (var name : root.getKeys(false)) {
+            var section = root.getConfigurationSection(name);
+            if (section == null) continue;
+            var kind = section.getString("kind", NexoraObject.HOLOGRAM);
+            double forward = section.getDouble("offset.forward"), right = section.getDouble("offset.right"), up = section.getDouble("offset.up");
+            var location = base.clone().add(forwardX * forward + rightX * right, up, forwardZ * forward + rightZ * right);
+            location.setYaw(base.getYaw() + section.getInt("offset.yaw"));
+            location.setPitch(0);
+            var id = prefix + name;
+            NexoraObject object = NexoraObject.NPC.equals(kind) ? new Npc(plugin, id, location) : new Hologram(plugin, id, location);
+            object.apply(defaults(object.kind()));
+            if (object instanceof Hologram hologram) hologram.lines().add(newLine());
+            applyTemplate(object, section);
+            if (object instanceof Npc && section.getBoolean("copy-skin") && !skinValue.isEmpty()) {
+                object.apply(Map.of("skin-name", "", "skin-value", skinValue, "skin-signature", skinSignature));
+            }
+            double radius = section.getDouble("path-radius");
+            if (radius > 0) {
+                for (var corner : new double[][]{{-radius, -radius}, {radius, -radius}, {radius, radius}, {-radius, radius}}) {
+                    object.addWaypoint(location.clone().add(corner[0], 0, corner[1]));
+                }
+            }
+            register(object);
+            created.add(id);
+        }
+        return created;
     }
 
-    public String presetLabel(String kind, String preset) {
-        return plugin.getConfig().getString("presets." + kind + "." + preset + ".label", preset);
+    public int clearDemo() {
+        var prefix = plugin.getConfig().getString("demo.id-prefix", "");
+        if (prefix.isEmpty()) return 0;
+        int count = 0;
+        for (var object : List.copyOf(objects.values())) {
+            if (!object.id().startsWith(prefix)) continue;
+            delete(object);
+            count++;
+        }
+        return count;
     }
 
-    public boolean applyPreset(NexoraObject object, String preset) {
-        if (preset == null || preset.contains(".")) return false;
-        var section = plugin.getConfig().getConfigurationSection("presets." + object.kind() + "." + preset);
-        if (section == null) return false;
+    private void applyTemplate(NexoraObject object, ConfigurationSection section) {
         object.apply(strings(section.getConfigurationSection("props")));
         var items = section.getConfigurationSection("equipment");
         if (object instanceof Npc npc && items != null) {
@@ -106,7 +152,6 @@ public final class ObjectManager {
             hologram.lines().clear();
             hologram.lines().addAll(lines);
         }
-        return true;
     }
 
     private static Map<String, String> strings(ConfigurationSection section) {

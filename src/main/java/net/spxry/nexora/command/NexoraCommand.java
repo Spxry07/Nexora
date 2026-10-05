@@ -4,7 +4,6 @@ import net.spxry.nexora.Nexora;
 import net.spxry.nexora.object.Hologram;
 import net.spxry.nexora.object.NexoraObject;
 import net.spxry.nexora.object.Npc;
-import net.spxry.nexora.util.ColorUtil;
 import net.spxry.nexora.util.ItemCodec;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -38,7 +37,8 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private static final String ADD_ITEM = "additem";
     private static final String EQUIP = "equip";
     private static final String SKIN = "skin";
-    private static final String PRESET = "preset";
+    private static final String DEMO = "demo";
+    private static final String ENTITY_TYPE = "entity-type";
     private static final String ADD = "add";
     private static final String CLEAR = "clear";
     private static final String TEXTURES = "textures";
@@ -51,10 +51,10 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private static final String NEWLINE_ESCAPE = "\\n";
     private static final String NEWLINE = "\n";
     private static final String KINDS_KEY = "dialog.kinds.";
-    private static final List<String> ROOT = List.of(HELP, RELOAD, WEB, HOLO, NPC);
-    private static final List<String> HOLO_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, PRESET, ADD_LINE, ADD_ITEM);
-    private static final List<String> NPC_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, PRESET, EQUIP, SKIN);
-    private static final Set<String> ID_SUBS = Set.of(EDIT, DELETE, MOVE_HERE, TP, PATH, PRESET, ADD_LINE, ADD_ITEM, EQUIP, SKIN);
+    private static final List<String> ROOT = List.of(HELP, RELOAD, WEB, DEMO, HOLO, NPC);
+    private static final List<String> HOLO_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, ADD_LINE, ADD_ITEM);
+    private static final List<String> NPC_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, EQUIP, SKIN);
+    private static final Set<String> ID_SUBS = Set.of(EDIT, DELETE, MOVE_HERE, TP, PATH, ADD_LINE, ADD_ITEM, EQUIP, SKIN);
     private static final List<String> PATH_ACTIONS = List.of(ADD, CLEAR);
 
     private final Nexora plugin;
@@ -84,6 +84,10 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
                 plugin.messages().send(player, "cmd.reloaded");
             }
             case WEB -> web(player);
+            case DEMO -> {
+                if (args.length > 1 && CLEAR.equalsIgnoreCase(args[1])) plugin.menus().clearDemo(player);
+                else plugin.menus().spawnDemo(player);
+            }
             case HOLO -> object(player, NexoraObject.HOLOGRAM, args);
             case NPC -> object(player, NexoraObject.NPC, args);
             default -> help(player);
@@ -98,7 +102,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
         var sub = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
         List<String> options = switch (args.length) {
             case 1 -> ROOT;
-            case 2 -> kind == null ? List.of() : HOLO.equalsIgnoreCase(args[0]) ? HOLO_SUBS : NPC_SUBS;
+            case 2 -> DEMO.equalsIgnoreCase(args[0]) ? List.of(CLEAR) : kind == null ? List.of() : HOLO.equalsIgnoreCase(args[0]) ? HOLO_SUBS : NPC_SUBS;
             case 3 -> kind != null && ID_SUBS.contains(sub) ? ids(kind) : List.of();
             case 4 -> kind == null ? List.of() : fourth(kind, sub);
             default -> List.of();
@@ -109,12 +113,17 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
 
     private List<String> fourth(String kind, String sub) {
         return switch (sub) {
-            case PRESET, CREATE -> plugin.objects().presets(kind);
+            case CREATE -> NexoraObject.NPC.equals(kind) ? entityTypes() : List.of();
             case PATH -> PATH_ACTIONS;
             case EQUIP -> plugin.menus().slots().stream().map(EquipmentSlot::name).toList();
             case SKIN -> Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
             default -> List.of();
         };
+    }
+
+    private List<String> entityTypes() {
+        var prop = plugin.schema().props(NexoraObject.NPC).get(ENTITY_TYPE);
+        return prop == null ? List.of() : prop.options().stream().map(o -> o.id().toLowerCase(Locale.ROOT)).toList();
     }
 
     private List<String> ids(String kind) {
@@ -189,7 +198,6 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
             }
             case TP -> teleport(player, obj);
             case PATH -> path(player, obj, args.length > 3 ? args[3].toLowerCase(Locale.ROOT) : "");
-            case PRESET -> preset(player, obj, args.length > 3 ? args[3] : "", false);
             case ADD_LINE -> addLine(player, obj, args);
             case ADD_ITEM -> addItem(player, obj);
             case EQUIP -> equip(player, obj, args);
@@ -204,22 +212,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
         plugin.messages().send(player, ids.isEmpty() ? "cmd.list-empty" : "cmd.list", ph);
     }
 
-    private void preset(Player player, NexoraObject obj, String name, boolean openEditor) {
-        var preset = plugin.objects().presets(obj.kind()).stream().filter(p -> p.equalsIgnoreCase(name)).findFirst();
-        if (preset.isEmpty()) {
-            plugin.messages().send(player, "cmd.unknown-preset", Map.of("preset", name, "presets", String.join(", ", plugin.objects().presets(obj.kind()))));
-            return;
-        }
-        Map<String, String> ph = Map.of("id", obj.id(), "preset", ColorUtil.plain(plugin.objects().presetLabel(obj.kind(), preset.get())));
-        plugin.objects().mutate(obj, o -> plugin.objects().applyPreset(o, preset.get()))
-            .thenRun(() -> plugin.scheduler().runAtEntity(player, () -> {
-                plugin.messages().send(player, "cmd.preset-applied", ph);
-                if (openEditor) plugin.menus().openEditor(player, obj);
-            }))
-            .exceptionally(ex -> missing(player, obj));
-    }
-
-    private void create(Player player, String kind, String id, String preset) {
+    private void create(Player player, String kind, String id, String entityType) {
         var objects = plugin.objects();
         var kindName = plugin.messages().raw(KINDS_KEY + kind + ".singular");
         if (!objects.validId(id)) {
@@ -233,10 +226,9 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
         var location = player.getLocation();
         NexoraObject created = NexoraObject.HOLOGRAM.equals(kind)
             ? objects.createHologram(id, location)
-            : objects.createNpc(id, location, plugin.menus().entityType(null));
+            : objects.createNpc(id, location, plugin.menus().entityType(entityType));
         plugin.messages().send(player, "cmd.created", Map.of("kind", kindName, "id", id));
-        if (preset != null) preset(player, created, preset, true);
-        else plugin.menus().openEditor(player, created);
+        plugin.menus().openEditor(player, created);
     }
 
     private void teleport(Player player, NexoraObject obj) {

@@ -80,7 +80,6 @@ public final class WebServer {
     private static final String IPV6_MARK = ":";
     private static final String IPV6_OPEN = "[";
     private static final String IPV6_CLOSE = "]";
-    private static final String K_PRESET = "preset";
     private static final String K_SLOT = "slot";
     private static final String K_MATERIAL = "material";
     private static final String DEFAULT_NPC_TYPE = "MANNEQUIN";
@@ -141,7 +140,6 @@ public final class WebServer {
         "/api/movehere", this::moveHere,
         "/api/teleport", this::teleport,
         "/api/path", this::path,
-        "/api/preset", this::preset,
         "/api/equip", this::equip);
     private volatile HttpServer server;
     private volatile ExecutorService executor;
@@ -489,24 +487,7 @@ public final class WebServer {
         view.put("idPattern", config.getString("ids.pattern", ""));
         view.put("defaultNpcType", config.getString("npc.default-type", DEFAULT_NPC_TYPE));
         view.put("lineDefaults", plugin.objects().defaults(NexoraObject.LINE));
-        Map<String, Object> presets = new LinkedHashMap<>();
-        for (var kind : KINDS) {
-            List<Map<String, String>> entries = new ArrayList<>();
-            for (var preset : plugin.objects().presets(kind)) {
-                entries.add(Map.of(K_ID, preset, K_LABEL, ColorUtil.plain(plugin.objects().presetLabel(kind, preset))));
-            }
-            presets.put(kind, entries);
-        }
-        view.put("presets", presets);
         return view;
-    }
-
-    private Object preset(Session session, JsonObject body) throws Exception {
-        var object = find(body);
-        var name = str(body, K_PRESET);
-        if (!plugin.objects().presets(object.kind()).contains(name)) throw new ApiException(HTTP_BAD_REQUEST, "web-error-unknown-preset", Map.of(K_PRESET, name));
-        await(object, plugin.objects().<NexoraObject>mutate(object, target -> plugin.objects().applyPreset(target, name)));
-        return Map.of(K_OK, true);
     }
 
     private Object equip(Session session, JsonObject body) throws Exception {
@@ -623,7 +604,6 @@ public final class WebServer {
         if (plugin.objects().exists(kind, id)) throw new ApiException(HTTP_CONFLICT, "web-error-id-exists", Map.of("kind", kind, "id", id));
         var player = onlinePlayer(session);
         var type = entityType(body);
-        var preset = optStr(body, K_PRESET);
         var done = new CompletableFuture<NexoraObject>();
         plugin.scheduler().runAtEntity(player, () -> {
             try {
@@ -633,10 +613,7 @@ public final class WebServer {
                 done.completeExceptionally(e);
             }
         }, () -> done.completeExceptionally(new ApiException(HTTP_CONFLICT, "web-error-offline")));
-        var created = await(done);
-        if (preset != null && plugin.objects().presets(kind).contains(preset)) {
-            await(created, plugin.objects().<NexoraObject>mutate(created, target -> plugin.objects().applyPreset(target, preset)));
-        }
+        await(done);
         return Map.of(K_OK, true, K_KIND, kind, K_ID, id);
     }
 

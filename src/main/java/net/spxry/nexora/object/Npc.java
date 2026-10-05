@@ -46,7 +46,7 @@ public final class Npc extends NexoraObject {
 
     private final Map<EquipmentSlot, ItemStack> equipment = new ConcurrentHashMap<>();
     private final Map<UUID, Long> cooldowns = new ConcurrentHashMap<>();
-    private final Set<UUID> looking = ConcurrentHashMap.newKeySet();
+    private final Map<UUID, Integer> looking = new ConcurrentHashMap<>();
 
     private String entityType;
     private String name = "";
@@ -139,7 +139,9 @@ public final class Npc extends NexoraObject {
         sneaking = false;
         looking.clear();
         setPosition(anchor.getX(), anchor.getY(), anchor.getZ());
-        return new Built(spawnPackets(), List.of(Packets.destroy(entityId), Packets.teamRemove(teamName())), new int[]{entityId});
+        var spawn = spawnPackets();
+        Packets.clearDirty(h);
+        return new Built(spawn, List.of(Packets.destroy(entityId), Packets.teamRemove(teamName())), new int[]{entityId});
     }
 
     private void configure(LivingEntity entity) {
@@ -239,9 +241,8 @@ public final class Npc extends NexoraObject {
         if (crossed(hurtInterval, interval)) everyone.add(Packets.hurt(entityId, yaw));
         var data = Packets.dirtyData(h, false);
         if (data != null) everyone.add(data);
-        if (moved || rotated || data != null) refreshSpawn(spawnPackets());
         broadcast(everyone);
-        broadcast(rotation, looking);
+        broadcast(rotation, looking.keySet());
         particles(x(), y() + PARTICLE_HEIGHT, z(), interval);
     }
 
@@ -261,15 +262,27 @@ public final class Npc extends NexoraObject {
             release(viewer, h);
             return;
         }
-        looking.add(viewer.getUniqueId());
         float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
         float pitch = (float) -Math.toDegrees(Math.atan2(dy, horizontal));
-        Packets.send(viewer, Packets.rotation(entityId, yaw, pitch));
-        Packets.send(viewer, Packets.head(h, yaw));
+        Integer key = Packets.angleKey(yaw, pitch);
+        if (key.equals(looking.put(viewer.getUniqueId(), key))) return;
+        Packets.send(viewer, Packets.bundle(List.of(Packets.rotation(entityId, yaw, pitch), Packets.head(h, yaw))));
+    }
+
+    @Override
+    protected List<Packet<?>> catchUp() {
+        var h = handle;
+        if (h == null) return List.of();
+        List<Packet<?>> list = new ArrayList<>();
+        list.add(Packets.teleport(entityId, x(), y(), z(), currentYaw, NO_PITCH));
+        list.add(Packets.head(h, currentYaw));
+        var data = Packets.fullData(h);
+        if (data != null) list.add(data);
+        return list;
     }
 
     private void release(Player viewer, Entity h) {
-        if (!looking.remove(viewer.getUniqueId())) return;
+        if (looking.remove(viewer.getUniqueId()) == null) return;
         Packets.send(viewer, Packets.rotation(entityId, currentYaw, NO_PITCH));
         Packets.send(viewer, Packets.head(h, currentYaw));
     }

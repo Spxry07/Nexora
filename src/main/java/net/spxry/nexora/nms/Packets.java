@@ -42,6 +42,7 @@ import java.util.logging.Level;
 public final class Packets {
     private static final String INTERPOLATION_START_FIELD = "DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID";
     private static final float ANGLE_SCALE = 256.0F / 360.0F;
+    private static final int BYTE_MASK = 0xFF;
 
     private static EntityDataAccessor<Integer> interpolationStart;
     private static Scoreboard scoreboard;
@@ -72,8 +73,11 @@ public final class Packets {
 
     public static Packet<?> fullData(Entity handle) {
         var values = handle.getEntityData().getNonDefaultValues();
-        handle.getEntityData().packDirty();
         return values == null || values.isEmpty() ? null : new ClientboundSetEntityDataPacket(handle.getId(), values);
+    }
+
+    public static void clearDirty(Entity handle) {
+        handle.getEntityData().packDirty();
     }
 
     public static Packet<?> dirtyData(Entity handle, boolean restartInterpolation) {
@@ -147,6 +151,10 @@ public final class Packets {
         if (packet == null) return;
         var connection = ((CraftPlayer) player).getHandle().connection;
         if (connection != null) connection.send(packet);
+    }
+
+    public static int angleKey(float yaw, float pitch) {
+        return (angle(yaw) & BYTE_MASK) << Byte.SIZE | (angle(pitch) & BYTE_MASK);
     }
 
     private static byte angle(float degrees) {

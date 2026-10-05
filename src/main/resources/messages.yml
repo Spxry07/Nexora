@@ -30,8 +30,8 @@ cmd:
       - "&8» &f/nexora holo additem <id> &7- add your held item as a line"
       - "&8» &f/nexora npc equip <id> <slot> &7- equip your held item (empty hand clears)"
       - "&8» &f/nexora npc skin <id> <player|name> &7- set the skin"
-      - "&8» &f/nexora <holo|npc> preset <id> <preset> &7- apply a ready-made style"
-      - "&8» &f/nexora <holo|npc> create <id> [preset] &7- create from a preset"
+      - "&8» &f/nexora demo &7- spawn demo NPCs and holograms in front of you"
+      - "&8» &f/nexora demo clear &7- remove the demo objects"
   reloaded:
     messages:
       - "{prefix}&#00FF5AConfiguration reloaded."
@@ -146,17 +146,18 @@ cmd:
     sound: "entity.villager.no"
     sound-volume: 0.8
     sound-pitch: 1.0
-  preset-applied:
+  demo-spawned:
     messages:
-      - "{prefix}&7Applied preset {preset} &7to &#6293F0{id}&7."
+      - "{prefix}&7Spawned &#6293F0{count}&7 demo objects: &f{ids}"
+      - "{prefix}&7Right-click the NPC, then edit anything with &#6293F0/nexora&7. Remove with &#6293F0/nexora demo clear&7."
     sound: "entity.player.levelup"
     sound-volume: 1.0
     sound-pitch: 1.2
-  unknown-preset:
+  demo-cleared:
     messages:
-      - "{prefix}&#FF0000Unknown preset '{preset}'. Available: {presets}"
-    sound: "entity.villager.no"
-    sound-volume: 0.8
+      - "{prefix}&7Removed &#6293F0{count}&7 demo objects."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
     sound-pitch: 1.0
   skin-set:
     messages:
@@ -174,7 +175,6 @@ dialog:
       singular: "ɴᴘᴄ"
       plural: "ɴᴘᴄꜱ"
   empty-slot: "none"
-  preset-none: "None"
   preview:
     item: "[item]"
     block: "[block]"
@@ -182,9 +182,7 @@ dialog:
     ellipsis: "…"
   input:
     id: "&fɪᴅ"
-    preset: "&fꜱᴛᴀʀᴛ ꜰʀᴏᴍ ᴘʀᴇꜱᴇᴛ"
   title:
-    presets: "&#6293F0&lᴘʀᴇꜱᴇᴛꜱ &8» &7{id}"
     main: "&#6293F0&lɴᴇxᴏʀᴀ &8» &7ᴍᴀɪɴ ᴍᴇɴᴜ"
     list: "&#6293F0&l{kinds}"
     create: "&#6293F0&lᴄʀᴇᴀᴛᴇ &8» &7{kind}"
@@ -206,13 +204,13 @@ dialog:
     equipment: "&7Hold an item and pick a slot to equip it."
     equipment-slot: "&8» &7{slot}: &f{item}"
     delete: "&7Delete &f{id}&7? This cannot be undone."
-    presets: "&7Pick a style for &f{id}&7. Settings it defines are overwritten; tweak anything afterwards."
   button:
-    presets: "&#B266FFᴘʀᴇꜱᴇᴛꜱ"
     holograms: "&#6293F0ʜᴏʟᴏɢʀᴀᴍꜱ"
     npcs: "&#6293F0ɴᴘᴄꜱ"
     create-hologram: "&#00FF5Aᴄʀᴇᴀᴛᴇ ʜᴏʟᴏɢʀᴀᴍ"
     create-npc: "&#00FF5Aᴄʀᴇᴀᴛᴇ ɴᴘᴄ"
+    demo-spawn: "&#B266FFꜱᴘᴀᴡɴ ᴅᴇᴍᴏ"
+    demo-clear: "&#FF0000ᴄʟᴇᴀʀ ᴅᴇᴍᴏ"
     web: "&#6293F0ᴡᴇʙ ᴇᴅɪᴛᴏʀ"
     close: "&#FF0000ᴄʟᴏꜱᴇ"
     back: "&7ʙᴀᴄᴋ"
@@ -243,6 +241,8 @@ dialog:
     npcs: "&7Browse and edit NPCs."
     create-hologram: "&7Create a hologram at your position."
     create-npc: "&7Create an NPC at your position."
+    demo-spawn: "&7Spawn an animated NPC, a walking NPC and two holograms in front of you."
+    demo-clear: "&7Remove every demo object."
     web: "&7Get a link to the web editor."
     object: "&7World: &f{world}\n&7Position: &f{x} {y} {z}"
     create: "&7Create a new one at your position."
@@ -261,8 +261,6 @@ dialog:
     line-delete: "&7Remove this line."
     equip-set: "&7Equip the item in your main hand."
     equip-clear: "&7Remove the item from this slot."
-    presets: "&7Turn it into a ready-made style in one click."
-    preset: "&7Apply this preset. Matching settings are overwritten."
   notice:
     saved: "&#00FF5ASaved."
     invalid: "&#FF0000Invalid values were ignored: {fields}"
@@ -279,7 +277,6 @@ dialog:
     no-block: "&#FF0000The item in your main hand is not a block."
     equipped: "&#00FF5AEquipped {slot}."
     unequipped: "&#00FF5ACleared {slot}."
-    preset-applied: "&#00FF5AApplied preset {preset}&#00FF5A."
 
 web-link: "{prefix}&7Web editor ready &8(expires in {minutes} min)&7: &#6293F0&nᴄʟɪᴄᴋ ᴛᴏ ᴏᴘᴇɴ"
 web-link-hover: "&#6293F0ᴏᴘᴇɴ ᴛʜᴇ ɴᴇxᴏʀᴀ ᴡᴇʙ ᴇᴅɪᴛᴏʀ"
@@ -327,5 +324,4 @@ web-error-waypoint-limit: "Waypoint limit of {limit} reached."
 web-error-teleport: "Teleport failed."
 web-error-world-missing: "The object's world is not loaded."
 web-error-bad-action: "Unknown action '{action}'."
-web-error-unknown-preset: "Unknown preset '{preset}'."
 web-error-bad-material: "'{material}' is not an item."

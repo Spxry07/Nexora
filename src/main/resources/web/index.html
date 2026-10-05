@@ -86,8 +86,6 @@ input[type=color]{width:38px;height:34px;padding:0;border:1px solid var(--line);
 .slot{align-items:center;gap:8px}
 .slot .slot-name{min-width:78px;font-weight:600}
 .slot input{flex:1;min-width:0}
-.preset-pick{display:inline-flex;gap:6px;align-items:center}
-.preset-pick select{width:auto;min-width:140px}
 .stage{min-height:240px;border-radius:var(--r);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:28px 12px;overflow:auto;background:radial-gradient(circle at 50% 30%,#1c2438,#0a0d14 70%),#0a0d14;position:relative}
 .stage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
 .stack{display:flex;flex-direction:column;align-items:center;gap:var(--gap,6px);position:relative;max-width:100%}
@@ -144,7 +142,6 @@ main{padding:12px 16px;overflow:visible}
       <div class="head">
         <div><h1><span class="chip" id="kindChip"></span><span id="title"></span></h1><div class="muted" id="coords"></div></div>
         <div class="actions">
-          <span class="preset-pick" id="presetWrap"><select id="presetSel" aria-label="Preset"></select><button class="btn" id="aPreset">Apply preset</button></span>
           <button class="btn" id="aTp">Teleport</button>
           <button class="btn" id="aMove">Move here</button>
           <button class="btn" id="aPathAdd">Path add</button>
@@ -167,7 +164,6 @@ main{padding:12px 16px;overflow:visible}
     <h3 id="newTitle">New</h3>
     <div class="field"><label for="newId">Id</label><input type="text" id="newId" autocomplete="off" maxlength="64"></div>
     <div class="field" id="newTypeWrap" style="margin-top:10px"><label for="newType">Entity type</label><select id="newType"></select></div>
-    <div class="field" id="newPresetWrap" style="margin-top:10px"><label for="newPreset">Start from preset</label><select id="newPreset"></select></div>
     <p class="note">Created at your current position in game.</p>
     <div class="foot"><button type="button" class="btn" id="newCancel">Cancel</button><button type="submit" class="btn primary" id="newOk">Create</button></div>
   </form>
@@ -645,25 +641,6 @@ async function equip(slot, material) {
   toast(material.trim() ? 'Equipped ' + slot.toLowerCase() : 'Cleared ' + slot.toLowerCase(), 'ok');
 }
 
-function presetOptions(kind) {
-  return (S.cfg.presets && S.cfg.presets[kind]) || [];
-}
-
-function renderPresets() {
-  const list = presetOptions(S.cur.kind);
-  $('#presetWrap').hidden = !list.length;
-  $('#presetSel').replaceChildren(...list.map(p => el('option', {value: p.id, text: p.label})));
-}
-
-async function applyPreset() {
-  const name = $('#presetSel').value;
-  if (!name) return;
-  if (!confirm('Apply preset "' + $('#presetSel').selectedOptions[0].textContent + '"? It overwrites matching settings' + (S.cur.kind === 'hologram' ? ' and lines.' : ' and equipment.'))) return;
-  await api('/api/preset', Object.assign(ref(), {preset: name}));
-  S.dirty = false;
-  await select(S.cur.kind, S.cur.id, []);
-  toast('Preset applied', 'ok');
-}
 
 function renderEditor() {
   const c = S.cur;
@@ -673,7 +650,6 @@ function renderEditor() {
   $('#title').textContent = c.id;
   $('#aPathAdd').hidden = $('#aPathClear').hidden = false;
   renderMeta();
-  renderPresets();
   const cards = $('#cards');
   cards.replaceChildren();
   for (const sec of S.schema.kinds[c.kind].sections) cards.append(sectionCard(sec, S.props, () => buildPreview()));
@@ -763,7 +739,6 @@ async function save() {
 
 function bind() {
   $('#aSave').addEventListener('click', ev => run(ev.currentTarget, save));
-  $('#aPreset').addEventListener('click', ev => run(ev.currentTarget, applyPreset));
   $('#aTp').addEventListener('click', ev => run(ev.currentTarget, async () => { await api('/api/teleport', ref()); toast('Teleported', 'ok'); }));
   $('#aMove').addEventListener('click', ev => run(ev.currentTarget, async () => { await api('/api/movehere', ref()); await refreshMeta(); toast('Moved to your position', 'ok'); }));
   $('#aPathAdd').addEventListener('click', ev => run(ev.currentTarget, async () => {
@@ -820,9 +795,6 @@ function openNew() {
     sel.replaceChildren(...(prop ? prop.options : []).map(o => el('option', {value: o.id, text: o.label})));
     sel.value = S.cfg.defaultNpcType;
   }
-  const presets = presetOptions(S.tab);
-  $('#newPresetWrap').hidden = !presets.length;
-  $('#newPreset').replaceChildren(el('option', {value: '', text: 'None'}), ...presets.map(p => el('option', {value: p.id, text: p.label})));
   $('#newDlg').showModal();
   $('#newId').focus();
 }
@@ -836,7 +808,6 @@ async function submitNew() {
   if (S.dirty && !confirm('Discard unsaved changes?')) return;
   const body = {kind, id};
   if (kind === 'npc') body.entityType = $('#newType').value;
-  if ($('#newPreset').value) body.preset = $('#newPreset').value;
   const btn = $('#newOk');
   await run(btn, async () => {
     await api('/api/create', body);

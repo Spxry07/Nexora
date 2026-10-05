@@ -33,6 +33,9 @@ public abstract class NexoraObject {
     private final String id;
     private volatile Location anchor;
     private final Set<UUID> viewers = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> joined = ConcurrentHashMap.newKeySet();
+    private Particle particleType;
+    private String particleName;
     private volatile Packet<?> spawnBundle;
     private volatile Packet<?> despawnBundle;
     private volatile int[] entityIds = new int[0];
@@ -74,6 +77,8 @@ public abstract class NexoraObject {
     protected void readExtra(ConfigurationSection section) {}
 
     protected void onHide(UUID viewer) {}
+
+    protected List<Packet<?>> catchUp() { return List.of(); }
 
     static <T extends NexoraObject> Map<String, Binding<T>> commonBindings() {
         Map<String, Binding<T>> map = new LinkedHashMap<>();
@@ -127,7 +132,10 @@ public abstract class NexoraObject {
     public final void show(Player player) {
         synchronized (this) {
             if (removed || spawnBundle == null) return;
-            if (viewers.add(player.getUniqueId())) Packets.send(player, spawnBundle);
+            if (viewers.add(player.getUniqueId())) {
+                Packets.send(player, spawnBundle);
+                joined.add(player.getUniqueId());
+            }
         }
     }
 
@@ -218,6 +226,7 @@ public abstract class NexoraObject {
         if (removed) return;
         try {
             tick(interval);
+            if (!joined.isEmpty()) sendCatchUp();
         } catch (RuntimeException e) {
             plugin.getLogger().log(Level.WARNING, kind() + ":" + id, e);
             cancelTask();
@@ -252,8 +261,15 @@ public abstract class NexoraObject {
         }
     }
 
-    protected final void refreshSpawn(List<Packet<?>> spawn) {
-        spawnBundle = Packets.bundle(spawn);
+    private void sendCatchUp() {
+        var packets = catchUp();
+        var bundle = packets.isEmpty() ? null : Packets.bundle(packets);
+        for (var uuid : List.copyOf(joined)) {
+            joined.remove(uuid);
+            if (bundle == null || !viewers.contains(uuid)) continue;
+            var player = Bukkit.getPlayer(uuid);
+            if (player != null) Packets.send(player, bundle);
+        }
     }
 
     protected final void setPosition(double x, double y, double z) {
@@ -309,13 +325,17 @@ public abstract class NexoraObject {
         particleCooldown -= interval;
         if (particleCooldown > 0) return;
         particleCooldown = particleInterval;
-        Particle type;
-        try {
-            type = Particle.valueOf(particle.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException e) {
-            return;
+        if (!particle.equals(particleName)) {
+            particleName = particle;
+            try {
+                var parsed = Particle.valueOf(particle.toUpperCase(Locale.ROOT));
+                particleType = parsed.getDataType() == Void.class ? parsed : null;
+            } catch (IllegalArgumentException e) {
+                particleType = null;
+            }
         }
-        if (type.getDataType() != Void.class) return;
+        var type = particleType;
+        if (type == null) return;
         var random = ThreadLocalRandom.current();
         double r = particleRadius;
         for (var uuid : viewers) {

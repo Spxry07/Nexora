@@ -45,8 +45,8 @@ public final class DialogMenus {
     private static final int TEXT_FALLBACK_LENGTH = 256;
     private static final String INPUT_ID = "id";
     private static final String INPUT_ENTITY_TYPE = "entity-type";
-    private static final String INPUT_PRESET = "preset";
-    private static final String NO_PRESET = "none";
+    private static final char KEY_DASH = '-';
+    private static final char KEY_UNDERSCORE = '_';
     private static final String PROP_TYPE = "type";
     private static final String PROP_MATERIAL = "material";
     private static final String TYPE_ITEM = "ITEM";
@@ -80,11 +80,22 @@ public final class DialogMenus {
         actions.add(nav(player, "npcs", p -> openList(p, NexoraObject.NPC)));
         actions.add(nav(player, "create-hologram", p -> openCreate(p, NexoraObject.HOLOGRAM)));
         actions.add(nav(player, "create-npc", p -> openCreate(p, NexoraObject.NPC)));
+        actions.add(nav(player, "demo-spawn", this::spawnDemo));
+        actions.add(nav(player, "demo-clear", this::clearDemo));
         if (plugin.getConfig().getBoolean("web.enabled") && player.hasPermission(plugin.getConfig().getString("permissions.web", ""))) {
             actions.add(nav(player, "web", p -> plugin.web().sendLink(p)));
         }
         show(player, text("dialog.title.main"), null, List.of(text("dialog.body.main")), List.of(),
             DialogType.multiAction(actions, close(), columns()));
+    }
+
+    public void spawnDemo(Player player) {
+        var ids = plugin.objects().spawnDemo(player);
+        plugin.messages().send(player, "cmd.demo-spawned", Map.of("count", String.valueOf(ids.size()), "ids", String.join(", ", ids)));
+    }
+
+    public void clearDemo(Player player) {
+        plugin.messages().send(player, "cmd.demo-cleared", Map.of("count", String.valueOf(plugin.objects().clearDemo())));
     }
 
     public void openList(Player player, String kind) {
@@ -153,7 +164,7 @@ public final class DialogMenus {
         Map<String, String> ph = Map.of("kind", kindName(kind, "singular"));
         List<DialogInput> inputs = new ArrayList<>();
         List<String> keys = new ArrayList<>();
-        inputs.add(DialogInput.text(INPUT_ID, text("dialog.input.id")).maxLength(ID_MAX_LENGTH).width(inputWidth()).build());
+        inputs.add(DialogInput.text(key(INPUT_ID), text("dialog.input.id")).maxLength(ID_MAX_LENGTH).width(inputWidth()).build());
         keys.add(INPUT_ID);
         if (NexoraObject.NPC.equals(kind)) {
             var prop = plugin.schema().props(NexoraObject.NPC).get(INPUT_ENTITY_TYPE);
@@ -161,16 +172,6 @@ public final class DialogMenus {
                 inputs.add(choice(prop, plugin.getConfig().getString("npc.default-type", ""), ColorUtil.colorize(prop.label())));
                 keys.add(INPUT_ENTITY_TYPE);
             }
-        }
-        var presets = plugin.objects().presets(kind);
-        if (!presets.isEmpty()) {
-            List<SingleOptionDialogInput.OptionEntry> entries = new ArrayList<>();
-            entries.add(SingleOptionDialogInput.OptionEntry.create(NO_PRESET, text("dialog.preset-none"), true));
-            for (var preset : presets) {
-                entries.add(SingleOptionDialogInput.OptionEntry.create(preset, ColorUtil.colorize(plugin.objects().presetLabel(kind, preset)), false));
-            }
-            inputs.add(DialogInput.singleOption(INPUT_PRESET, text("dialog.input.preset"), entries).width(inputWidth()).build());
-            keys.add(INPUT_PRESET);
         }
         var create = submit(player, "confirm-create", view -> readText(view, keys), (p, values) -> create(p, kind, values));
         var back = nav(player, "back", p -> openList(p, kind));
@@ -193,12 +194,7 @@ public final class DialogMenus {
             ? objects.createHologram(id, location)
             : objects.createNpc(id, location, entityType(values.get(INPUT_ENTITY_TYPE)));
         plugin.messages().send(player, "cmd.created", Map.of("kind", kindName(kind, "singular"), "id", id));
-        var preset = values.get(INPUT_PRESET);
-        if (preset == null || NO_PRESET.equals(preset) || !objects.presets(kind).contains(preset)) {
-            openEditor(player, created);
-            return;
-        }
-        mutate(player, created, o -> objects.applyPreset(o, preset), () -> openEditor(player, created, null));
+        openEditor(player, created);
     }
 
     private void openEditor(Player player, NexoraObject obj, Component notice) {
@@ -208,7 +204,6 @@ public final class DialogMenus {
         }
         if (obj instanceof Hologram holo) actions.add(nav(player, "lines", p -> openLines(p, holo, null)));
         if (obj instanceof Npc npc) actions.add(nav(player, "equipment", p -> openEquipment(p, npc, null)));
-        if (!plugin.objects().presets(obj.kind()).isEmpty()) actions.add(nav(player, "presets", p -> openPresets(p, obj)));
         actions.add(nav(player, "move-here", p -> moveHere(p, obj)));
         actions.add(nav(player, "teleport", p -> teleport(p, obj)));
         actions.add(nav(player, "path-add", p -> addPoint(p, obj)));
@@ -217,22 +212,6 @@ public final class DialogMenus {
         var ph = info(obj);
         show(player, text("dialog.title.editor", ph), notice, List.of(text("dialog.body.editor", ph)), List.of(),
             DialogType.multiAction(actions, nav(player, "back", p -> openList(p, obj.kind())), columns()));
-    }
-
-    private void openPresets(Player player, NexoraObject obj) {
-        List<ActionButton> actions = new ArrayList<>();
-        for (var preset : plugin.objects().presets(obj.kind())) {
-            var label = plugin.objects().presetLabel(obj.kind(), preset);
-            actions.add(nav(player, ColorUtil.colorize(label), tooltip("preset"), p -> applyPreset(p, obj, preset, label)));
-        }
-        Map<String, String> ph = Map.of("id", obj.id());
-        show(player, text("dialog.title.presets", ph), null, List.of(text("dialog.body.presets", ph)), List.of(),
-            DialogType.multiAction(actions, nav(player, "back", p -> openEditor(p, obj, null)), columns()));
-    }
-
-    private void applyPreset(Player player, NexoraObject obj, String preset, String label) {
-        mutate(player, obj, o -> plugin.objects().applyPreset(o, preset),
-            () -> openEditor(player, obj, text(NOTICE_KEY + "preset-applied", Map.of("preset", label))));
     }
 
     private void moveHere(Player player, NexoraObject obj) {
@@ -339,7 +318,7 @@ public final class DialogMenus {
         var label = ColorUtil.colorize(prop.label());
         var value = current == null ? "" : current;
         return switch (prop.type()) {
-            case BOOL -> DialogInput.bool(prop.id(), label).initial(Boolean.parseBoolean(value)).build();
+            case BOOL -> DialogInput.bool(key(prop.id()), label).initial(Boolean.parseBoolean(value)).build();
             case CHOICE -> prop.options().isEmpty() ? textInput(prop, value, label, false) : choice(prop, value, label);
             case NUMBER, INTEGER -> prop.max() > prop.min() ? slider(prop, value, label) : textInput(prop, value, label, false);
             case MULTILINE -> textInput(prop, value, label, true);
@@ -351,14 +330,14 @@ public final class DialogMenus {
         var min = (float) prop.min();
         var max = (float) prop.max();
         var initial = (float) Math.max(min, Math.min(max, parse(value, prop.min())));
-        var builder = DialogInput.numberRange(prop.id(), label, min, max).initial(initial).width(inputWidth());
+        var builder = DialogInput.numberRange(key(prop.id()), label, min, max).initial(initial).width(inputWidth());
         if (prop.step() > 0) builder = builder.step((float) prop.step());
         return builder.build();
     }
 
     private DialogInput textInput(Schema.Prop prop, String value, Component label, boolean multiline) {
         var declared = prop.max() > 0 ? (int) prop.max() : prop.type() == Schema.Type.COLOR ? COLOR_MAX_LENGTH : TEXT_FALLBACK_LENGTH;
-        var builder = DialogInput.text(prop.id(), label).initial(value).maxLength(Math.max(declared, value.length())).width(inputWidth());
+        var builder = DialogInput.text(key(prop.id()), label).initial(value).maxLength(Math.max(declared, value.length())).width(inputWidth());
         if (multiline) {
             builder = builder.multiline(TextDialogInput.MultilineOptions.create(positive("dialogs.multiline-max-lines"), positive("dialogs.multiline-height")));
         }
@@ -374,14 +353,14 @@ public final class DialogMenus {
             var initial = matched ? option.id().equalsIgnoreCase(current) : i == 0;
             entries.add(SingleOptionDialogInput.OptionEntry.create(option.id(), ColorUtil.colorize(option.label()), initial));
         }
-        return DialogInput.singleOption(prop.id(), label, entries).width(inputWidth()).build();
+        return DialogInput.singleOption(key(prop.id()), label, entries).width(inputWidth()).build();
     }
 
     private Map<String, String> readText(DialogResponseView view, List<String> keys) {
         Map<String, String> out = new LinkedHashMap<>();
         if (view == null) return out;
         for (var key : keys) {
-            var value = view.getText(key);
+            var value = view.getText(key(key));
             if (value != null) out.put(key, value);
         }
         return out;
@@ -394,17 +373,17 @@ public final class DialogMenus {
             var id = prop.id();
             var value = switch (prop.type()) {
                 case BOOL -> {
-                    var flag = view.getBoolean(id);
+                    var flag = view.getBoolean(key(id));
                     yield flag == null ? null : String.valueOf(flag);
                 }
                 case NUMBER, INTEGER -> {
                     if (prop.max() > prop.min()) {
-                        var number = view.getFloat(id);
+                        var number = view.getFloat(key(id));
                         yield number == null ? null : Schema.format(number);
                     }
-                    yield view.getText(id);
+                    yield view.getText(key(id));
                 }
-                default -> view.getText(id);
+                default -> view.getText(key(id));
             };
             if (value != null) out.put(id, value);
         }
@@ -644,6 +623,10 @@ public final class DialogMenus {
 
     private int positive(String path) {
         return Math.max(1, plugin.getConfig().getInt(path));
+    }
+
+    private static String key(String id) {
+        return id.replace(KEY_DASH, KEY_UNDERSCORE);
     }
 
     private int columns() {
