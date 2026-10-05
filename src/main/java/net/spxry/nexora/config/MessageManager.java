@@ -13,9 +13,13 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 public final class MessageManager {
     private final Plugin plugin;
@@ -26,7 +30,23 @@ public final class MessageManager {
     public void reload() {
         var file = new File(plugin.getDataFolder(), "messages.yml");
         if (!file.exists()) plugin.saveResource("messages.yml", false);
-        this.messages = YamlConfiguration.loadConfiguration(file);
+        var yaml = YamlConfiguration.loadConfiguration(file);
+        try (var in = plugin.getResource("messages.yml")) {
+            if (in != null) {
+                var defaults = YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
+                boolean missing = defaults.getKeys(true).stream().anyMatch(key -> !yaml.contains(key, true));
+                if (missing) {
+                    yaml.setDefaults(defaults);
+                    yaml.options().copyDefaults(true);
+                    yaml.save(file);
+                    this.messages = YamlConfiguration.loadConfiguration(file);
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, file.getName(), e);
+        }
+        this.messages = yaml;
     }
 
     public String getPrefix() { return messages.getString("prefix", ""); }
