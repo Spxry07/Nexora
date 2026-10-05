@@ -750,6 +750,10 @@ public final class WebServer {
         view.put("lineDefaults", plugin.objects().defaults(NexoraObject.LINE));
         view.put("nameplateSuffix", config.getString("npc.nameplate.id-suffix", ""));
         view.put("lookAngle", config.getDouble("npc.triggers.look-angle", 10));
+        var animations = config.getConfigurationSection("npc.animations");
+        Map<String, Object> animationView = new LinkedHashMap<>();
+        if (animations != null) for (var key : animations.getKeys(false)) animationView.put(key, animations.getString(key, ""));
+        view.put("animations", animationView);
         return view;
     }
 

@@ -63,12 +63,25 @@ npc:
     id-suffix: "-tag"
     base-height: 1.8
     line-spacing: 0.28
-  skin-palette:
-    enabled: true
-    texture-url: "http://textures.minecraft.net/texture/{hash}"
-    name-url: "https://mc-heads.net/skin/{name}"
-    timeout-seconds: 8
-    retry-minutes: 10
+  animations:
+    WAVE: "8 swing=main head=0,0,10\n8 swing=main head=0,0,-10\n8 swing=main head=0,0,10\n30 head=0,0,0"
+    NOD: "6 head=20,0,0\n6 head=-5,0,0\n6 head=20,0,0\n40 head=0,0,0"
+    LOOK_AROUND: "30 head=0,45,0\n30 head=10,-45,0\n30 head=0,0,0"
+    CHEER: "6 swing=main head=-15,0,0\n6 swing=off\n6 swing=main\n6 swing=off\n6 pose=SNEAKING head=0,0,0\n10 pose=STANDING"
+    CROUCH_DANCE: "5 pose=SNEAKING head=0,20,0\n5 pose=STANDING swing=main\n5 pose=SNEAKING head=0,-20,0\n5 pose=STANDING swing=off"
+    ARCHER: "20 item=bow use=none head=0,0,0\n25 use=main head=-5,0,0\n6 use=none swing=main\n20 head=0,0,0"
+    CROSSBOW: "20 item=crossbow use=none\n25 use=main\n8 use=none swing=main\n20 head=0,0,0"
+    TRIDENT: "20 item=trident use=none head=0,0,0\n20 use=main head=-20,0,0\n6 use=none swing=main\n20 head=0,0,0"
+    CAST: "20 item=blaze_rod use=none head=0,0,0\n18 item=trident use=main head=-25,0,0\n6 use=none swing=main item=blaze_rod\n16 head=10,0,0\n10 head=0,0,0"
+    SPYGLASS: "15 item=spyglass use=none head=0,0,0\n40 use=main head=-10,30,0\n40 head=-10,-30,0\n15 use=none head=0,0,0"
+    HORN: "20 item=goat_horn use=none head=0,0,0\n30 use=main head=-25,0,0\n30 use=none head=0,0,0"
+    SHIELD: "20 offitem=shield use=none\n40 use=off\n20 use=none swing=main"
+    GUARD: "40 item=iron_sword offitem=shield use=off head=0,25,0\n40 head=0,-25,0\n10 use=none swing=main head=0,0,0"
+    FEAST: "10 item=cooked_beef use=none head=0,0,0\n32 use=main\n20 use=none head=0,20,0\n10 head=0,0,0"
+    POTION: "10 item=potion use=none head=0,0,0\n32 use=main head=-20,0,0\n20 use=none head=0,0,0"
+    SWIMMER: "60 pose=SWIMMING swing=main\n60 swing=off"
+    RIPTIDE: "40 pose=SPIN_ATTACK item=trident\n30 pose=STANDING"
+    SLEEPY: "100 pose=SLEEPING"
   equipment-slots:
     - HAND
     - OFF_HAND
@@ -186,10 +199,8 @@ defaults:
     actions: "[message] &fHello &#6293F0{player}&f!"
     click-type: "ANY"
     cooldown: 20
-    animation-enabled: false
     animation-speed: 1
-    animation: "10 rarm=-110,0,25\n8 rarm=-150,0,45\n8 rarm=-110,0,25\n8 rarm=-150,0,45\n12 rarm=-15,0,10"
-    small: false
+    animation: "NONE"
     triggers: "look -> particle HEART 3 head; sound entity.villager.ambient\nclick -> particle! TOTEM_OF_UNDYING 20 body 0.6"
     look-trigger-range: 6
     approach-range: 5

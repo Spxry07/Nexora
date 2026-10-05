@@ -1,4 +1,4 @@
-file-version: 4
+file-version: 5
 kinds:
   hologram:
     sections:
@@ -152,8 +152,8 @@ kinds:
         title: "&#6293F0&lᴀɴɪᴍᴀᴛɪᴏɴꜱ"
         properties: [swing-interval, sneak-interval, hurt-interval]
       animation:
-        title: "&#6293F0&lᴋᴇʏꜰʀᴀᴍᴇ ᴀɴɪᴍᴀᴛɪᴏɴ"
-        properties: [animation-enabled, animation-speed, animation, small]
+        title: "&#6293F0&lᴀɴɪᴍᴀᴛɪᴏɴ ᴘʀᴇꜱᴇᴛ"
+        properties: [animation, animation-speed]
       triggers:
         title: "&#6293F0&lᴛʀɪɢɢᴇʀꜱ & ᴇꜰꜰᴇᴄᴛꜱ"
         properties: [triggers, look-trigger-range, approach-range]
@@ -200,7 +200,7 @@ kinds:
           PIG: "Pig"
           CHICKEN: "Chicken"
           HORSE: "Horse"
-          ARMOR_STAND: "Poseable (armor stand)"
+          ARMOR_STAND: "Armor Stand"
       name: {label: "&fɴᴀᴍᴇ", type: text, max: 256}
       name-visible: {label: "&fꜱʜᴏᴡ ɴᴀᴍᴇ", type: bool}
       description: {label: "&fᴅᴇꜱᴄʀɪᴘᴛɪᴏɴ (player type)", type: text, max: 256}
@@ -247,10 +247,11 @@ kinds:
         type: choice
         options: {ANY: "Any", RIGHT: "Right click", LEFT: "Left click"}
       cooldown: {label: "&fᴄᴏᴏʟᴅᴏᴡɴ (ticks)", type: integer, min: 0, max: 12000, step: 1}
-      animation-enabled: {label: "&fᴘʟᴀʏ ᴀɴɪᴍᴀᴛɪᴏɴ", type: bool}
       animation-speed: {label: "&fᴀɴɪᴍᴀᴛɪᴏɴ ꜱᴘᴇᴇᴅ", type: number, min: 0.1, max: 5, step: 0.1}
-      animation: {label: "&fᴋᴇʏꜰʀᴀᴍᴇꜱ (ticks head=x,y,z body= larm= rarm= lleg= rleg=)", type: multiline, max: 8192}
-      small: {label: "&fꜱᴍᴀʟʟ (ᴀʀᴍᴏʀ ꜱᴛᴀɴᴅ)", type: bool}
+      animation:
+        label: "&fᴀɴɪᴍᴀᴛɪᴏɴ"
+        type: choice
+        options: {NONE: "None", WAVE: "Wave", NOD: "Nod", LOOK_AROUND: "Look around", CHEER: "Cheer", CROUCH_DANCE: "Crouch dance", ARCHER: "Archer", CROSSBOW: "Crossbow", TRIDENT: "Trident throw", CAST: "Spell cast", SPYGLASS: "Spyglass scout", HORN: "Horn call", SHIELD: "Shield guard", GUARD: "Sword guard", FEAST: "Feast", POTION: "Potion drink", SWIMMER: "Swimmer", RIPTIDE: "Riptide spin", SLEEPY: "Sleepy"}
       triggers: {label: "&fᴛʀɪɢɢᴇʀꜱ (event -> action; action)", type: multiline, max: 8192}
       look-trigger-range: {label: "&fʟᴏᴏᴋ ᴛʀɪɢɢᴇʀ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
       approach-range: {label: "&fᴀᴘᴘʀᴏᴀᴄʜ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
