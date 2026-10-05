@@ -4,13 +4,13 @@ Packet-based animated holograms and NPCs for Paper / Folia **1.21.11**, with an 
 
 ## Install
 1. Drop `Nexora-1.0.jar` into `plugins/` on a Paper or Folia 1.21.11 server and start it.
-2. Open TCP port **8155** on your host/firewall (the web editor). Change it with `web.port` in `config.yml`.
+2. The web editor picks a random port (saved in `web-port.txt`); open it on your firewall, or pin one with `/nexora web port <number>`. `/nexora web info` shows the address.
 3. In game: `/nexora` opens the menu. `/nexora web` gives you a private link to the web editor.
 
-The link uses the same address you joined the server with (e.g. `play.example.com:8155`). Set `web.public-url` if the editor sits behind a reverse proxy or a different domain.
+The link uses the backend server IP (server-ip, then auto-detected public IP). Override with `web.host` or `web.public-url`.
 
 ## Quick start
-- `/nexora demo` – spawns an animated NPC (your skin), a walking NPC and two animated holograms in front of you. `/nexora demo clear` removes them.
+- `/nexora demo` – spawns the showcase: wizard with levitating blocks, solar system, globe, ferris wheel, tornado, text-effects board, your clone, a patrol and a titan. `/nexora demo clear` removes it.
 - `/nexora npc skin guard Notch` – copy a skin (online player = exact textures, otherwise by name).
 - `/nexora npc equip guard hand` – put your held item in the NPC's hand.
 - `/nexora npc path guard add` (repeat at each point) + set *walk speed* – patrol route.

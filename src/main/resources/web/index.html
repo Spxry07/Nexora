@@ -2,171 +2,277 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <title>Nexora Editor</title>
 <style>
-:root{--bg:#0b0e14;--panel:#121722;--panel2:#171d2b;--line:#252d40;--text:#e6e9f0;--muted:#8b94a8;--accent:#6293F0;--accent-d:#4a78d6;--danger:#e5484d;--ok:#3ecf8e;--r:10px;color-scheme:dark}
+:root{--bg:#10131a;--panel:#1d222e;--panel2:#262c3b;--lo:#0a0c11;--hi:#4b5469;--text:#e9edf7;--muted:#97a1b8;--accent:#6293F0;--accent2:#8fb2ff;--danger:#ff5555;--ok:#55ff8a;--btn:#3d4558;--btn-hi:#7a86a3;--btn-lo:#171b25;--btn-hover:#4f5b78;--field:#0a0d13;--font:"Pixelify Sans","Courier New",ui-monospace,monospace;color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-button,input,select,textarea{font:inherit;color:inherit}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px/1.4 var(--font);overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit;border-radius:0}
 button{cursor:pointer}
 [hidden]{display:none!important}
-#app{display:grid;grid-template-columns:290px minmax(0,1fr);height:100vh}
-.topbar{display:none;align-items:center;gap:12px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
-.brand{font-weight:700;letter-spacing:.04em;color:var(--accent)}
-#side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-.side-head{padding:16px 16px 8px;display:flex;align-items:center;justify-content:space-between}
-.side-head .brand{font-size:18px}
-.tabs{display:flex;gap:6px;padding:8px 12px}
-.tab{flex:1;padding:8px 10px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
-.tab.on{border-color:var(--accent);color:var(--text);background:rgba(98,147,240,.12)}
-.tab .n{font-variant-numeric:tabular-nums;opacity:.8}
-.search-row{display:flex;gap:6px;padding:4px 12px 10px}
-.search-row input{flex:1;min-width:0}
-#list{list-style:none;margin:0;padding:0 8px 12px;overflow:auto;flex:1}
-#list button{width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:8px;padding:8px 10px;display:block}
-#list button:hover{background:var(--panel2)}
-#list button.on{background:rgba(98,147,240,.14);border-color:var(--accent)}
-#list .id{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#list .pos{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tex{image-rendering:pixelated;display:block}
 .muted{color:var(--muted)}
+.grow{flex:1}
+#app{display:grid;grid-template-columns:268px minmax(0,1fr) 410px;height:100vh;height:100dvh}
+#side{background:var(--panel);border-right:2px solid var(--lo);display:flex;flex-direction:column;min-height:0;min-width:0}
+.side-head{padding:12px 12px 6px;display:flex;align-items:center;justify-content:space-between}
+.brand{font-weight:600;letter-spacing:.06em;color:var(--accent);font-size:20px;text-shadow:2px 2px 0 #000a}
+.search-row{display:flex;gap:6px;padding:4px 12px 8px}
+.search-row input{flex:1;min-width:0}
+.chips{display:flex;gap:6px;padding:0 12px 8px;flex-wrap:wrap}
+.chip{background:var(--field);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);padding:1px 9px;font-size:13px;color:var(--muted)}
+.chip.on{background:#2c4a8c;color:#fff;border-color:var(--hi) var(--lo) var(--lo) var(--hi)}
+.chip:hover{color:#fff}
+#list{list-style:none;margin:0;padding:0 8px 12px;overflow:auto;flex:1}
+#list button{width:100%;text-align:left;background:none;border:2px solid transparent;padding:5px 6px;display:flex;gap:8px;align-items:center}
+#list button:hover{background:var(--panel2)}
+#list button.on{background:#25365e;border-color:var(--accent)}
+#list .ic{width:28px;height:28px;flex:none;display:grid;place-items:center}
+#list .ic img,#list .ic svg{width:28px;height:28px}
+#list .tx{min-width:0}
+#list .id{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#list .pos{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .empty{padding:24px;text-align:center;color:var(--muted)}
-main{overflow:auto;padding:20px;min-width:0}
-input[type=text],input[type=number],select,textarea{width:100%;background:#0e1320;border:1px solid var(--line);border-radius:8px;padding:7px 10px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-textarea{resize:vertical;min-height:70px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
-input[type=range]{width:100%;accent-color:var(--accent)}
-input[type=color]{width:38px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;background:none;flex:none}
-.btn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;white-space:nowrap}
-.btn:hover{border-color:var(--accent)}
-.btn:disabled{opacity:.5;cursor:default}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#07101f;font-weight:600}
-.btn.primary:hover{background:var(--accent-d)}
-.btn.danger{color:var(--danger)}
-.btn.danger:hover{border-color:var(--danger)}
-.btn.sm{padding:3px 8px;font-size:12px}
-.icon-btn{background:none;border:1px solid var(--line);border-radius:8px;width:34px;height:34px;display:grid;place-items:center}
-.head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
-.head h1{margin:0;font-size:22px;word-break:break-all}
-.chip{display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:99px;background:rgba(98,147,240,.16);color:var(--accent);margin-right:8px;vertical-align:middle}
-.actions{display:flex;flex-wrap:wrap;gap:8px}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
-.preview{position:sticky;top:0}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
-.card>h2{margin:0;padding:10px 14px;font-size:14px;color:var(--accent);letter-spacing:.04em;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
-.card .body{padding:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px 14px}
-.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.btn{background:var(--btn);border:2px solid;border-color:var(--btn-hi) var(--btn-lo) var(--btn-lo) var(--btn-hi);box-shadow:inset -2px -2px 0 #0003,inset 2px 2px 0 #fff1;padding:4px 12px;white-space:nowrap;text-shadow:1px 1px 0 #000a;color:#fff;line-height:1.3}
+.btn:hover:not(:disabled){background:var(--btn-hover);outline:2px solid var(--accent);outline-offset:-2px}
+.btn:active:not(:disabled){border-color:var(--btn-lo) var(--btn-hi) var(--btn-hi) var(--btn-lo);box-shadow:inset 2px 2px 0 #0004}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.primary,.btn.on{background:#3b62b8}
+.btn.primary:hover:not(:disabled),.btn.on:hover:not(:disabled){background:#4a76d6}
+.btn.danger{color:#ff8a8a}
+.btn.sm{padding:1px 8px;font-size:13px}
+.btn.sq{width:36px;height:36px;padding:0;font-size:20px}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--field);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);padding:4px 8px;outline:none;color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-2px}
+select option{background:#0a0d13}
+textarea{resize:vertical;min-height:56px;font-family:var(--font)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:24px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:12px;background:var(--field);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:22px;margin-top:-7px;background:#8590aa;border:2px solid;border-color:#c0c8dc #3a4256 #3a4256 #c0c8dc}
+input[type=range]::-moz-range-track{height:8px;background:var(--field);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+input[type=range]::-moz-range-thumb{width:8px;height:18px;border-radius:0;background:#8590aa;border:2px solid;border-color:#c0c8dc #3a4256 #3a4256 #c0c8dc}
+input[type=range]:hover::-webkit-slider-thumb{background:var(--accent2)}
+input[type=color]{width:38px;height:32px;padding:0;border:2px solid var(--lo);background:none;flex:none}
+#mapwrap{position:relative;min-width:0;min-height:0;background:#0d1017;overflow:hidden}
+#map{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.mapbar{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;pointer-events:none}
+.mapbar>*{pointer-events:auto}
+.grp{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.mapbar select{width:auto;max-width:150px}
+#menuBtn,#inspToggle{display:none}
+.ind{background:#000b;border:2px solid var(--lo);padding:2px 10px;font-size:13px;color:var(--muted)}
+.ind[data-k=saved]{color:var(--ok)}
+.ind[data-k=error]{color:var(--danger)}
+.ind[data-k=pending],.ind[data-k=saving]{color:#ffd966}
+.zoombar{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px}
+.coordbar{position:absolute;left:8px;bottom:8px;background:#000b;padding:2px 8px;font-size:13px;pointer-events:none}
+.hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);max-width:calc(100% - 220px);background:#000b;padding:3px 10px;font-size:12px;text-align:center;pointer-events:none;color:var(--muted)}
+#insp{background:var(--panel);border-left:2px solid var(--lo);display:flex;flex-direction:column;min-height:0;min-width:0}
+#inspHead{padding:10px 12px 8px;border-bottom:2px solid var(--lo);background:var(--panel2)}
+.ititle{display:flex;align-items:center;gap:8px}
+.ititle h1{margin:0;font-size:18px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.kind{font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:1px 7px;background:#2c4a8c;color:#fff;flex:none}
+.isub{font-size:12px;color:var(--muted);margin:2px 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.actions{display:flex;flex-wrap:wrap;gap:6px}
+.itabs{display:flex;gap:2px;padding:6px 8px 0;background:var(--panel2);overflow-x:auto;flex:none}
+.itab{background:var(--btn-lo);border:2px solid;border-color:var(--hi) var(--lo) transparent var(--hi);padding:3px 12px;color:var(--muted);flex:none}
+.itab.on{background:var(--panel);color:#fff;border-color:var(--hi) var(--lo) var(--panel) var(--hi)}
+.itab:hover{color:#fff}
+#inspBody{flex:1;overflow:auto;padding:12px;min-height:0}
+.card{background:var(--panel2);border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);margin-bottom:12px}
+.card>h2{margin:0;padding:6px 10px;font-size:14px;font-weight:600;color:var(--accent);letter-spacing:.04em;background:#00000030;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card .body{padding:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 12px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .field.wide{grid-column:1/-1}
 .field>label{font-size:12px;color:var(--muted)}
 .row2{display:flex;gap:8px;align-items:center}
-.row2 input[type=number]{width:92px;flex:none}
+.row2 input[type=number]{width:84px;flex:none}
 .row2 input[type=range]{flex:1;min-width:0}
-.switch{position:relative;display:inline-block;width:42px;height:24px}
+.val{min-width:64px;text-align:right;font-size:13px;color:var(--accent2)}
+.switch{position:relative;display:inline-block;width:46px;height:26px}
 .switch input{opacity:0;width:0;height:0;position:absolute}
-.switch span{position:absolute;inset:0;background:#2a3348;border-radius:99px;transition:.15s}
-.switch span:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
-.switch input:checked+span{background:var(--accent)}
-.switch input:checked+span:before{transform:translateX(18px)}
-.switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.switch span{position:absolute;inset:0;background:var(--field);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+.switch span:before{content:"";position:absolute;top:1px;left:1px;width:18px;height:18px;background:#8590aa;border:2px solid;border-color:#c0c8dc #3a4256 #3a4256 #c0c8dc;transition:transform .1s}
+.switch input:checked+span{background:#2c4a8c}
+.switch input:checked+span:before{transform:translateX(18px);background:var(--accent2)}
+.switch input:focus-visible+span{outline:2px solid var(--accent)}
 .color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.color-row input[type=text]{width:112px}
-.color-row input[type=range]{flex:1;min-width:80px}
-.line{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;background:var(--panel2)}
-.line-head{display:flex;gap:6px;align-items:center;padding:6px 8px}
-.line-toggle{flex:1;min-width:0;background:none;border:0;text-align:left;display:flex;gap:8px;align-items:center;padding:4px}
-.line-toggle .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
-.line-toggle .i{font-weight:700;color:var(--accent);flex:none}
-.line-body{padding:4px 12px 12px;border-top:1px solid var(--line)}
-.sub{margin:12px 0 8px;font-size:12px;color:var(--accent);letter-spacing:.05em}
+.color-row input[type=text]{width:104px}
+.color-row input[type=range]{flex:1;min-width:70px}
+.swatches{display:flex;flex-wrap:wrap;gap:5px}
+.sw{width:24px;height:24px;border:2px solid;border-color:#ffffff90 #00000090 #00000090 #ffffff90;padding:0}
+.sw.on{outline:2px solid #fff;outline-offset:1px}
+.sw:hover{transform:scale(1.12)}
+.slot-mc{width:48px;height:48px;flex:none;background:#14182200;background-color:#161a24;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);display:grid;place-items:center;padding:0;position:relative}
+.slot-mc:hover{outline:2px solid var(--accent);outline-offset:-2px;background-color:#1f2636}
+.slot-mc img{width:32px;height:32px}
+.slot-mc .plus{color:var(--muted);font-size:22px}
+.slot-mc.on{outline:2px solid var(--accent);outline-offset:-2px}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:8px}
+.slotcell{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted);text-align:center}
+.slotcell .slot-mc{width:54px;height:54px}
+.slotcell .slot-mc img{width:36px;height:36px}
+.mobgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px;max-height:210px;overflow:auto;padding:4px;background:var(--field);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+.mob{background:var(--btn-lo);border:2px solid transparent;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;font-size:11px;color:var(--muted);min-width:0}
+.mob span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mob img{width:32px;height:32px}
+.mob:hover{background:var(--btn);color:#fff}
+.mob.on{border-color:var(--accent);background:#25365e;color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.pcard{background:var(--btn);border:2px solid;border-color:var(--btn-hi) var(--btn-lo) var(--btn-lo) var(--btn-hi);box-shadow:inset -2px -2px 0 #0003;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 4px;min-height:84px;text-align:center;font-size:13px;text-shadow:1px 1px 0 #000a;color:#fff}
+.pcard:hover{background:var(--btn-hover);outline:2px solid var(--accent);outline-offset:-2px}
+.pcard.on{background:#2f4f99;border-color:var(--accent2) #1b2c57 #1b2c57 var(--accent2)}
+.pcard small{color:#c3cbe0;font-size:11px;text-shadow:none;line-height:1.1}
+.ico{color:var(--accent2)}
+.pcard .ico{width:30px;height:30px}
+.shape-cv{width:56px;height:56px;background:#0b0e14;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+.mcard{background:var(--btn-lo);border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);margin-bottom:8px}
+.mcard.on{border-color:var(--accent2) #1b2c57 #1b2c57 var(--accent2);background:#1f2a47}
+.mcard>button{width:100%;display:flex;align-items:center;gap:10px;background:none;border:0;padding:8px 10px;text-align:left}
+.mcard>button:hover{background:#ffffff10}
+.mcard .ico{width:26px;height:26px;flex:none;color:var(--muted)}
+.mcard.on .ico{color:var(--accent2)}
+.mcard .mt{flex:1}
+.mcard .mb{padding:4px 10px 10px}
+.mcard.on .mi.spin{animation:kspin 2s linear infinite}
+.mcard.on .mi.orbit{animation:kspin 3s linear infinite}
+.mcard.on .mi.bob{animation:kbob 1s ease-in-out infinite}
+.mcard.on .mi.pulse{animation:kpulse 1s ease-in-out infinite}
+.mcard.on .mi.sway{transform-origin:50% 90%;animation:ksway 1.4s ease-in-out infinite}
+.mcard.on .mi.wave{animation:kwave 1s ease-in-out infinite}
+@keyframes kspin{to{transform:rotate(360deg)}}
+@keyframes kbob{50%{transform:translateY(-4px)}}
+@keyframes kpulse{50%{transform:scale(1.25)}}
+@keyframes ksway{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(16deg)}}
+@keyframes kwave{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+.sub{margin:10px 0 6px;font-size:12px;color:var(--accent);letter-spacing:.05em}
 .note{font-size:12px;color:var(--muted);margin:8px 0 0}
-.slot{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}
-.slot:last-child{border:0}
-.slot{align-items:center;gap:8px}
-.slot .slot-name{min-width:78px;font-weight:600}
-.slot input{flex:1;min-width:0}
-.stage{min-height:240px;border-radius:var(--r);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:28px 12px;overflow:auto;background:radial-gradient(circle at 50% 30%,#1c2438,#0a0d14 70%),#0a0d14;position:relative}
+.line{border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);margin-bottom:8px;background:var(--btn-lo)}
+.line-head{display:flex;gap:4px;align-items:center;padding:4px 6px}
+.line-toggle{flex:1;min-width:0;background:none;border:0;text-align:left;display:flex;gap:8px;align-items:center;padding:3px}
+.line-toggle .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.line-toggle .i{font-weight:600;color:var(--accent);flex:none}
+.line-body{padding:4px 10px 10px;border-top:2px solid var(--lo)}
+.qline{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px;align-items:start;margin-bottom:8px}
+.qline .ix{color:var(--accent);padding-top:4px;min-width:22px}
+.qline textarea{min-height:44px}
+.qline select{margin-bottom:4px}
+.stack-col{display:flex;flex-direction:column;gap:12px}
+.qtop{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.qprev{width:140px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;background:radial-gradient(circle at 50% 35%,#27324d,#0b0e14 75%);border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);padding:8px 4px;text-align:center;font-size:12px}
+.qprev .big{width:72px;height:72px}
+.qfields{flex:1;min-width:190px;display:flex;flex-direction:column;gap:10px}
+.skinbox{width:130px;height:190px;position:relative}
+.skinbox canvas{width:130px;height:190px;display:block}
+.skinbox .fb{width:130px;height:190px;object-fit:contain}
+.plate{background:#00000060;text-shadow:1px 1px 0 #000a;min-height:24px;margin-top:4px}
+.stage{min-height:150px;max-height:260px;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);display:flex;align-items:center;justify-content:center;padding:18px 8px;overflow:auto;background:radial-gradient(circle at 50% 30%,#1c2438,#0a0d14 70%),#0a0d14;position:relative}
 .stage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
 .stack{display:flex;flex-direction:column;align-items:center;gap:var(--gap,6px);position:relative;max-width:100%}
 .pv-line{position:relative;max-width:100%}
-.box{padding:2px 5px;border-radius:2px;font-family:ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word;line-height:1.25}
+.box{padding:2px 5px;font-family:var(--font);white-space:pre-wrap;word-break:break-word;line-height:1.25}
 .box .r{min-height:1.25em}
-.tile{width:34px;height:34px;border-radius:6px;background:linear-gradient(135deg,#3a4968,#27324a);border:1px solid #4c5d82;display:grid;place-items:center;font-size:9px;color:#cfd8ee;text-align:center;overflow:hidden;padding:2px;word-break:break-all}
-.npc-fig{display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
-.npc-fig .head-b{width:34px;height:34px;background:#8d6b52;border-radius:4px;margin-top:6px}
-.npc-fig .body-b{width:46px;height:62px;background:#3b6aa0;border-radius:4px}
-.npc-fig .legs{display:flex;gap:2px}
-.npc-fig .legs i{width:22px;height:46px;background:#3a3f78;border-radius:3px;display:block}
+.box img{width:100%;height:100%}
+.tile{border:2px solid #4c5d82;background:#27324a;display:grid;place-items:center;color:#cfd8ee}
 .pv-meta{font-size:12px;color:var(--muted);margin-top:6px;text-align:center}
-#toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:100;max-width:calc(100vw - 32px)}
-.toast{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:10px 14px;box-shadow:0 8px 24px #0008;max-width:380px;word-break:break-word}
+#toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:300;max-width:calc(100vw - 32px)}
+.toast{background:var(--panel2);border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);border-left:5px solid var(--accent);padding:8px 12px;box-shadow:0 8px 24px #0008;max-width:380px;word-break:break-word}
 .toast.err{border-left-color:var(--danger)}
 .toast.ok{border-left-color:var(--ok)}
-dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:18px;width:min(92vw,380px)}
+dialog{background:var(--panel);color:var(--text);border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);padding:16px;width:min(94vw,400px)}
 dialog::backdrop{background:#000a}
-dialog h3{margin:0 0 12px}
-dialog .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+dialog h3{margin:0 0 10px;font-weight:600;color:var(--accent)}
+dialog .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;align-items:center}
+.seg{display:flex;gap:6px;margin-bottom:10px}
+.seg .btn{flex:1}
+#pickDlg{width:min(96vw,640px);max-height:88vh;padding:12px}
+#pickDlg[open]{display:flex;flex-direction:column;gap:8px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:6px;overflow:auto;min-height:160px;flex:1;padding:4px}
+.pgrid .slot-mc{width:100%;height:50px}
+.pk-foot{display:flex;gap:8px;align-items:center}
+#pickHover{font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 #scrim{display:none}
-#gate{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;text-align:center;padding:24px;z-index:200}
+#gate{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;text-align:center;padding:24px;z-index:400}
 #gate div{max-width:420px}
 #gate h2{color:var(--accent);margin:0 0 8px}
-@media (max-width:1180px){.layout{grid-template-columns:minmax(0,1fr)}.preview{order:-1;position:static}}
-@media (max-width:860px){
-#app{display:block;height:auto;min-height:100vh}
-.topbar{display:flex}
-#side{position:fixed;top:0;bottom:0;left:0;width:min(86vw,320px);transform:translateX(-102%);transition:transform .2s;z-index:40}
+@media (max-width:1180px){
+#app{grid-template-columns:268px minmax(0,1fr)}
+#insp{position:fixed;top:0;right:0;bottom:0;width:min(410px,100vw);z-index:50;transform:translateX(104%);transition:transform .18s;box-shadow:-8px 0 24px #0008}
+#insp.open{transform:none}
+#inspToggle{display:inline-block}
+}
+@media (max-width:760px){
+#app{grid-template-columns:minmax(0,1fr)}
+#side{position:fixed;top:0;bottom:0;left:0;width:min(86vw,320px);transform:translateX(-104%);transition:transform .18s;z-index:60}
 #side.open{transform:none}
-#scrim.on{display:block;position:fixed;inset:0;background:#0009;z-index:35}
-main{padding:12px 16px;overflow:visible}
-.head h1{font-size:18px}
-.actions .btn{flex:1 1 auto}
+#scrim.on{display:block;position:fixed;inset:0;background:#000a;z-index:55}
+#insp{top:auto;left:0;right:0;width:auto;height:64vh;border-left:0;border-top:2px solid var(--hi);transform:translateY(104%);box-shadow:0 -8px 24px #0008}
+#insp.open{transform:none}
+#menuBtn{display:inline-block}
+.coordbar{display:none}
+.hint{max-width:calc(100% - 70px);bottom:6px}
+.zoombar{top:auto;bottom:44px;transform:none}
+.grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
 }
 </style>
 </head>
 <body>
-<div class="topbar"><button class="icon-btn" id="menuBtn" aria-label="Menu">&#9776;</button><span class="brand">ɴᴇxᴏʀᴀ</span></div>
 <div id="app">
   <aside id="side">
-    <div class="side-head"><span class="brand">ɴᴇxᴏʀᴀ</span><button class="btn sm" id="refreshBtn">Refresh</button></div>
-    <div class="tabs">
-      <button class="tab on" data-tab="hologram">Holograms <span class="n" id="cnt-hologram">0</span></button>
-      <button class="tab" data-tab="npc">NPCs <span class="n" id="cnt-npc">0</span></button>
-    </div>
-    <div class="search-row"><input type="text" id="search" placeholder="Search..." aria-label="Search"><button class="btn primary" id="newBtn">+ New</button></div>
+    <div class="side-head"><span class="brand">ɴᴇxᴏʀᴀ</span><button class="btn sm" id="refreshBtn" type="button">Refresh</button></div>
+    <div class="search-row"><input type="text" id="search" placeholder="Search..." aria-label="Search"><button class="btn primary" id="newBtn" type="button">+ New</button></div>
+    <div class="chips" id="chips"></div>
     <ul id="list"></ul>
   </aside>
-  <main id="main">
-    <div class="empty" id="empty">Select an object from the list or create a new one.</div>
-    <div id="editor" hidden>
-      <div class="head">
-        <div><h1><span class="chip" id="kindChip"></span><span id="title"></span></h1><div class="muted" id="coords"></div></div>
-        <div class="actions">
-          <button class="btn" id="aTp">Teleport</button>
-          <button class="btn" id="aMove">Move here</button>
-          <button class="btn" id="aPathAdd">Path add</button>
-          <button class="btn" id="aPathClear">Path clear</button>
-          <button class="btn danger" id="aDelete">Delete</button>
-          <button class="btn primary" id="aSave">Save</button>
-        </div>
+  <section id="mapwrap">
+    <canvas id="map"></canvas>
+    <div class="mapbar">
+      <div class="grp">
+        <button class="btn sq" id="menuBtn" type="button" aria-label="Objects">&#9776;</button>
+        <select id="worldSel" aria-label="World"></select>
+        <button class="btn" id="locP" type="button">Me</button>
+        <button class="btn" id="locO" type="button" disabled>Selected</button>
+        <button class="btn" id="refT" type="button">Terrain</button>
       </div>
-      <div class="layout">
-        <div id="cards"></div>
-        <div class="preview"><div class="card"><h2>Live preview</h2><div class="body"><div class="stage" id="stage"></div><div class="pv-meta" id="pvMeta"></div></div></div></div>
+      <div class="grp">
+        <button class="btn js-draw" id="mapDraw" type="button" disabled>Draw path</button>
+        <button class="btn js-undo" id="mapUndo" type="button" disabled>Undo</button>
+        <span class="ind" id="saveInd" data-k="saved">Saved &#10003;</span>
+        <button class="btn" id="inspToggle" type="button">Edit</button>
       </div>
     </div>
-  </main>
+    <div class="zoombar"><button class="btn sq" id="zIn" type="button" aria-label="Zoom in">+</button><button class="btn sq" id="zOut" type="button" aria-label="Zoom out">&minus;</button></div>
+    <div class="coordbar" id="coordBar"></div>
+    <div class="hint" id="mapHint" hidden></div>
+  </section>
+  <aside id="insp">
+    <div id="inspHead"></div>
+    <div class="itabs" id="inspTabs"></div>
+    <div id="inspBody"></div>
+  </aside>
 </div>
 <div id="scrim"></div>
 <div id="toasts" aria-live="polite"></div>
 <dialog id="newDlg">
   <form method="dialog" id="newForm">
-    <h3 id="newTitle">New</h3>
+    <h3>New object</h3>
+    <div class="seg" id="newKind"><button type="button" class="btn" data-k="hologram">Hologram</button><button type="button" class="btn" data-k="npc">NPC</button></div>
     <div class="field"><label for="newId">Id</label><input type="text" id="newId" autocomplete="off" maxlength="64"></div>
-    <div class="field" id="newTypeWrap" style="margin-top:10px"><label for="newType">Entity type</label><select id="newType"></select></div>
+    <div class="field" id="newTypeWrap" style="margin-top:10px"><label>Entity type</label><div id="newMob"></div></div>
     <p class="note">Created at your current position in game.</p>
     <div class="foot"><button type="button" class="btn" id="newCancel">Cancel</button><button type="submit" class="btn primary" id="newOk">Create</button></div>
   </form>
+</dialog>
+<dialog id="pickDlg">
+  <h3>Pick an item or block</h3>
+  <input type="text" id="pickQ" placeholder="Search... (e.g. diamond)" autocomplete="off" aria-label="Search materials">
+  <div class="chips" id="pickChips" style="padding:0"><button type="button" class="chip on" data-k="all">All</button><button type="button" class="chip" data-k="items">Items</button><button type="button" class="chip" data-k="blocks">Blocks</button></div>
+  <div class="pgrid" id="pickGrid"></div>
+  <button class="btn sm" id="pickMore" type="button" hidden>Show more</button>
+  <div class="pk-foot"><span id="pickHover" class="muted"></span><button class="btn danger" id="pickClear" type="button">Clear</button><button class="btn" id="pickCancel" type="button">Cancel</button></div>
 </dialog>
 <div id="gate" hidden><div><h2>Session required</h2><p class="muted" id="gateMsg">Run the web command in game to get a fresh link.</p></div></div>
 <script>
@@ -176,13 +282,101 @@ main{padding:12px 16px;overflow:visible}
 const $ = s => document.querySelector(s);
 const TOKEN_KEY = 'nexora.token';
 const TICK_MS = 50;
+const SAVE_MS = 400;
+const ME_MS = 3000;
+const ENSURE_MS = 200;
+const TILE = 64;
+const TILE_RADIUS = 32;
+const TILE_CONC = 2;
+const TILE_FETCH_LIMIT = 20;
+const TILE_TTL = 120000;
+const TILE_RETRY = 15000;
+const TILE_MAX_VISIBLE = 400;
+const SCALE_MIN = 3;
+const SCALE_MAX = 64;
+const SCALE_DEF = 10;
+const ICON = 30;
+const HIT_OBJ = 18;
+const HIT_NODE = 12;
+const HIT_MID = 10;
+const LONGPRESS = 550;
+const MOVE_SLOP = 5;
+const UNDO_MAX = 30;
+const PICK_PAGE = 200;
+const MAX_GEN_POINTS = 16;
+const DEFAULT_SPEED = 2;
+const GROUND_SLOP = 6;
+const LABEL_MIN_SCALE = 6;
+const WHEEL_K = 0.0025;
+const NO_H = -32768;
+const SKIN_W = 130;
+const SKIN_H = 190;
+const SHAPE_PX = 56;
+const SHAPE_MS = 60;
+const SHAPE_SPIN = 0.0016;
+const STEVE = 'MHF_Steve';
+const ACCENT = '#6293F0';
+const FONT_CANVAS = '"Pixelify Sans","Courier New",monospace';
 const COLORS = {'0':'#000000','1':'#0000AA','2':'#00AA00','3':'#00AAAA','4':'#AA0000','5':'#AA00AA','6':'#FFAA00','7':'#AAAAAA','8':'#555555','9':'#5555FF','a':'#55FF55','b':'#55FFFF','c':'#FF5555','d':'#FF55FF','e':'#FFFF55','f':'#FFFFFF'};
+const GLOW_HEX = {white:'#FFFFFF',gray:'#AAAAAA',dark_gray:'#555555',black:'#000000',red:'#FF5555',dark_red:'#AA0000',gold:'#FFAA00',yellow:'#FFFF55',green:'#55FF55',dark_green:'#00AA00',aqua:'#55FFFF',dark_aqua:'#00AAAA',blue:'#5555FF',dark_blue:'#0000AA',light_purple:'#FF55FF',dark_purple:'#AA00AA'};
 const RESET = {c:'#FFFFFF',b:false,i:false,u:false,s:false,k:false};
 const PX_BLOCK = 70;
 const FONT_PX = 14;
 const WIDTH_PX = 1.75;
 const OFFSET_PX = 40;
 const SAMPLE_PLAYER = 'Steve';
+const ENTITY_TEX = {IRON_GOLEM:'iron_block', SNOW_GOLEM:'snowball', ARMOR_STAND:'armor_stand'};
+const EQUIP_ORDER = ['HEAD','CHEST','LEGS','FEET','HAND','OFF_HAND'];
+const SHAPES = ['STACK','RING','HELIX','TORNADO','WHEEL','SPHERE','ROW'];
+const SHAPE_LABEL = {STACK:'Stack',RING:'Ring',HELIX:'Helix',TORNADO:'Tornado',WHEEL:'Wheel',SPHERE:'Sphere',ROW:'Row'};
+const PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#3a4254"/><rect x="1" y="1" width="14" height="14" fill="#2a3040"/><path d="M6 6h4v2H8v2M8 12h1" stroke="#8b94a8" stroke-width="1.4" fill="none"/></svg>');
+const ICONS = {
+  idle: 'M7 7h9l-9 10h9',
+  look: 'M2 12c3-5 7-7 10-7s7 2 10 7c-3 5-7 7-10 7S5 17 2 12zM12 9a3 3 0 100 6 3 3 0 000-6z',
+  circle: 'M12 3a9 9 0 100 18 9 9 0 000-18z',
+  square: 'M4 4h16v16H4z',
+  fig8: 'M12 12C9 6 3 6 3 12s6 6 9 0 9-6 9 0-6 6-9 0z',
+  spin: 'M20 12a8 8 0 11-3-6.2M20 4v5h-5',
+  dance: 'M9 18V6l10-2v12M9 18a3 3 0 11-6 0 3 3 0 016 0zM19 16a3 3 0 11-6 0 3 3 0 016 0z',
+  guard: 'M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z',
+  bob: 'M12 5v14M8 9l4-4 4 4M8 15l4 4 4-4',
+  orbit: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 7a1.5 1.5 0 100 3 1.5 1.5 0 000-3z',
+  pulse: 'M3 12h4l2-6 4 12 2-6h6',
+  sway: 'M12 3v9M12 12l-6 8M12 12l6 8',
+  wave: 'M2 12c3-6 5-6 8 0s5 6 8 0 2-3 4-2'
+};
+const MOTIONS = [
+  {id:'spin', label:'Spin', hint:'Rotate around its axis', props:['spin-speed'], defaults:['90']},
+  {id:'bob', label:'Bob', hint:'Float up and down', props:['bob-height','bob-speed'], defaults:['0.3','0.5']},
+  {id:'orbit', label:'Orbit', hint:'Circle around the anchor', props:['orbit-radius','orbit-speed'], defaults:['2','0.2']},
+  {id:'pulse', label:'Pulse', hint:'Grow and shrink', props:['pulse-amount','pulse-speed'], defaults:['0.15','1']},
+  {id:'sway', label:'Sway', hint:'Swing side to side', props:['sway-angle','sway-speed'], defaults:['10','0.5']},
+  {id:'wave', label:'Wave', hint:'Ripple through the lines', props:['wave-height','wave-speed'], defaults:['0.2','0.5']}
+];
+const RADIUS_SHAPES = new Set(['RING','HELIX','TORNADO','WHEEL','SPHERE']);
+const TURN_SHAPES = new Set(['HELIX','TORNADO']);
+const GEN = {
+  circle: r => {
+    const k = clamp(Math.round(r * 2.5), 8, MAX_GEN_POINTS);
+    return Array.from({length: k}, (_, i) => { const a = i / k * Math.PI * 2; return [Math.cos(a) * r, Math.sin(a) * r]; });
+  },
+  square: r => [[-r, -r], [r, -r], [r, r], [-r, r]],
+  fig8: r => Array.from({length: MAX_GEN_POINTS}, (_, i) => { const a = i / MAX_GEN_POINTS * Math.PI * 2; return [Math.sin(a) * r, Math.sin(2 * a) * r / 2]; })
+};
+const TABS = {
+  npc: [['quick','Quick'],['movement','Movement'],['appearance','Appearance'],['advanced','Advanced']],
+  hologram: [['quick','Quick'],['movement','Movement'],['appearance','Appearance'],['advanced','Advanced'],['lines','Lines']]
+};
+const NPC_APPEARANCE = [
+  ['Identity', ['entity-type','name','name-visible','description']],
+  ['Skin', ['skin-name','skin-value','skin-signature']],
+  ['Look', ['pose','glow','glow-color','scale']],
+  ['Particles', ['particle','particle-count','particle-radius','particle-interval']]
+];
+const HOLO_APPEARANCE = [
+  ['General', ['view-range','line-spacing']],
+  ['Particles', ['particle','particle-count','particle-radius','particle-interval']]
+];
 
 let token = null;
 try {
@@ -195,9 +389,14 @@ try {
 }
 if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 
-const S = {schema: null, cfg: null, objects: [], tab: 'hologram', search: '', cur: null, props: {}, lines: [], dirty: false};
+const S = {schema: null, cfg: null, assets: {}, objects: [], filter: 'all', search: '', cur: null, props: {}, lines: [], pm: {}, path: [], undo: [], tab: 'quick', pending: false, pathPending: false, me: null, mats: null, drawing: false, ui: {radius: 5, shape: null}, skin: null};
 let uid = 0;
 let T0 = performance.now();
+
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
+function r2(v) { return Math.round(v * 100) / 100; }
+function debounce(fn, ms) { let t = 0; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
 function el(tag, props, ...kids) {
   const e = document.createElement(tag);
@@ -210,6 +409,43 @@ function el(tag, props, ...kids) {
   }
   for (const c of kids.flat()) if (c != null) e.append(c);
   return e;
+}
+
+const NS = 'http://www.w3.org/2000/svg';
+function svgIcon(d, size, cls) {
+  const s = document.createElementNS(NS, 'svg');
+  s.setAttribute('viewBox', '0 0 24 24');
+  s.setAttribute('width', String(size || 24));
+  s.setAttribute('height', String(size || 24));
+  s.setAttribute('class', 'ico ' + (cls || ''));
+  const p = document.createElementNS(NS, 'path');
+  p.setAttribute('d', d);
+  p.setAttribute('fill', 'none');
+  p.setAttribute('stroke', 'currentColor');
+  p.setAttribute('stroke-width', '2');
+  p.setAttribute('stroke-linecap', 'round');
+  p.setAttribute('stroke-linejoin', 'round');
+  s.append(p);
+  return s;
+}
+
+function holoIcon(size) {
+  const s = document.createElementNS(NS, 'svg');
+  s.setAttribute('viewBox', '0 0 24 24');
+  s.setAttribute('width', String(size));
+  s.setAttribute('height', String(size));
+  s.style.filter = 'drop-shadow(0 0 4px ' + ACCENT + ')';
+  const d = document.createElementNS(NS, 'path');
+  d.setAttribute('d', 'M12 2l8 10-8 10-8-10z');
+  d.setAttribute('fill', ACCENT);
+  d.setAttribute('stroke', '#dbe8ff');
+  d.setAttribute('stroke-width', '1.5');
+  const t = document.createElementNS(NS, 'path');
+  t.setAttribute('d', 'M8.5 10.5h7M9.5 13.5h5');
+  t.setAttribute('stroke', '#ffffff');
+  t.setAttribute('stroke-width', '1.6');
+  s.append(d, t);
+  return s;
 }
 
 function toast(msg, kind) {
@@ -260,6 +496,112 @@ function mix(a, b, t) {
   const ch = k => parseInt(pa.substr(1 + k * 2, 2), 16) * (1 - t) + parseInt(pb.substr(1 + k * 2, 2), 16) * t;
   return '#' + [0, 1, 2].map(k => hex2(ch(k))).join('');
 }
+
+const safeUrl = u => /^https?:\/\//i.test(String(u || '')) ? String(u) : '';
+function fill(tpl, map) {
+  return safeUrl(tpl).replace(/\{(\w+)\}/g, (m, k) => map[k] != null ? encodeURIComponent(map[k]) : m);
+}
+
+function loadFont() {
+  const u = safeUrl(S.assets.font);
+  if (!u) return;
+  const l = document.createElement('link');
+  l.rel = 'stylesheet';
+  l.href = u;
+  l.onload = () => { if (document.fonts && document.fonts.load) document.fonts.load('14px "Pixelify Sans"').then(redraw, () => {}); };
+  document.head.append(l);
+}
+
+const texCache = new Map();
+function texCandidates(name) {
+  const t = S.assets.texture;
+  if (!t || !name) return [];
+  const isBlock = S.mats && S.mats.blockSet.has(name);
+  const item = fill(t, {type: 'item', name});
+  const block = fill(t, {type: 'block', name});
+  const variants = ['_top', '_side', '_front', '_bottom'].map(v => fill(t, {type: 'block', name: name + v}));
+  return (isBlock ? [block, item] : [item, block]).concat(variants);
+}
+function texFinish(e, state, url, img) {
+  e.state = state;
+  e.url = url;
+  e.img = img;
+  const w = e.waiters;
+  e.waiters = [];
+  for (const f of w) f(e);
+}
+function texProbe(e, list, i) {
+  if (i >= list.length) {
+    const ph = new Image();
+    ph.src = PLACEHOLDER;
+    texFinish(e, 'fail', PLACEHOLDER, ph);
+    return;
+  }
+  const img = new Image();
+  img.onload = () => texFinish(e, 'ok', list[i], img);
+  img.onerror = () => texProbe(e, list, i + 1);
+  img.src = list[i];
+}
+function getTex(name, cb) {
+  let e = texCache.get(name);
+  if (!e) {
+    e = {state: 'loading', url: PLACEHOLDER, img: null, waiters: [], watch: false};
+    texCache.set(name, e);
+    texProbe(e, texCandidates(name), 0);
+  }
+  if (e.state === 'loading') e.waiters.push(cb);
+  else cb(e);
+}
+function texNow(name) {
+  let e = texCache.get(name);
+  if (!e) { getTex(name, redraw); e = texCache.get(name); e.watch = true; }
+  else if (e.state === 'loading' && !e.watch) { e.watch = true; e.waiters.push(redraw); }
+  return e.state === 'ok' ? e : null;
+}
+
+const lazyObs = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
+  for (const x of es) if (x.isIntersecting) { lazyObs.unobserve(x.target); x.target._go(); }
+}, {rootMargin: '120px'}) : null;
+
+function texEl(name, size, lazy) {
+  const i = el('img', {class: 'tex', alt: '', draggable: 'false', width: size, height: size});
+  const go = () => getTex(name, e => { i.src = e.url; });
+  if (lazy && lazyObs) { i._go = go; lazyObs.observe(i); } else go();
+  return i;
+}
+
+const imgCache = new Map();
+function peekImg(url) {
+  let e = imgCache.get(url);
+  if (!e) {
+    e = {state: 'loading', img: new Image(), watch: true};
+    imgCache.set(url, e);
+    e.img.onload = () => { e.state = 'ok'; redraw(); };
+    e.img.onerror = () => { e.state = 'fail'; redraw(); };
+    e.img.src = url;
+  }
+  return e;
+}
+function headUrl(id, size) { return fill(S.assets.head, {id: id || STEVE, size}); }
+function headNow(id) {
+  const e = peekImg(headUrl(id, 64));
+  if (e.state === 'fail' && id && id !== STEVE) return headNow(STEVE);
+  return e.state === 'ok' ? e : null;
+}
+function headEl(id, size) {
+  const i = el('img', {class: 'tex', alt: '', draggable: 'false', width: size, height: size, src: headUrl(id, size * 2)});
+  let tried = false;
+  i.addEventListener('error', () => { if (tried) return; tried = true; i.src = headUrl(STEVE, size * 2); });
+  return i;
+}
+function entityTex(type) { return ENTITY_TEX[type] || String(type || '').toLowerCase() + '_spawn_egg'; }
+function isPlayerType(t) { return !t || t === 'MANNEQUIN'; }
+function iconEl(o, size) {
+  if (o.kind === 'hologram') return holoIcon(size);
+  return isPlayerType(o.entityType) ? headEl(o.skinId, size) : texEl(entityTex(o.entityType), size);
+}
+
+const OBF = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
 function parseText(text) {
   const out = [];
@@ -333,7 +675,6 @@ function sameStyle(a, b) {
   return a.c === b.c && a.b === b.b && a.i === b.i && a.u === b.u && a.s === b.s && a.k === b.k;
 }
 
-const OBF = 'abcdefghijklmnopqrstuvwxyz0123456789';
 function charsToRows(chars) {
   const rows = [el('div', {class: 'r'})];
   let run = null;
@@ -371,7 +712,7 @@ function isAnimated(l) {
   return (sep && text.includes(sep)) || l.effect !== 'NONE' || /\{(time|online|max|date)\}|&k/i.test(text);
 }
 
-function lineNode(l, spacingPx) {
+function lineNode(l) {
   const root = el('div', {class: 'pv-line'});
   const scale = Math.max(0.1, Number(l.scale) || 1);
   const offset = Number(l['offset-y']) || 0;
@@ -385,8 +726,9 @@ function lineNode(l, spacingPx) {
     box.style.opacity = String(Math.max(30, Math.min(255, Number(l.opacity) || 255)) / 255);
     if (l.shadow === 'true') box.style.textShadow = '1px 1px 0 rgba(0,0,0,.65)';
   } else {
-    const size = Math.round(34 * scale);
-    const tile = el('div', {class: 'tile', text: String(l.material || '').toLowerCase().replace(/_/g, ' ')});
+    const size = Math.round(40 * scale);
+    const name = String(l.material || '').toLowerCase();
+    const tile = name ? texEl(name, size) : el('div', {class: 'tile', text: '?'});
     tile.style.width = tile.style.height = size + 'px';
     box.append(tile);
     box.style.background = 'transparent';
@@ -404,42 +746,22 @@ function paintLine(n, tick) {
 let pv = [];
 function buildPreview() {
   const stage = $('#stage');
-  stage.replaceChildren();
   pv = [];
-  if (!S.cur) return;
-  const kind = S.cur.kind;
-  if (kind === 'hologram') {
-    const spacing = Number(S.props['line-spacing']) || 0.3;
-    const stack = el('div', {class: 'stack'});
-    stack.style.setProperty('--gap', Math.max(2, (spacing - 0.2) * PX_BLOCK) + 'px');
-    for (const l of S.lines) {
-      const n = lineNode(l.props);
-      stack.append(n.root);
-      pv.push(n);
-    }
-    if (!S.lines.length) stack.append(el('div', {class: 'muted', text: 'No lines'}));
-    stage.append(stack);
-    $('#pvMeta').textContent = S.lines.length + ' line(s)';
-  } else {
-    const p = S.props;
-    const fig = el('div', {class: 'npc-fig'});
-    const plate = el('div', {class: 'box'});
-    plate.style.background = 'rgba(0,0,0,.25)';
-    plate.style.textShadow = '1px 1px 0 rgba(0,0,0,.65)';
-    const plain = {effect: 'NONE'};
-    const nameVisible = p['name-visible'] !== 'false';
-    if (nameVisible) plate.replaceChildren(...renderText(p.name, plain, 0));
-    if (nameVisible) fig.append(plate);
-    if (p['entity-type'] === 'MANNEQUIN' && p.description) {
-      const desc = el('div', {class: 'box'});
-      desc.style.background = 'rgba(0,0,0,.25)';
-      desc.replaceChildren(...renderText(p.description, plain, 0));
-      fig.append(desc);
-    }
-    fig.append(el('div', {class: 'head-b'}), el('div', {class: 'body-b'}), el('div', {class: 'legs'}, el('i'), el('i')));
-    stage.append(fig);
-    $('#pvMeta').textContent = String(p['entity-type'] || '');
+  if (!stage) return;
+  stage.replaceChildren();
+  if (!S.cur || S.cur.kind !== 'hologram') return;
+  const spacing = Number(S.props['line-spacing']) || 0.3;
+  const stack = el('div', {class: 'stack'});
+  stack.style.setProperty('--gap', Math.max(2, (spacing - 0.2) * PX_BLOCK) + 'px');
+  for (const l of S.lines) {
+    const n = lineNode(l.props);
+    stack.append(n.root);
+    pv.push(n);
   }
+  if (!S.lines.length) stack.append(el('div', {class: 'muted', text: 'No lines'}));
+  stage.append(stack);
+  const meta = $('#pvMeta');
+  if (meta) meta.textContent = S.lines.length + ' line(s)';
   tickPreview(true);
 }
 
@@ -447,20 +769,129 @@ function tickPreview(force) {
   const tick = Math.floor((performance.now() - T0) / TICK_MS);
   for (const n of pv) if (force || n.animated) paintLine(n, tick);
 }
-setInterval(() => { if (!document.hidden && S.cur) tickPreview(false); }, TICK_MS);
+setInterval(() => { if (!document.hidden && S.cur && pv.length) tickPreview(false); }, TICK_MS);
 
-function markDirty() {
-  S.dirty = true;
-  $('#aSave').textContent = 'Save *';
+function pvCard() {
+  return el('section', {class: 'card'}, el('h2', {text: 'Live preview'}), el('div', {class: 'body'}, el('div', {class: 'stage', id: 'stage'}), el('div', {class: 'pv-meta', id: 'pvMeta'})));
 }
 
-function clean() {
-  S.dirty = false;
-  $('#aSave').textContent = 'Save';
+const IND = {pending: 'Unsaved...', saving: 'Saving...', saved: 'Saved ✓', error: 'Save failed'};
+function setInd(k) {
+  const n = $('#saveInd');
+  n.textContent = IND[k] || '';
+  n.dataset.k = k;
 }
+
+let saveTimer = 0;
+let saving = null;
+let pathTimer = 0;
+let pathSaving = null;
+
+function touch() {
+  if (!S.cur) return;
+  S.pending = true;
+  setInd('pending');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(runSave, SAVE_MS);
+}
+
+function ref() { return {kind: S.cur.kind, id: S.cur.id}; }
+
+async function runSave() {
+  clearTimeout(saveTimer);
+  if (saving) await saving;
+  if (!S.pending || !S.cur) return;
+  S.pending = false;
+  const c = S.cur;
+  const known = new Set(Object.keys(S.pm));
+  const props = {};
+  for (const [k, v] of Object.entries(S.props)) if (known.has(k)) props[k] = v;
+  const body = {kind: c.kind, id: c.id, props};
+  const snap = S.lines.slice();
+  if (c.kind === 'hologram') body.lines = snap.map(l => ({ref: l.ref, props: l.props}));
+  setInd('saving');
+  saving = (async () => {
+    try {
+      const res = await api('/api/save', body);
+      snap.forEach((l, i) => { l.ref = i; });
+      setInd(S.pending || S.pathPending ? 'pending' : 'saved');
+      if (res && res.invalid && res.invalid.length) {
+        toast('Invalid values reset: ' + res.invalid.join(', '), 'err');
+        if (S.cur === c && !S.pending) await reloadCurrent();
+      }
+    } catch (e) {
+      S.pending = true;
+      setInd('error');
+      toast(e.message, 'err');
+    }
+  })();
+  await saving;
+  saving = null;
+}
+
+function schedulePathSave() {
+  S.pathPending = true;
+  setInd('pending');
+  clearTimeout(pathTimer);
+  pathTimer = setTimeout(runPathSave, SAVE_MS);
+}
+
+async function runPathSave() {
+  clearTimeout(pathTimer);
+  if (pathSaving) await pathSaving;
+  if (!S.pathPending || !S.cur) return;
+  S.pathPending = false;
+  const c = S.cur;
+  const points = S.path.map(p => [r2(p[0]), r2(p[1]), r2(p[2])]);
+  setInd('saving');
+  pathSaving = (async () => {
+    try {
+      const r = await api('/api/waypoints', {kind: c.kind, id: c.id, points});
+      c.waypoints = r && r.waypoints != null ? r.waypoints : points.length;
+      const o = curEntry();
+      if (o) o.pathPoints = c.waypoints;
+      setInd(S.pending || S.pathPending ? 'pending' : 'saved');
+    } catch (e) {
+      S.pathPending = true;
+      setInd('error');
+      toast(e.message, 'err');
+    }
+  })();
+  await pathSaving;
+  pathSaving = null;
+}
+
+async function flushAll() {
+  clearTimeout(saveTimer);
+  clearTimeout(pathTimer);
+  if (S.pending || saving) await runSave();
+  if (S.pathPending || pathSaving) await runPathSave();
+}
+
+function busy() { return S.pending || S.pathPending || saving || pathSaving; }
+
+function curEntry() {
+  return S.cur ? S.objects.find(o => o.kind === S.cur.kind && o.id === S.cur.id) : null;
+}
+
+const skinSideEffect = debounce(() => { redraw(); renderList(); }, 700);
+
+function setProp(id, v) {
+  S.props[id] = v;
+  touch();
+  const o = curEntry();
+  if (o) {
+    if (id === 'entity-type') { o.entityType = v; redraw(); renderList(); }
+    if (id === 'skin-name' && v) { o.skinId = v; skinSideEffect(); }
+  }
+  if (S.cur && S.cur.kind === 'hologram') buildPreview();
+}
+
+const isOn = id => String(S.props[id]) === 'true';
+const nv = id => num(S.props[id]);
 
 function field(prop, id, node, wide) {
-  return el('div', {class: 'field' + (wide ? ' wide' : '')}, el('label', {for: id, text: prop.label}), node);
+  return el('div', {class: 'field' + (wide ? ' wide' : '')}, el('label', {for: id || false, text: prop.label}), node);
 }
 
 function stepOf(prop) {
@@ -486,24 +917,24 @@ function control(prop, value, set) {
     const ranged = prop.max > prop.min;
     const step = stepOf(prop);
     const lim = ranged ? {min: prop.min, max: prop.max} : {};
-    const num = el('input', Object.assign({type: 'number', id, step}, lim));
+    const num2 = el('input', Object.assign({type: 'number', id, step}, lim));
     const rng = ranged ? el('input', Object.assign({type: 'range', step, 'aria-label': prop.label}, lim)) : null;
-    num.value = value;
+    num2.value = value;
     if (rng) {
       rng.value = value;
-      rng.addEventListener('input', () => { num.value = rng.value; set(rng.value); });
+      rng.addEventListener('input', () => { num2.value = rng.value; set(rng.value); });
     }
-    num.addEventListener('input', () => { if (num.value !== '' && Number.isFinite(Number(num.value))) { if (rng) rng.value = num.value; set(num.value); } });
-    num.addEventListener('change', () => {
-      let v = Number(num.value);
+    num2.addEventListener('input', () => { if (num2.value !== '' && Number.isFinite(Number(num2.value))) { if (rng) rng.value = num2.value; set(num2.value); } });
+    num2.addEventListener('change', () => {
+      let v = Number(num2.value);
       if (!Number.isFinite(v)) v = Number(value) || 0;
       if (ranged) v = Math.max(prop.min, Math.min(prop.max, v));
       if (t === 'integer') v = Math.round(v);
-      num.value = v;
+      num2.value = v;
       if (rng) rng.value = v;
       set(String(v));
     });
-    return field(prop, id, el('div', {class: 'row2'}, rng, num));
+    return field(prop, id, el('div', {class: 'row2'}, rng, num2));
   }
   if (t === 'bool') {
     const c = el('input', {type: 'checkbox', id});
@@ -551,13 +982,93 @@ function colorControl(prop, id, value, set) {
   return field(prop, id, el('div', {class: 'color-row'}, picker, hex, a), alpha);
 }
 
-function sectionCard(sec, store, onChange, nested) {
-  const grid = el('div', {class: 'grid'});
-  for (const prop of sec.props) {
-    grid.append(control(prop, store[prop.id], v => { store[prop.id] = v; markDirty(); onChange(prop.id); }));
+function swatchControl(prop, value, set) {
+  const wrap = el('div', {class: 'swatches'});
+  let cur = value;
+  const paint = () => { for (const b of wrap.children) b.classList.toggle('on', b.dataset.v === cur); };
+  for (const o of prop.options) {
+    const b = el('button', {type: 'button', class: 'sw', title: o.label, 'aria-label': o.label, 'data-v': o.id});
+    b.style.background = GLOW_HEX[o.id] || '#888888';
+    b.addEventListener('click', () => { cur = o.id; paint(); set(o.id); });
+    wrap.append(b);
   }
+  paint();
+  return field(prop, '', wrap, true);
+}
+
+function materialControl(prop, value, set) {
+  const id = 'f' + (++uid);
+  const slot = el('button', {class: 'slot-mc', type: 'button', 'aria-label': prop.label});
+  const input = el('input', {type: 'text', id, maxlength: prop.max > 0 ? prop.max : false, spellcheck: 'false'});
+  input.value = value || '';
+  const paint = v => slot.replaceChildren(v ? texEl(String(v).toLowerCase(), 32) : el('span', {class: 'plus', text: '+'}));
+  paint(value);
+  input.addEventListener('input', () => set(input.value));
+  input.addEventListener('change', () => paint(input.value));
+  slot.addEventListener('click', async () => {
+    const r = await pickMaterial({clear: true});
+    if (r == null) return;
+    input.value = r;
+    paint(r);
+    set(r);
+  });
+  return field(prop, id, el('div', {class: 'row2'}, slot, input), true);
+}
+
+function entityOptions() {
+  const p = S.schema.kinds.npc.sections.flatMap(s => s.props).find(x => x.id === 'entity-type');
+  return p ? p.options : [];
+}
+
+function mobGrid(value, onPick) {
+  const grid = el('div', {class: 'mobgrid'});
+  let cur = value;
+  const paint = () => { for (const b of grid.children) b.classList.toggle('on', b.dataset.v === cur); };
+  for (const o of entityOptions()) {
+    const icon = o.id === 'MANNEQUIN' ? headEl(STEVE, 32) : texEl(entityTex(o.id), 32, true);
+    const b = el('button', {type: 'button', class: 'mob', title: o.label, 'data-v': o.id}, icon, el('span', {text: o.label}));
+    b.addEventListener('click', () => { cur = o.id; paint(); onPick(o.id); });
+    grid.append(b);
+  }
+  paint();
+  return grid;
+}
+
+function entityControl(prop, value, set) {
+  const grid = mobGrid(value, v => {
+    set(v);
+    if (S.tab === 'quick' || S.tab === 'appearance') renderBody();
+  });
+  return field(prop, '', grid, true);
+}
+
+function controlFor(prop, value, set) {
+  if (prop.id === 'material' && prop.type === 'text') return materialControl(prop, value, set);
+  if (prop.id === 'glow-color' && prop.type === 'choice') return swatchControl(prop, value, set);
+  if (prop.id === 'entity-type' && prop.type === 'choice') return entityControl(prop, value, set);
+  return control(prop, value, set);
+}
+
+function pc(id) {
+  const p = S.pm[id];
+  return p ? controlFor(p, S.props[id], v => setProp(id, v)) : null;
+}
+
+function sectionCard(sec, store, setFn, nested) {
+  const grid = el('div', {class: 'grid'});
+  for (const prop of sec.props) grid.append(controlFor(prop, store[prop.id], v => setFn(prop.id, v)));
   if (nested) return el('div', {}, el('div', {class: 'sub', text: sec.title}), grid);
   return el('section', {class: 'card'}, el('h2', {text: sec.title}), el('div', {class: 'body'}, grid));
+}
+
+function groupCard(title, ids) {
+  const grid = el('div', {class: 'grid'});
+  let n = 0;
+  for (const id of ids) {
+    const c = pc(id);
+    if (c) { grid.append(c); n++; }
+  }
+  return n ? el('section', {class: 'card'}, el('h2', {text: title}), el('div', {class: 'body'}, grid)) : null;
 }
 
 function lineSummary(l) {
@@ -574,7 +1085,9 @@ function lineCard(l, index, rerender) {
     if (built) return;
     built = true;
     for (const sec of S.schema.kinds.line.sections) {
-      body.append(sectionCard(sec, l.props, id => {
+      body.append(sectionCard(sec, l.props, (id, v) => {
+        l.props[id] = v;
+        touch();
         summary.textContent = lineSummary(l);
         buildPreview();
       }, true));
@@ -592,17 +1105,24 @@ function lineCard(l, index, rerender) {
     const j = index + d;
     if (j < 0 || j >= S.lines.length) return;
     [S.lines[index], S.lines[j]] = [S.lines[j], S.lines[index]];
-    markDirty();
+    touch();
     rerender();
     buildPreview();
   }});
-  const del = el('button', {class: 'btn sm danger', type: 'button', 'aria-label': 'Delete line', text: '✕', onclick: () => {
+  const del = el('button', {class: 'btn sm danger', type: 'button', 'aria-label': 'Delete line', text: 'X', onclick: () => {
     S.lines.splice(index, 1);
-    markDirty();
+    touch();
     rerender();
     buildPreview();
   }});
   return el('div', {class: 'line'}, el('div', {class: 'line-head'}, toggle, move(-1, 'Move up', '↑'), move(1, 'Move down', '↓'), del), body);
+}
+
+function addLine(open) {
+  if (S.lines.length >= S.cfg.maxLines) return false;
+  S.lines.push({ref: -1, props: Object.assign({}, S.cfg.lineDefaults), hasItem: false, open: !!open});
+  touch();
+  return true;
 }
 
 function linesPanel() {
@@ -614,9 +1134,7 @@ function linesPanel() {
     add.disabled = S.lines.length >= S.cfg.maxLines;
   };
   const add = el('button', {class: 'btn sm', type: 'button', text: '+ Add line', onclick: () => {
-    if (S.lines.length >= S.cfg.maxLines) return;
-    S.lines.push({ref: -1, props: Object.assign({}, S.cfg.lineDefaults), hasItem: false, open: true});
-    markDirty();
+    if (!addLine(true)) return;
     render();
     buildPreview();
   }});
@@ -624,199 +1142,1493 @@ function linesPanel() {
   return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Lines'}), el('span', {class: 'row2'}, count, add)), el('div', {class: 'body'}, list));
 }
 
-function equipmentCard() {
-  const rows = (S.cur.equipment || []).map(s => {
-    const input = el('input', {type: 'text', value: s.material || '', placeholder: 'empty (e.g. diamond_sword)', 'aria-label': s.slot + ' material'});
-    const set = el('button', {class: 'btn sm', type: 'button', text: 'Set', onclick: ev => run(ev.currentTarget, () => equip(s.slot, input.value))});
-    const clear = el('button', {class: 'btn sm danger', type: 'button', text: 'Clear', onclick: ev => run(ev.currentTarget, () => equip(s.slot, ''))});
-    return el('div', {class: 'slot'}, el('span', {class: 'slot-name', text: s.slot.toLowerCase().replace(/_/g, ' ')}), input, set, clear);
+function quickLines() {
+  const list = el('div');
+  const count = el('span', {class: 'muted'});
+  const render = () => {
+    list.replaceChildren(...S.lines.map((l, i) => quickLine(l, i, render)));
+    count.textContent = S.lines.length + ' / ' + S.cfg.maxLines;
+    add.disabled = S.lines.length >= S.cfg.maxLines;
+  };
+  const add = el('button', {class: 'btn sm', type: 'button', text: '+ Add line', onclick: () => {
+    if (!addLine(false)) return;
+    render();
+    buildPreview();
+  }});
+  render();
+  return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Text'}), el('span', {class: 'row2'}, count, add)), el('div', {class: 'body'}, list));
+}
+
+function quickLine(l, i, rerender) {
+  const typeProp = S.schema.kinds.line.sections.flatMap(s => s.props).find(p => p.id === 'type');
+  const sel = el('select', {'aria-label': 'Line type'}, (typeProp ? typeProp.options : []).map(o => el('option', {value: o.id, text: o.label})));
+  sel.value = l.props.type;
+  sel.addEventListener('change', () => { l.props.type = sel.value; touch(); rerender(); buildPreview(); });
+  let main;
+  if (l.props.type === 'TEXT') {
+    main = el('textarea', {rows: 2, 'aria-label': 'Line text'});
+    main.value = l.props.text || '';
+    main.addEventListener('input', () => { l.props.text = main.value; touch(); buildPreview(); });
+  } else {
+    const mp = {id: 'material', label: 'Material', type: 'text', max: 64};
+    main = materialControl(mp, l.props.material, v => { l.props.material = v; touch(); buildPreview(); });
+  }
+  const del = el('button', {class: 'btn sm danger', type: 'button', 'aria-label': 'Delete line', text: 'X', onclick: () => {
+    S.lines.splice(i, 1);
+    touch();
+    rerender();
+    buildPreview();
+  }});
+  return el('div', {class: 'qline'}, el('span', {class: 'ix', text: '#' + (i + 1)}), el('div', {}, sel, main), del);
+}
+
+function equipmentPanel() {
+  const eq = (S.cur.equipment || []).slice().sort((a, b) => {
+    const ia = EQUIP_ORDER.indexOf(a.slot), ib = EQUIP_ORDER.indexOf(b.slot);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
   });
-  return el('section', {class: 'card'}, el('h2', {text: 'Equipment'}), el('div', {class: 'body'}, rows, el('p', {class: 'note', text: 'Type a material id. Items with enchants or custom models can be equipped in game from your hand.'})));
+  if (!eq.length) return null;
+  const grid = el('div', {class: 'slots'});
+  for (const s of eq) {
+    const b = el('button', {type: 'button', class: 'slot-mc', title: s.material || 'empty', 'aria-label': s.slot}, s.material ? texEl(String(s.material).toLowerCase(), 36) : el('span', {class: 'plus', text: '+'}));
+    b.addEventListener('click', async () => {
+      const r = await pickMaterial({clear: true});
+      if (r == null) return;
+      equipItem(s, r);
+    });
+    grid.append(el('div', {class: 'slotcell'}, b, el('span', {text: s.slot.toLowerCase().replace(/_/g, ' ')})));
+  }
+  return el('section', {class: 'card'}, el('h2', {text: 'Equipment'}), el('div', {class: 'body'}, grid, el('p', {class: 'note', text: 'Click a slot to pick an item. Enchants and custom models can be set in game from your hand.'})));
 }
 
-async function equip(slot, material) {
-  if (S.dirty && !confirm('Unsaved changes will be discarded. Continue?')) return;
-  await api('/api/equip', Object.assign(ref(), {slot, material: material.trim()}));
-  await select(S.cur.kind, S.cur.id, []);
-  toast(material.trim() ? 'Equipped ' + slot.toLowerCase() : 'Cleared ' + slot.toLowerCase(), 'ok');
-}
-
-
-function renderEditor() {
-  const c = S.cur;
-  $('#empty').hidden = true;
-  $('#editor').hidden = false;
-  $('#kindChip').textContent = c.kind === 'hologram' ? 'Hologram' : 'NPC';
-  $('#title').textContent = c.id;
-  $('#aPathAdd').hidden = $('#aPathClear').hidden = false;
-  renderMeta();
-  const cards = $('#cards');
-  cards.replaceChildren();
-  for (const sec of S.schema.kinds[c.kind].sections) cards.append(sectionCard(sec, S.props, () => buildPreview()));
-  if (c.kind === 'hologram') cards.append(linesPanel());
-  else cards.append(equipmentCard());
-  buildPreview();
-}
-
-function renderMeta() {
-  const c = S.cur;
-  $('#coords').textContent = c.world + ' · ' + [c.x, c.y, c.z].map(v => Number(v).toFixed(1)).join(', ') + ' · path: ' + c.waypoints + ' pt';
-}
-
-function adopt(data, keepOpen) {
-  S.cur = {kind: data.kind, id: data.id, world: data.world, x: data.x, y: data.y, z: data.z, waypoints: data.waypoints, equipment: data.equipment};
-  const ids = new Set(S.schema.kinds[data.kind].sections.flatMap(s => s.props.map(p => p.id)));
-  S.props = {};
-  for (const [k, v] of Object.entries(data.props || {})) if (ids.has(k)) S.props[k] = v;
-  S.lines = (data.lines || []).map((l, i) => ({ref: i, props: Object.assign({}, l.props), hasItem: !!l.hasItem, open: keepOpen ? !!keepOpen[i] : false}));
-  clean();
-}
-
-async function select(kind, id, keepOpen) {
-  if (S.dirty && !keepOpen && !confirm('Discard unsaved changes?')) return;
+async function equipItem(s, material) {
   try {
-    const data = await api('/api/object', {kind, id});
-    adopt(data, keepOpen);
-    T0 = performance.now();
-    renderEditor();
-    renderList();
-    closeSide();
+    await flushAll();
+    await api('/api/equip', Object.assign(ref(), {slot: s.slot, material: material.trim()}));
+    s.material = material.trim();
+    toast(s.material ? 'Equipped ' + s.slot.toLowerCase().replace(/_/g, ' ') : 'Cleared ' + s.slot.toLowerCase().replace(/_/g, ' '), 'ok');
+    if (S.tab === 'quick' || S.tab === 'appearance') renderBody();
   } catch (e) {
     toast(e.message, 'err');
   }
 }
 
-async function refreshList() {
-  const data = await api('/api/objects');
-  S.objects = data.objects;
-  renderList();
+const pk = {resolve: null, kind: 'all', q: '', list: [], shown: 0};
+
+async function ensureMats() {
+  if (S.mats) return S.mats;
+  const d = await api('/api/materials');
+  const items = (d.items || []).slice();
+  const blocks = (d.blocks || []).slice().sort();
+  const blockSet = new Set(blocks);
+  const all = Array.from(new Set(items.concat(blocks))).sort();
+  S.mats = {all, blocks, items: all.filter(n => !blockSet.has(n)), blockSet};
+  return S.mats;
 }
 
-function renderList() {
-  for (const k of ['hologram', 'npc']) $('#cnt-' + k).textContent = S.objects.filter(o => o.kind === k).length;
-  for (const t of document.querySelectorAll('.tab')) t.classList.toggle('on', t.dataset.tab === S.tab);
-  const q = S.search.trim().toLowerCase();
-  const items = S.objects.filter(o => o.kind === S.tab && o.id.toLowerCase().includes(q));
-  const list = $('#list');
-  list.replaceChildren();
-  if (!items.length) { list.append(el('li', {class: 'empty', text: 'Nothing here yet.'})); return; }
-  for (const o of items) {
-    const on = S.cur && S.cur.kind === o.kind && S.cur.id === o.id;
-    list.append(el('li', {}, el('button', {class: on ? 'on' : '', type: 'button', onclick: () => select(o.kind, o.id)},
-      el('div', {class: 'id', text: o.id}),
-      el('div', {class: 'pos', text: o.world + ' ' + [o.x, o.y, o.z].map(v => Math.round(v)).join(' ')}))));
+async function pickMaterial(opt) {
+  try { await ensureMats(); } catch (e) { toast(e.message, 'err'); return null; }
+  if (pk.resolve) return null;
+  pk.kind = 'all';
+  pk.q = '';
+  $('#pickQ').value = '';
+  $('#pickClear').hidden = !(opt && opt.clear);
+  for (const c of $('#pickChips').children) c.classList.toggle('on', c.dataset.k === 'all');
+  pkRender();
+  return new Promise(res => {
+    pk.resolve = res;
+    $('#pickDlg').showModal();
+    $('#pickQ').focus();
+  });
+}
+
+function pkFinish(v) {
+  const r = pk.resolve;
+  pk.resolve = null;
+  const d = $('#pickDlg');
+  if (d.open) d.close();
+  if (r) r(v);
+}
+
+function pkRender() {
+  const base = S.mats[pk.kind];
+  pk.list = pk.q ? base.filter(n => n.includes(pk.q)) : base;
+  pk.shown = 0;
+  $('#pickGrid').replaceChildren();
+  pkMore();
+}
+
+function pkMore() {
+  const g = $('#pickGrid');
+  const end = Math.min(pk.list.length, pk.shown + PICK_PAGE);
+  for (let i = pk.shown; i < end; i++) {
+    const n = pk.list[i];
+    g.append(el('button', {type: 'button', class: 'slot-mc', 'data-n': n, title: n}, texEl(n, 32, true)));
+  }
+  pk.shown = end;
+  $('#pickMore').hidden = end >= pk.list.length;
+  if (!pk.list.length) g.append(el('div', {class: 'empty', text: 'No matches'}));
+}
+
+function bindPicker() {
+  $('#pickQ').addEventListener('input', debounce(() => { pk.q = $('#pickQ').value.trim().toLowerCase().replace(/\s+/g, '_'); pkRender(); }, 120));
+  $('#pickQ').addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); if (pk.list.length) pkFinish(pk.list[0]); } });
+  $('#pickChips').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-k]');
+    if (!b) return;
+    pk.kind = b.dataset.k;
+    for (const c of $('#pickChips').children) c.classList.toggle('on', c === b);
+    pkRender();
+  });
+  $('#pickGrid').addEventListener('click', ev => { const b = ev.target.closest('[data-n]'); if (b) pkFinish(b.dataset.n); });
+  $('#pickGrid').addEventListener('mouseover', ev => { const b = ev.target.closest('[data-n]'); if (b) $('#pickHover').textContent = b.dataset.n; });
+  $('#pickMore').addEventListener('click', pkMore);
+  $('#pickClear').addEventListener('click', () => pkFinish(''));
+  $('#pickCancel').addEventListener('click', () => pkFinish(null));
+  $('#pickDlg').addEventListener('close', () => pkFinish(null));
+}
+
+let viewerLib = null;
+function loadViewerLib() {
+  if (window.skinview3d) return Promise.resolve(window.skinview3d);
+  if (viewerLib) return viewerLib;
+  viewerLib = new Promise((ok, bad) => {
+    const src = safeUrl(S.assets.viewer);
+    if (!src) { bad(new Error('no viewer')); return; }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => window.skinview3d ? ok(window.skinview3d) : bad(new Error('viewer'));
+    s.onerror = () => bad(new Error('viewer'));
+    document.head.append(s);
+  });
+  return viewerLib;
+}
+
+function loadCors(url) {
+  return new Promise((ok, bad) => {
+    const i = new Image();
+    i.crossOrigin = 'anonymous';
+    i.onload = () => ok(i);
+    i.onerror = () => bad(new Error('skin'));
+    i.src = url;
+  });
+}
+
+function skinId() { return S.props['skin-name'] || (S.cur && S.cur.skinId) || STEVE; }
+
+function skinPreview() {
+  const node = el('div', {class: 'skinbox'});
+  const canvas = el('canvas', {width: SKIN_W, height: SKIN_H});
+  const fb = el('img', {class: 'tex fb', alt: '', hidden: true});
+  node.append(canvas, fb);
+  let viewer = null;
+  let seq = 0;
+  let dead = false;
+  const showFallback = id => {
+    canvas.hidden = true;
+    fb.hidden = false;
+    fb.src = fill(S.assets.body, {id, size: SKIN_H});
+  };
+  const reload = async () => {
+    const my = ++seq;
+    const id = skinId();
+    try {
+      const lib = await loadViewerLib();
+      if (dead || my !== seq) return;
+      if (!viewer) {
+        viewer = new lib.SkinViewer({canvas, width: SKIN_W, height: SKIN_H});
+        viewer.autoRotate = true;
+        viewer.autoRotateSpeed = 0.6;
+        viewer.zoom = 0.9;
+        viewer.animation = new lib.IdleAnimation();
+      }
+      const img = await loadCors(fill(S.assets.skin, {id}));
+      if (dead || my !== seq) return;
+      await viewer.loadSkin(img);
+      canvas.hidden = false;
+      fb.hidden = true;
+    } catch (e) {
+      if (!dead && my === seq) showFallback(id);
+    }
+  };
+  return {node, reload, destroy: () => { dead = true; if (viewer) { try { viewer.dispose(); } catch (e) { viewer = null; } } }};
+}
+
+function shapePoints(kind) {
+  const n = 8, out = [];
+  for (let i = 0; i < n; i++) {
+    const u = i / (n - 1) - 0.5;
+    if (kind === 'RING') { const a = i / n * Math.PI * 2; out.push([Math.cos(a), 0, Math.sin(a)]); }
+    else if (kind === 'HELIX') { const a = i * 0.9; out.push([Math.cos(a) * 0.7, -u * 1.6, Math.sin(a) * 0.7]); }
+    else if (kind === 'TORNADO') { const a = i * 0.9, r = 0.25 + 0.55 * (0.5 - u); out.push([Math.cos(a) * r, -u * 1.6, Math.sin(a) * r]); }
+    else if (kind === 'WHEEL') { const a = i / n * Math.PI * 2; out.push([Math.cos(a), Math.sin(a), 0]); }
+    else if (kind === 'SPHERE') { const y = 1 - (i + 0.5) / n * 2, r = Math.sqrt(1 - y * y), a = i * 2.399963; out.push([Math.cos(a) * r, y, Math.sin(a) * r]); }
+    else if (kind === 'ROW') out.push([u * 1.8, 0, 0]);
+    else out.push([0, -u * 1.6, 0]);
+  }
+  return out;
+}
+
+const shapeCvs = [];
+function shapeCanvas(kind) {
+  const c = el('canvas', {width: SHAPE_PX, height: SHAPE_PX, class: 'shape-cv'});
+  shapeCvs.push({c, pts: shapePoints(kind), kind});
+  return c;
+}
+
+function paintShape(s, t) {
+  const g = s.c.getContext('2d'), h = SHAPE_PX / 2;
+  g.clearRect(0, 0, SHAPE_PX, SHAPE_PX);
+  const cs = Math.cos(t), sn = Math.sin(t);
+  const pts = s.pts.map((p, i) => {
+    const x = p[0] * cs + p[2] * sn, z = -p[0] * sn + p[2] * cs;
+    const bob = s.kind === 'STACK' ? Math.sin(t * 2 + i) * 1.5 : 0;
+    return {x: h + x * h * 0.7, y: h - p[1] * h * 0.62 + z * h * 0.22 + bob, d: clamp((z + 1) / 2, 0, 1)};
+  });
+  pts.sort((a, b) => a.d - b.d);
+  for (const p of pts) {
+    g.fillStyle = mix('#3b62b8', '#dbe8ff', p.d);
+    g.fillRect(Math.round(p.x - 5), Math.round(p.y - 2), 10, 4);
   }
 }
+
+setInterval(() => {
+  if (document.hidden || !shapeCvs.length) return;
+  const t = performance.now() * SHAPE_SPIN;
+  for (let i = shapeCvs.length - 1; i >= 0; i--) {
+    const s = shapeCvs[i];
+    if (!s.c.isConnected) { shapeCvs.splice(i, 1); continue; }
+    paintShape(s, t);
+  }
+}, SHAPE_MS);
+
+function cloneProps() { return S.path.map(p => p.slice()); }
+function parsePath(list) { return (list || []).map(p => [num(p[0]), num(p[1]), num(p[2])]); }
+
+function pushUndo(snap) {
+  S.undo.push(snap || cloneProps());
+  if (S.undo.length > UNDO_MAX) S.undo.shift();
+  updateUndoUI();
+}
+
+function updateUndoUI() {
+  for (const b of document.querySelectorAll('.js-undo')) b.disabled = !S.undo.length;
+}
+
+function syncPathUI() {
+  if (S.cur) S.cur.waypoints = S.path.length;
+  for (const n of document.querySelectorAll('.js-pathcount')) n.textContent = S.path.length + ' point(s)';
+  renderHeader();
+  updateUndoUI();
+  redraw();
+}
+
+function setPath(pts, record) {
+  if (record) pushUndo();
+  S.path = pts;
+  syncPathUI();
+  schedulePathSave();
+}
+
+function undoPath() {
+  if (!S.undo.length || !S.cur) return;
+  S.path = S.undo.pop();
+  S.ui.shape = null;
+  syncPathUI();
+  schedulePathSave();
+  if (S.tab === 'movement') renderBody();
+}
+
+function toggleDraw() {
+  if (!S.cur) return;
+  S.drawing = !S.drawing;
+  syncDrawUI();
+}
+
+function syncDrawUI() {
+  for (const b of document.querySelectorAll('.js-draw')) {
+    b.classList.toggle('on', S.drawing);
+    b.disabled = !S.cur;
+    b.textContent = S.drawing ? 'Drawing...' : 'Draw path';
+  }
+  $('#locO').disabled = !S.cur;
+  updateHint();
+  cv.style.cursor = S.drawing ? 'crosshair' : 'default';
+}
+
+function updateHint() {
+  const h = $('#mapHint');
+  let t = '';
+  if (S.drawing) t = 'Draw path: click the map to add points. Esc to stop.';
+  else if (S.cur) t = 'Drag the icon to move it. Drag path nodes, click + to insert, right-click or long-press a node to delete.';
+  h.textContent = t;
+  h.hidden = !t;
+}
+
+async function addHere() {
+  const snap = cloneProps();
+  const r = await api('/api/path', Object.assign(ref(), {action: 'add'}));
+  const d = await api('/api/object', ref());
+  S.path = parsePath(d.waypointList);
+  S.cur.waypoints = r && r.waypoints != null ? r.waypoints : S.path.length;
+  pushUndo(snap);
+  syncPathUI();
+  toast('Waypoint added (' + S.path.length + ')', 'ok');
+}
+
+function genShape(kind) {
+  const r = S.ui.radius, c = S.cur;
+  const pts = GEN[kind](r).map(p => [r2(c.x + p[0]), c.y, r2(c.z + p[1])]);
+  setPath(pts, true);
+  S.ui.shape = kind;
+  if (S.pm['path-speed'] && !nv('path-speed')) { S.props['path-speed'] = String(DEFAULT_SPEED); touch(); }
+  renderBody();
+}
+
+function radiusControl() {
+  const rng = el('input', {type: 'range', min: 1, max: 25, step: 1, 'aria-label': 'Path size'});
+  rng.value = S.ui.radius;
+  const out = el('span', {class: 'val', text: S.ui.radius + ' blocks'});
+  rng.addEventListener('input', () => { S.ui.radius = Number(rng.value); out.textContent = S.ui.radius + ' blocks'; });
+  rng.addEventListener('change', () => { if (S.ui.shape && S.path.length) genShape(S.ui.shape); });
+  return el('div', {class: 'field wide', style: 'margin-top:10px'}, el('label', {text: 'Patrol size (radius)'}), el('div', {class: 'row2'}, rng, out));
+}
+
+function pcard(label, hint, iconNode, on, onclick) {
+  return el('button', {type: 'button', class: 'pcard' + (on ? ' on' : ''), onclick}, iconNode, el('span', {text: label}), hint ? el('small', {text: hint}) : null);
+}
+
+function shapePathCards() {
+  const defs = [['circle', 'Circle', 'circle'], ['square', 'Square', 'square'], ['fig8', 'Figure-8', 'fig8']];
+  return el('div', {class: 'cards'}, defs.map(([k, label, ic]) => pcard(label, '', svgIcon(ICONS[ic], 30), S.ui.shape === k && S.path.length > 0, () => genShape(k))));
+}
+
+function pathCard(withShapes) {
+  const info = el('span', {class: 'muted js-pathcount', text: S.path.length + ' point(s)'});
+  const actions = el('div', {class: 'actions'},
+    el('button', {class: 'btn js-draw', type: 'button', text: 'Draw path', onclick: toggleDraw}),
+    el('button', {class: 'btn', type: 'button', text: '+ My position', onclick: ev => run(ev.currentTarget, addHere)}),
+    el('button', {class: 'btn js-undo', type: 'button', text: 'Undo', onclick: undoPath}),
+    el('button', {class: 'btn danger', type: 'button', text: 'Clear', onclick: () => { S.ui.shape = null; if (S.path.length) setPath([], true); renderBody(); }}));
+  const body = el('div', {class: 'body'}, actions, el('p', {class: 'note', text: 'Edit the path on the map: drag nodes, click + to insert, right-click or long-press to delete.'}));
+  if (withShapes) body.append(el('div', {class: 'sub', text: 'GENERATE A SHAPE'}), shapePathCards(), radiusControl());
+  const spd = pc('path-speed');
+  if (spd) body.append(el('div', {class: 'grid', style: 'margin-top:10px'}, spd));
+  return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Path'}), info), body);
+}
+
+function npcPresets() {
+  return [
+    {label: 'Idle', hint: 'Stand still', icon: 'idle', props: () => ({'spin-speed': '0', 'look-at': 'false', 'swing-interval': '0', 'sneak-interval': '0', 'hurt-interval': '0'}), path: () => [], on: () => !S.path.length && !nv('spin-speed') && !isOn('look-at') && !nv('swing-interval') && !nv('sneak-interval')},
+    {label: 'Look at players', hint: 'Turns to nearby players', icon: 'look', props: () => ({'look-at': 'true', 'spin-speed': '0'}), on: () => isOn('look-at') && !nv('spin-speed') && !nv('swing-interval')},
+    {label: 'Patrol circle', hint: 'Walk in a circle', icon: 'circle', shape: 'circle'},
+    {label: 'Patrol square', hint: 'Walk a square', icon: 'square', shape: 'square'},
+    {label: 'Figure-8', hint: 'Walk an infinity loop', icon: 'fig8', shape: 'fig8'},
+    {label: 'Spin', hint: 'Rotate in place', icon: 'spin', props: () => ({'spin-speed': String(nv('spin-speed') || 90), 'look-at': 'false'}), on: () => nv('spin-speed') !== 0 && !nv('sneak-interval')},
+    {label: 'Dance', hint: 'Spin, sneak, swing', icon: 'dance', props: () => ({'spin-speed': '120', 'sneak-interval': '6', 'swing-interval': '8', 'look-at': 'false'}), on: () => nv('spin-speed') !== 0 && nv('sneak-interval') > 0 && nv('swing-interval') > 0},
+    {label: 'Guard', hint: 'Watch and swing', icon: 'guard', props: () => ({'look-at': 'true', 'look-range': '12', 'swing-interval': '60', 'spin-speed': '0'}), on: () => isOn('look-at') && nv('swing-interval') > 0}
+  ];
+}
+
+function applyPreset(d) {
+  if (d.shape) { genShape(d.shape); return; }
+  const pr = d.props ? d.props() : {};
+  for (const [k, v] of Object.entries(pr)) if (S.pm[k]) S.props[k] = v;
+  touch();
+  if (d.path) {
+    const pts = d.path();
+    if (S.path.length || pts.length) setPath(pts, true);
+    S.ui.shape = null;
+  }
+  renderBody();
+}
+
+function bodyMoveNpc() {
+  const root = el('div');
+  const cards = el('div', {class: 'cards'}, npcPresets().map(d => pcard(d.label, d.hint, svgIcon(ICONS[d.icon], 30), d.shape ? S.ui.shape === d.shape && S.path.length > 0 : d.on(), () => applyPreset(d))));
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Behaviour'}), el('div', {class: 'body'}, cards, radiusControl())));
+  root.append(pathCard(false));
+  for (const g of [groupCard('Speed and look', ['spin-speed', 'look-at', 'look-range']), groupCard('Animations', ['swing-interval', 'sneak-interval', 'hurt-interval'])]) if (g) root.append(g);
+  return root;
+}
+
+function pickShape(k) {
+  setProp('layout', k);
+  if (RADIUS_SHAPES.has(k) && !nv('layout-radius')) S.props['layout-radius'] = '2';
+  renderBody();
+}
+
+function shapeCards() {
+  const cur = S.props.layout || 'STACK';
+  return el('div', {class: 'cards'}, SHAPES.map(k => el('button', {type: 'button', class: 'pcard' + (cur === k ? ' on' : ''), onclick: () => pickShape(k)}, shapeCanvas(k), el('span', {text: SHAPE_LABEL[k]}))));
+}
+
+function shapeCard() {
+  const cur = S.props.layout || 'STACK';
+  const body = el('div', {class: 'body'}, shapeCards());
+  const ids = [];
+  if (cur !== 'STACK') ids.push('layout-radius', 'layout-speed');
+  if (TURN_SHAPES.has(cur)) ids.push('helix-step');
+  if (ids.length) {
+    const grid = el('div', {class: 'grid', style: 'margin-top:10px'});
+    for (const id of ids) { const c = pc(id); if (c) grid.append(c); }
+    body.append(grid);
+  }
+  return el('section', {class: 'card'}, el('h2', {text: 'Shape'}), body);
+}
+
+function motionCard(m) {
+  const on = nv(m.props[0]) !== 0;
+  const toggle = () => {
+    if (on) setProp(m.props[0], '0');
+    else m.props.forEach((p, i) => { if (i === 0 || !nv(p)) setProp(p, m.defaults[i]); });
+    renderBody();
+  };
+  const head = el('button', {type: 'button', 'aria-pressed': on ? 'true' : 'false', onclick: toggle}, svgIcon(ICONS[m.id], 26, 'mi ' + m.id), el('span', {class: 'mt'}, el('span', {text: m.label}), el('div', {class: 'muted', style: 'font-size:12px', text: m.hint})), el('span', {class: 'chip' + (on ? ' on' : ''), text: on ? 'ON' : 'OFF'}));
+  const card = el('div', {class: 'mcard' + (on ? ' on' : '')}, head);
+  if (on) {
+    const grid = el('div', {class: 'grid'});
+    for (const p of m.props) { const c = pc(p); if (c) grid.append(c); }
+    card.append(el('div', {class: 'mb'}, grid));
+  }
+  return card;
+}
+
+function bodyMoveHolo() {
+  const root = el('div');
+  root.append(shapeCard());
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Motion'}), el('div', {class: 'body'}, MOTIONS.map(motionCard))));
+  root.append(pathCard(true));
+  return root;
+}
+
+function npcPlateRow() {
+  const plate = el('div', {class: 'box plate'});
+  const paint = () => plate.replaceChildren(...renderText(S.props.name, {effect: 'NONE'}, 0));
+  paint();
+  return {plate, paint};
+}
+
+function bodyQuickNpc() {
+  const root = el('div');
+  const type = S.props['entity-type'] || S.cfg.defaultNpcType;
+  const player = isPlayerType(type);
+  const prev = el('div', {class: 'qprev'});
+  if (player) {
+    const sp = skinPreview();
+    S.skin = sp;
+    prev.append(sp.node, el('span', {class: 'muted', text: 'Player'}));
+    sp.reload();
+  } else {
+    const opt = entityOptions().find(o => o.id === type);
+    prev.append(texEl(entityTex(type), 72), el('span', {text: opt ? opt.label : type}));
+    prev.firstChild.classList.add('big');
+  }
+  const fields = el('div', {class: 'qfields'});
+  const nameCtl = pc('name');
+  const np = npcPlateRow();
+  if (nameCtl) {
+    const inp = nameCtl.querySelector('input');
+    if (inp) inp.addEventListener('input', np.paint);
+    fields.append(nameCtl, np.plate);
+  }
+  const vis = pc('name-visible');
+  if (vis) fields.append(vis);
+  if (player) fields.append(skinBox());
+  const look = pc('look-at');
+  if (look) fields.append(look);
+  const glow = pc('glow');
+  if (glow) fields.append(glow);
+  const gc = pc('glow-color');
+  if (gc) fields.append(gc);
+  root.append(el('div', {class: 'qtop'}, prev, fields));
+  const ent = pc('entity-type');
+  if (ent) root.append(el('section', {class: 'card'}, el('h2', {text: 'Entity type'}), el('div', {class: 'body'}, ent)));
+  const eq = equipmentPanel();
+  if (eq) root.append(eq);
+  return root;
+}
+
+function skinBox() {
+  const id = 'f' + (++uid);
+  const input = el('input', {type: 'text', id, maxlength: 16, placeholder: 'Player name (e.g. Notch)', spellcheck: 'false', autocomplete: 'off'});
+  input.value = S.props['skin-name'] || '';
+  const reload = debounce(() => { if (S.skin) S.skin.reload(); }, 600);
+  input.addEventListener('input', () => { setProp('skin-name', input.value.trim()); reload(); });
+  return el('div', {class: 'field'}, el('label', {for: id, text: 'Skin (player name)'}), input);
+}
+
+function bodyQuickHolo() {
+  const root = el('div');
+  root.append(pvCard());
+  root.append(quickLines());
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Shape'}), el('div', {class: 'body'}, shapeCards())));
+  const g = groupCard('Basics', ['line-spacing', 'view-range']);
+  if (g) root.append(g);
+  return root;
+}
+
+function bodyAppearance() {
+  const root = el('div');
+  const groups = S.cur.kind === 'npc' ? NPC_APPEARANCE : HOLO_APPEARANCE;
+  for (const [title, ids] of groups) {
+    const g = groupCard(title, ids);
+    if (g) root.append(g);
+  }
+  if (S.cur.kind === 'npc') {
+    const eq = equipmentPanel();
+    if (eq) root.append(eq);
+  }
+  return root;
+}
+
+function bodyAdvanced() {
+  const root = el('div');
+  for (const sec of S.schema.kinds[S.cur.kind].sections) root.append(sectionCard(sec, S.props, setProp));
+  return root;
+}
+
+function bodyLines() {
+  const root = el('div');
+  root.append(pvCard(), linesPanel());
+  return root;
+}
+
+function renderBody() {
+  if (S.skin) { S.skin.destroy(); S.skin = null; }
+  const body = $('#inspBody');
+  const top = body.scrollTop;
+  body.replaceChildren();
+  pv = [];
+  if (!S.cur) {
+    body.append(el('div', {class: 'empty', text: 'Click an icon on the map or pick an object from the list. Use + New to create one at your position.'}));
+    return;
+  }
+  const tabs = TABS[S.cur.kind];
+  if (!tabs.some(t => t[0] === S.tab)) S.tab = 'quick';
+  const k = S.cur.kind;
+  let node;
+  if (S.tab === 'quick') node = k === 'npc' ? bodyQuickNpc() : bodyQuickHolo();
+  else if (S.tab === 'movement') node = k === 'npc' ? bodyMoveNpc() : bodyMoveHolo();
+  else if (S.tab === 'appearance') node = bodyAppearance();
+  else if (S.tab === 'advanced') node = bodyAdvanced();
+  else node = bodyLines();
+  body.append(node);
+  body.scrollTop = top;
+  syncDrawUI();
+  updateUndoUI();
+  if (k === 'hologram') buildPreview();
+}
+
+function renderTabs() {
+  const t = $('#inspTabs');
+  t.replaceChildren();
+  if (!S.cur) return;
+  for (const [id, label] of TABS[S.cur.kind]) {
+    t.append(el('button', {type: 'button', class: 'itab' + (S.tab === id ? ' on' : ''), text: label, onclick: () => { S.tab = id; renderTabs(); renderBody(); }}));
+  }
+}
+
+function renderHeader() {
+  const h = $('#inspHead');
+  h.replaceChildren();
+  if (!S.cur) {
+    h.append(el('div', {class: 'ititle'}, el('h1', {text: 'Inspector'}), el('button', {class: 'btn sm', type: 'button', text: 'Close', onclick: closeInsp})));
+    return;
+  }
+  const c = S.cur;
+  const coords = c.world + ' · ' + [c.x, c.y, c.z].map(v => Number(v).toFixed(1)).join(', ') + ' · path ' + (c.waypoints || 0);
+  h.append(
+    el('div', {class: 'ititle'}, el('span', {class: 'kind', text: c.kind === 'hologram' ? 'Hologram' : 'NPC'}), el('h1', {text: c.id}), el('button', {class: 'btn sm', type: 'button', 'aria-label': 'Close', text: 'X', onclick: closeOrDeselect})),
+    el('div', {class: 'isub', text: coords}),
+    el('div', {class: 'actions'},
+      el('button', {class: 'btn sm', type: 'button', text: 'Teleport', onclick: ev => run(ev.currentTarget, async () => { await api('/api/teleport', ref()); toast('Teleported', 'ok'); })}),
+      el('button', {class: 'btn sm', type: 'button', text: 'Move here', onclick: ev => run(ev.currentTarget, moveHere)}),
+      el('button', {class: 'btn sm danger', type: 'button', text: 'Delete', onclick: ev => run(ev.currentTarget, deleteCur)})));
+}
+
+function renderInspector() {
+  renderHeader();
+  renderTabs();
+  renderBody();
+}
+
+function closeOrDeselect() {
+  if (window.matchMedia('(max-width:1180px)').matches) closeInsp();
+  else deselect();
+}
+
+function openInsp() { $('#insp').classList.add('open'); }
+function closeInsp() { $('#insp').classList.remove('open'); }
+function closeSide() { $('#side').classList.remove('open'); $('#scrim').classList.remove('on'); }
 
 async function run(btn, fn) {
   btn.disabled = true;
   try { await fn(); } catch (e) { toast(e.message, 'err'); } finally { btn.disabled = false; }
 }
 
-function ref() { return {kind: S.cur.kind, id: S.cur.id}; }
-
-async function refreshMeta() {
-  const data = await api('/api/object', ref());
-  Object.assign(S.cur, {world: data.world, x: data.x, y: data.y, z: data.z, waypoints: data.waypoints});
-  renderMeta();
-  await refreshList();
+function adopt(data) {
+  S.cur = {kind: data.kind, id: data.id, world: data.world, x: data.x, y: data.y, z: data.z, yaw: data.yaw, waypoints: data.waypoints, equipment: data.equipment, skinId: data.skinId, entityType: data.entityType};
+  const props = S.schema.kinds[data.kind].sections.flatMap(s => s.props);
+  S.pm = Object.fromEntries(props.map(p => [p.id, p]));
+  S.props = {};
+  for (const [k, v] of Object.entries(data.props || {})) if (S.pm[k]) S.props[k] = v;
+  S.lines = (data.lines || []).map((l, i) => ({ref: i, props: Object.assign({}, l.props), hasItem: !!l.hasItem, open: false}));
+  S.path = parsePath(data.waypointList);
+  S.pending = false;
+  S.pathPending = false;
 }
 
-async function save() {
-  const known = new Set(S.schema.kinds[S.cur.kind].sections.flatMap(s => s.props.map(p => p.id)));
-  const props = {};
-  for (const [k, v] of Object.entries(S.props)) if (known.has(k)) props[k] = v;
-  const body = Object.assign(ref(), {props});
-  if (S.cur.kind === 'hologram') body.lines = S.lines.map(l => ({ref: l.ref, props: l.props}));
-  const res = await api('/api/save', body);
+async function reloadCurrent() {
+  const data = await api('/api/object', ref());
   const open = S.lines.map(l => l.open);
-  const data = await api('/api/object', ref());
-  adopt(data, open);
-  renderEditor();
-  if (res.invalid && res.invalid.length) toast('Saved. Invalid values reset: ' + res.invalid.join(', '), 'err');
-  else toast('Saved', 'ok');
+  adopt(data);
+  S.lines.forEach((l, i) => { l.open = !!open[i]; });
+  renderInspector();
+  redraw();
 }
 
-function bind() {
-  $('#aSave').addEventListener('click', ev => run(ev.currentTarget, save));
-  $('#aTp').addEventListener('click', ev => run(ev.currentTarget, async () => { await api('/api/teleport', ref()); toast('Teleported', 'ok'); }));
-  $('#aMove').addEventListener('click', ev => run(ev.currentTarget, async () => { await api('/api/movehere', ref()); await refreshMeta(); toast('Moved to your position', 'ok'); }));
-  $('#aPathAdd').addEventListener('click', ev => run(ev.currentTarget, async () => {
-    const r = await api('/api/path', Object.assign(ref(), {action: 'add'}));
-    S.cur.waypoints = r.waypoints;
-    renderMeta();
-    toast('Waypoint added (' + r.waypoints + ')', 'ok');
-  }));
-  $('#aPathClear').addEventListener('click', ev => run(ev.currentTarget, async () => {
-    if (!confirm('Clear all waypoints?')) return;
-    const r = await api('/api/path', Object.assign(ref(), {action: 'clear'}));
-    S.cur.waypoints = r.waypoints;
-    renderMeta();
-    toast('Path cleared', 'ok');
-  }));
-  $('#aDelete').addEventListener('click', ev => run(ev.currentTarget, async () => {
-    if (!confirm('Delete ' + S.cur.id + '? This cannot be undone.')) return;
-    await api('/api/delete', ref());
-    S.cur = null;
-    clean();
-    $('#editor').hidden = true;
-    $('#empty').hidden = false;
-    buildPreview();
-    await refreshList();
-    toast('Deleted', 'ok');
-  }));
-  for (const t of document.querySelectorAll('.tab')) t.addEventListener('click', () => { S.tab = t.dataset.tab; renderList(); });
-  $('#search').addEventListener('input', ev => { S.search = ev.target.value; renderList(); });
-  $('#refreshBtn').addEventListener('click', ev => run(ev.currentTarget, refreshList));
-  $('#menuBtn').addEventListener('click', () => { $('#side').classList.add('open'); $('#scrim').classList.add('on'); });
-  $('#scrim').addEventListener('click', closeSide);
-  $('#newBtn').addEventListener('click', openNew);
-  $('#newCancel').addEventListener('click', () => $('#newDlg').close());
-  $('#newForm').addEventListener('submit', ev => { ev.preventDefault(); submitNew(); });
-  document.addEventListener('keydown', ev => {
-    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's' && S.cur) { ev.preventDefault(); run($('#aSave'), save); }
+async function selectObj(kind, id, opt) {
+  const o = opt || {};
+  try {
+    await flushAll();
+    const data = await api('/api/object', {kind, id});
+    adopt(data);
+    S.undo = [];
+    S.drawing = false;
+    S.ui.shape = null;
+    T0 = performance.now();
+    const worldChanged = data.world !== view.world;
+    view.world = data.world;
+    if (o.center || worldChanged) centerOn(data.x, data.z);
+    refreshWorldSel();
+    setInd('saved');
+    renderInspector();
+    renderList();
+    openInsp();
+    closeSide();
+    syncDrawUI();
+    redraw();
+    scheduleEnsure();
+  } catch (e) {
+    toast(e.message, 'err');
+  }
+}
+
+async function deselect() {
+  try { await flushAll(); } catch (e) { toast(e.message, 'err'); }
+  S.cur = null;
+  S.path = [];
+  S.undo = [];
+  S.drawing = false;
+  renderInspector();
+  renderList();
+  syncDrawUI();
+  redraw();
+}
+
+async function moveHere() {
+  await flushAll();
+  await api('/api/movehere', ref());
+  const d = await api('/api/object', ref());
+  Object.assign(S.cur, {world: d.world, x: d.x, y: d.y, z: d.z, waypoints: d.waypoints});
+  S.path = parsePath(d.waypointList);
+  await refreshList();
+  view.world = d.world;
+  centerOn(d.x, d.z);
+  refreshWorldSel();
+  renderHeader();
+  toast('Moved to your position', 'ok');
+}
+
+async function deleteCur() {
+  if (!confirm('Delete ' + S.cur.id + '? This cannot be undone.')) return;
+  clearTimeout(saveTimer);
+  clearTimeout(pathTimer);
+  S.pending = false;
+  S.pathPending = false;
+  await api('/api/delete', ref());
+  S.cur = null;
+  S.path = [];
+  S.undo = [];
+  S.drawing = false;
+  renderInspector();
+  syncDrawUI();
+  await refreshList();
+  setInd('saved');
+  toast('Deleted', 'ok');
+}
+
+async function refreshList() {
+  const data = await api('/api/objects');
+  S.objects = data.objects;
+  refreshWorldSel();
+  renderList();
+  redraw();
+}
+
+function renderList() {
+  const chips = $('#chips');
+  const count = k => k === 'all' ? S.objects.length : S.objects.filter(o => o.kind === k).length;
+  chips.replaceChildren(...[['all', 'All'], ['hologram', 'Holograms'], ['npc', 'NPCs']].map(([k, label]) => el('button', {type: 'button', class: 'chip' + (S.filter === k ? ' on' : ''), text: label + ' ' + count(k), onclick: () => { S.filter = k; renderList(); }})));
+  const q = S.search.trim().toLowerCase();
+  const items = S.objects.filter(o => (S.filter === 'all' || o.kind === S.filter) && o.id.toLowerCase().includes(q)).sort((a, b) => a.id.localeCompare(b.id));
+  const list = $('#list');
+  list.replaceChildren();
+  if (!items.length) { list.append(el('li', {class: 'empty', text: 'Nothing here yet.'})); return; }
+  for (const o of items) {
+    const on = S.cur && S.cur.kind === o.kind && S.cur.id === o.id;
+    list.append(el('li', {}, el('button', {class: on ? 'on' : '', type: 'button', onclick: () => selectObj(o.kind, o.id, {center: true})},
+      el('span', {class: 'ic'}, iconEl(o, 28)),
+      el('span', {class: 'tx'},
+        el('div', {class: 'id', text: o.id}),
+        el('div', {class: 'pos', text: o.world + ' ' + [o.x, o.y, o.z].map(v => Math.round(v)).join(' ')})))));
+  }
+}
+
+function refreshWorldSel() {
+  const sel = $('#worldSel');
+  const worlds = new Set(S.objects.map(o => o.world));
+  if (S.me && S.me.world) worlds.add(S.me.world);
+  if (view.world) worlds.add(view.world);
+  const list = Array.from(worlds).sort();
+  sel.replaceChildren(...list.map(w => el('option', {value: w, text: w})));
+  if (view.world) sel.value = view.world;
+}
+
+const cv = $('#map');
+const ctx = cv.getContext('2d');
+const view = {world: null, cx: 0, cz: 0, s: SCALE_DEF};
+const tiles = new Map();
+const tq = [];
+let tActive = 0;
+let W = 0;
+let H = 0;
+let dpr = 1;
+let raf = 0;
+let drag = null;
+let pinch = null;
+let hoverObj = null;
+let lastTerrainErr = 0;
+const ptrs = new Map();
+
+const sx = x => (x - view.cx) * view.s + W / 2;
+const sz = z => (z - view.cz) * view.s + H / 2;
+const wx = px => (px - W / 2) / view.s + view.cx;
+const wz = py => (py - H / 2) / view.s + view.cz;
+
+function redraw() {
+  if (raf) return;
+  raf = requestAnimationFrame(draw);
+}
+
+function resizeMap() {
+  const r = cv.parentElement.getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  W = r.width;
+  H = r.height;
+  cv.width = Math.max(1, Math.round(W * dpr));
+  cv.height = Math.max(1, Math.round(H * dpr));
+  redraw();
+  scheduleEnsure();
+}
+
+function centerOn(x, z) {
+  view.cx = x;
+  view.cz = z;
+  redraw();
+  scheduleEnsure();
+}
+
+function zoomAt(px, py, f) {
+  const ax = wx(px), az = wz(py);
+  view.s = clamp(view.s * f, SCALE_MIN, SCALE_MAX);
+  view.cx = ax - (px - W / 2) / view.s;
+  view.cz = az - (py - H / 2) / view.s;
+  redraw();
+  scheduleEnsure();
+}
+
+const scheduleEnsure = debounce(() => ensureTiles(), ENSURE_MS);
+
+function tileKey(world, gx, gz) { return world + '|' + gx + '|' + gz; }
+
+function ensureTiles() {
+  if (!view.world || !W || !S.assets) return;
+  const gx0 = Math.floor(wx(0) / TILE), gx1 = Math.floor(wx(W) / TILE);
+  const gz0 = Math.floor(wz(0) / TILE), gz1 = Math.floor(wz(H) / TILE);
+  if ((gx1 - gx0 + 1) * (gz1 - gz0 + 1) > TILE_MAX_VISIBLE) return;
+  const now = Date.now();
+  const need = [];
+  const ccx = view.cx / TILE - 0.5, ccz = view.cz / TILE - 0.5;
+  for (let gz = gz0; gz <= gz1; gz++) {
+    for (let gx = gx0; gx <= gx1; gx++) {
+      const key = tileKey(view.world, gx, gz);
+      const t = tiles.get(key);
+      if (t && t.loading) continue;
+      const stale = !t || (t.state === 'fail' && now - t.fail > TILE_RETRY) || (t.state === 'ok' && now - t.ts > TILE_TTL);
+      if (stale) need.push({world: view.world, gx, gz, key, d: Math.hypot(gx - ccx, gz - ccz)});
+    }
+  }
+  need.sort((a, b) => a.d - b.d);
+  for (const j of need.slice(0, TILE_FETCH_LIMIT)) {
+    let t = tiles.get(j.key);
+    if (!t) { t = {state: 'new', canvas: null, ts: 0, fail: 0, loading: true, x0: 0, z0: 0, size: 0, heights: null}; tiles.set(j.key, t); }
+    else t.loading = true;
+    tq.push(j);
+  }
+  pumpTiles();
+}
+
+function jobVisible(j) {
+  if (j.world !== view.world) return false;
+  const gx0 = Math.floor(wx(0) / TILE), gx1 = Math.floor(wx(W) / TILE);
+  const gz0 = Math.floor(wz(0) / TILE), gz1 = Math.floor(wz(H) / TILE);
+  return j.gx >= gx0 && j.gx <= gx1 && j.gz >= gz0 && j.gz <= gz1;
+}
+
+function pumpTiles() {
+  while (tActive < TILE_CONC && tq.length) {
+    const j = tq.shift();
+    if (!jobVisible(j)) {
+      const t = tiles.get(j.key);
+      if (t) { t.loading = false; if (t.state === 'new') tiles.delete(j.key); }
+      continue;
+    }
+    tActive++;
+    loadTile(j).finally(() => { tActive--; pumpTiles(); });
+  }
+}
+
+async function loadTile(j) {
+  const t = tiles.get(j.key);
+  if (!t) return;
+  try {
+    const r = await api('/api/terrain', {world: j.world, x: j.gx * TILE + TILE / 2, z: j.gz * TILE + TILE / 2, radius: TILE_RADIUS});
+    t.canvas = renderTile(r);
+    t.x0 = r.x0;
+    t.z0 = r.z0;
+    t.size = r.size;
+    t.heights = r.heights;
+    t.state = 'ok';
+    t.ts = Date.now();
+  } catch (e) {
+    t.state = t.canvas ? 'ok' : 'fail';
+    t.fail = Date.now();
+    if (!t.canvas && Date.now() - lastTerrainErr > 10000) { lastTerrainErr = Date.now(); toast('Terrain: ' + e.message, 'err'); }
+  }
+  t.loading = false;
+  redraw();
+}
+
+function shadeFor(df) {
+  if (df > 1) return 1.16;
+  if (df > 0) return 1.08;
+  if (df < -1) return 0.7;
+  if (df < 0) return 0.85;
+  return 1;
+}
+
+function renderTile(r) {
+  const n = r.size;
+  const c = document.createElement('canvas');
+  c.width = c.height = n;
+  const g = c.getContext('2d');
+  const im = g.createImageData(n, n);
+  const d = im.data;
+  for (let z = 0; z < n; z++) {
+    for (let x = 0; x < n; x++) {
+      const i = z * n + x, col = r.colors[i], o = i * 4;
+      if (col <= 0) continue;
+      let f = 1;
+      const h = r.heights[i];
+      if (z > 0 && h !== NO_H) {
+        const hn = r.heights[i - n];
+        if (hn !== NO_H) f = shadeFor(h - hn);
+      }
+      d[o] = clamp(((col >> 16) & 255) * f, 0, 255);
+      d[o + 1] = clamp(((col >> 8) & 255) * f, 0, 255);
+      d[o + 2] = clamp((col & 255) * f, 0, 255);
+      d[o + 3] = 255;
+    }
+  }
+  g.putImageData(im, 0, 0);
+  return c;
+}
+
+function groundY(x, z) {
+  const gx = Math.floor(x / TILE), gz = Math.floor(z / TILE);
+  const t = tiles.get(tileKey(view.world, gx, gz));
+  const fb = S.cur ? S.cur.y : 0;
+  if (!t || !t.heights) return fb;
+  const dx = Math.floor(x) - t.x0, dz = Math.floor(z) - t.z0;
+  if (dx < 0 || dz < 0 || dx >= t.size || dz >= t.size) return fb;
+  const h = t.heights[dz * t.size + dx];
+  if (h === NO_H) return fb;
+  return Math.abs(h + 1 - fb) <= GROUND_SLOP ? h + 1 : fb;
+}
+
+function viewObjs() {
+  const list = S.objects.filter(o => o.world === view.world);
+  const sel = S.cur ? list.findIndex(o => o.kind === S.cur.kind && o.id === S.cur.id) : -1;
+  if (sel >= 0) list.push(list.splice(sel, 1)[0]);
+  return list;
+}
+
+function isSel(o) { return !!S.cur && o.kind === S.cur.kind && o.id === S.cur.id; }
+
+function objPos(o) {
+  if (drag && drag.type === 'obj' && drag.o === o && drag.moved) return drag.pos;
+  return {x: o.x, z: o.z};
+}
+
+function curVisible() { return !!S.cur && S.cur.world === view.world; }
+
+function pathGeom() {
+  const pts = S.path.map(p => ({x: sx(p[0]), y: sz(p[2])}));
+  const mids = [];
+  const n = pts.length;
+  if (n >= 2) {
+    const segs = n === 2 ? 1 : n;
+    for (let i = 0; i < segs; i++) {
+      const a = S.path[i], b = S.path[(i + 1) % n];
+      const wxm = (a[0] + b[0]) / 2, wzm = (a[2] + b[2]) / 2;
+      mids.push({x: sx(wxm), y: sz(wzm), i, wx: wxm, wz: wzm, wy: (a[1] + b[1]) / 2});
+    }
+  }
+  return {pts, mids};
+}
+
+function draw() {
+  raf = 0;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#0d1017';
+  ctx.fillRect(0, 0, W, H);
+  drawTiles();
+  drawGrid();
+  const objs = viewObjs();
+  for (const o of objs) if (!isSel(o)) drawObj(o, false);
+  drawPath();
+  for (const o of objs) if (isSel(o)) drawObj(o, true);
+  drawPlayer();
+}
+
+function drawTiles() {
+  if (!view.world) return;
+  ctx.imageSmoothingEnabled = false;
+  for (const [key, t] of tiles) {
+    if (!t.canvas || !key.startsWith(view.world + '|')) continue;
+    const x = Math.floor(sx(t.x0)), z = Math.floor(sz(t.z0));
+    const w = Math.ceil(sx(t.x0 + t.size)) - x, h = Math.ceil(sz(t.z0 + t.size)) - z;
+    if (x > W || z > H || x + w < 0 || z + h < 0) continue;
+    ctx.drawImage(t.canvas, x, z, w, h);
+  }
+}
+
+function drawGrid() {
+  if (view.s < 4) return;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,.14)';
+  ctx.beginPath();
+  for (let x = Math.floor(wx(0) / 16) * 16; x <= wx(W); x += 16) {
+    const px = Math.round(sx(x)) + 0.5;
+    ctx.moveTo(px, 0);
+    ctx.lineTo(px, H);
+  }
+  for (let z = Math.floor(wz(0) / 16) * 16; z <= wz(H); z += 16) {
+    const py = Math.round(sz(z)) + 0.5;
+    ctx.moveTo(0, py);
+    ctx.lineTo(W, py);
+  }
+  ctx.stroke();
+}
+
+function plate(x, y, s, sel) {
+  const h = s / 2;
+  ctx.fillStyle = '#161b28';
+  ctx.fillRect(x - h, y - h, s, s);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = sel ? ACCENT : '#000000cc';
+  ctx.strokeRect(x - h + 1, y - h + 1, s - 2, s - 2);
+  ctx.strokeStyle = sel ? '#dbe8ff' : '#ffffff40';
+  ctx.beginPath();
+  ctx.moveTo(x - h + 1, y + h - 1);
+  ctx.lineTo(x - h + 1, y - h + 1);
+  ctx.lineTo(x + h - 1, y - h + 1);
+  ctx.stroke();
+}
+
+function drawObj(o, sel) {
+  const p = objPos(o);
+  const x = sx(p.x), y = sz(p.z);
+  if (x < -40 || x > W + 40 || y < -40 || y > H + 40) return;
+  const s = sel ? ICON + 6 : ICON, h = s / 2;
+  ctx.save();
+  if (o.kind === 'npc') {
+    plate(x, y, s, sel);
+    const inner = s - 8;
+    if (isPlayerType(o.entityType)) {
+      const e = headNow(o.skinId);
+      if (e) { ctx.imageSmoothingEnabled = true; ctx.drawImage(e.img, x - inner / 2, y - inner / 2, inner, inner); }
+    } else {
+      const e = texNow(entityTex(o.entityType));
+      if (e) { ctx.imageSmoothingEnabled = false; ctx.drawImage(e.img, x - inner / 2, y - inner / 2, inner, inner); }
+    }
+    if (sel) drawFacing(x, y, h, o.yaw);
+  } else {
+    ctx.shadowColor = ACCENT;
+    ctx.shadowBlur = sel ? 20 : 11;
+    ctx.beginPath();
+    ctx.moveTo(x, y - h);
+    ctx.lineTo(x + h * 0.8, y);
+    ctx.lineTo(x, y + h);
+    ctx.lineTo(x - h * 0.8, y);
+    ctx.closePath();
+    const gr = ctx.createLinearGradient(x, y - h, x, y + h);
+    gr.addColorStop(0, '#cfe6ff');
+    gr.addColorStop(0.5, ACCENT);
+    gr.addColorStop(1, '#2a4a9a');
+    ctx.fillStyle = gr;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = sel ? 2 : 1.5;
+    ctx.strokeStyle = sel ? '#ffffff' : '#ffffffb0';
+    ctx.stroke();
+    ctx.fillStyle = '#ffffffd0';
+    ctx.fillRect(x - h * 0.34, y - 3, h * 0.68, 2);
+    ctx.fillRect(x - h * 0.24, y + 1, h * 0.48, 2);
+  }
+  ctx.restore();
+  if (sel || view.s >= LABEL_MIN_SCALE || hoverObj === o) label(o.id, x, y + h + 12);
+}
+
+function drawFacing(x, y, h, yaw) {
+  if (yaw == null) return;
+  const r = num(yaw) * Math.PI / 180;
+  const a = Math.atan2(Math.cos(r), -Math.sin(r));
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(a);
+  ctx.fillStyle = ACCENT;
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(h + 8, 0);
+  ctx.lineTo(h + 1, -5);
+  ctx.lineTo(h + 1, 5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function label(text, x, y) {
+  ctx.font = '12px ' + FONT_CANVAS;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#000000d0';
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(text, x, y);
+}
+
+function drawPath() {
+  if (!curVisible() || !S.path.length) return;
+  const g = pathGeom();
+  const n = g.pts.length;
+  if (n >= 2) {
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    for (const pass of [0, 1]) {
+      ctx.lineWidth = pass ? 3 : 6;
+      ctx.strokeStyle = pass ? ACCENT : '#000000a0';
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(g.pts[0].x, g.pts[0].y);
+      for (let i = 1; i < n; i++) ctx.lineTo(g.pts[i].x, g.pts[i].y);
+      ctx.stroke();
+      if (n > 2) {
+        ctx.setLineDash([8, 6]);
+        ctx.beginPath();
+        ctx.moveTo(g.pts[n - 1].x, g.pts[n - 1].y);
+        ctx.lineTo(g.pts[0].x, g.pts[0].y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+  }
+  if (!S.drawing) {
+    for (const m of g.mids) {
+      ctx.fillStyle = '#1b2c57';
+      ctx.fillRect(m.x - 8, m.y - 8, 16, 16);
+      ctx.strokeStyle = '#8fb2ff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(m.x - 7, m.y - 7, 14, 14);
+      ctx.beginPath();
+      ctx.moveTo(m.x - 4, m.y);
+      ctx.lineTo(m.x + 4, m.y);
+      ctx.moveTo(m.x, m.y - 4);
+      ctx.lineTo(m.x, m.y + 4);
+      ctx.stroke();
+    }
+  }
+  ctx.font = '12px ' + FONT_CANVAS;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  g.pts.forEach((p, i) => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = i === 0 ? '#3b62b8' : '#161b28';
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#8fb2ff';
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(String(i + 1), p.x, p.y + 1);
   });
-  window.addEventListener('beforeunload', ev => { if (S.dirty) { ev.preventDefault(); ev.returnValue = ''; } });
 }
 
-function closeSide() {
-  $('#side').classList.remove('open');
-  $('#scrim').classList.remove('on');
+function drawPlayer() {
+  const m = S.me;
+  if (!m || !m.online || m.world !== view.world) return;
+  const x = sx(m.x), y = sz(m.z);
+  if (x < -30 || x > W + 30 || y < -30 || y > H + 30) return;
+  const r = num(m.yaw) * Math.PI / 180;
+  const a = Math.atan2(Math.cos(r), -Math.sin(r));
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.beginPath();
+  ctx.arc(0, 0, 13, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,.12)';
+  ctx.fill();
+  ctx.rotate(a);
+  ctx.beginPath();
+  ctx.moveTo(11, 0);
+  ctx.lineTo(-7, -7);
+  ctx.lineTo(-3, 0);
+  ctx.lineTo(-7, 7);
+  ctx.closePath();
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#000000';
+  ctx.stroke();
+  ctx.restore();
+}
+
+function hit(px, py) {
+  if (curVisible() && S.path.length) {
+    const g = pathGeom();
+    for (let i = g.pts.length - 1; i >= 0; i--) if (Math.hypot(g.pts[i].x - px, g.pts[i].y - py) <= HIT_NODE) return {t: 'node', i};
+    if (!S.drawing) for (const m of g.mids) if (Math.hypot(m.x - px, m.y - py) <= HIT_MID) return {t: 'mid', m};
+  }
+  const objs = viewObjs();
+  for (let k = objs.length - 1; k >= 0; k--) {
+    const o = objs[k], q = objPos(o);
+    if (Math.hypot(sx(q.x) - px, sz(q.z) - py) <= HIT_OBJ) return {t: 'obj', o};
+  }
+  return null;
+}
+
+function pt(ev) {
+  const r = cv.getBoundingClientRect();
+  return {x: ev.clientX - r.left, y: ev.clientY - r.top};
+}
+
+function updateCoords(p) {
+  const x = Math.floor(wx(p.x)), z = Math.floor(wz(p.y));
+  $('#coordBar').textContent = 'x ' + x + '  z ' + z + '  chunk ' + (x >> 4) + ', ' + (z >> 4);
+}
+
+function updateHover(p) {
+  const h = hit(p.x, p.y);
+  const next = h && h.t === 'obj' ? h.o : null;
+  let cur = S.drawing ? 'crosshair' : 'default';
+  if (h) cur = h.t === 'node' ? 'grab' : h.t === 'mid' ? 'copy' : (isSel(h.o) ? 'move' : 'pointer');
+  cv.style.cursor = cur;
+  if (next !== hoverObj) { hoverObj = next; redraw(); }
+}
+
+function deleteNode(i) {
+  if (i < 0 || i >= S.path.length) return;
+  pushUndo();
+  S.path.splice(i, 1);
+  S.ui.shape = null;
+  syncPathUI();
+  schedulePathSave();
+  if (S.tab === 'movement') renderBody();
+  if (navigator.vibrate) navigator.vibrate(20);
+}
+
+function appendPoint(x, z) {
+  pushUndo();
+  S.path.push([r2(x), groundY(x, z), r2(z)]);
+  S.ui.shape = null;
+  syncPathUI();
+  schedulePathSave();
+}
+
+async function commitMove(o, pos) {
+  const prev = {x: o.x, z: o.z};
+  o.x = pos.x;
+  o.z = pos.z;
+  if (isSel(o)) { S.cur.x = o.x; S.cur.z = o.z; renderHeader(); }
+  redraw();
+  try {
+    await api('/api/move', {kind: o.kind, id: o.id, x: r2(pos.x), y: o.y, z: r2(pos.z)});
+  } catch (e) {
+    o.x = prev.x;
+    o.z = prev.z;
+    if (isSel(o)) { S.cur.x = prev.x; S.cur.z = prev.z; renderHeader(); }
+    toast(e.message, 'err');
+    redraw();
+  }
+}
+
+function startPinch() {
+  const [a, b] = Array.from(ptrs.values());
+  const mid = {x: (a.x + b.x) / 2, y: (a.y + b.y) / 2};
+  pinch = {d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, s0: view.s, ax: wx(mid.x), az: wz(mid.y)};
+}
+
+function doPinch() {
+  const [a, b] = Array.from(ptrs.values());
+  const mid = {x: (a.x + b.x) / 2, y: (a.y + b.y) / 2};
+  view.s = clamp(pinch.s0 * (Math.hypot(a.x - b.x, a.y - b.y) / pinch.d0), SCALE_MIN, SCALE_MAX);
+  view.cx = pinch.ax - (mid.x - W / 2) / view.s;
+  view.cz = pinch.az - (mid.y - H / 2) / view.s;
+  redraw();
+  scheduleEnsure();
+}
+
+function cancelDrag() {
+  if (!drag) return;
+  clearTimeout(drag.timer);
+  if (drag.type === 'node' && drag.moved) schedulePathSave();
+  drag = null;
+}
+
+function bindMap() {
+  cv.addEventListener('pointerdown', ev => {
+    if (ev.button === 2) return;
+    cv.setPointerCapture(ev.pointerId);
+    const p = pt(ev);
+    ptrs.set(ev.pointerId, p);
+    if (ptrs.size === 2) { cancelDrag(); startPinch(); return; }
+    if (ptrs.size > 2) return;
+    const h = hit(p.x, p.y);
+    drag = {id: ev.pointerId, x: p.x, y: p.y, cx: view.cx, cz: view.cz, moved: false, type: 'pan', timer: 0};
+    if (h && h.t === 'node') {
+      drag.type = 'node';
+      drag.i = h.i;
+      drag.snap = cloneProps();
+      drag.timer = setTimeout(() => {
+        if (!drag || drag.moved || drag.type !== 'node') return;
+        const i = drag.i;
+        drag = null;
+        deleteNode(i);
+      }, LONGPRESS);
+    } else if (h && h.t === 'mid') {
+      pushUndo();
+      S.path.splice(h.m.i + 1, 0, [h.m.wx, h.m.wy, h.m.wz]);
+      S.ui.shape = null;
+      drag.type = 'node';
+      drag.i = h.m.i + 1;
+      drag.inserted = true;
+      drag.snap = null;
+    } else if (h && h.t === 'obj') {
+      drag.o = h.o;
+      if (isSel(h.o)) {
+        drag.type = 'obj';
+        drag.ox = wx(p.x) - h.o.x;
+        drag.oz = wz(p.y) - h.o.z;
+        drag.pos = {x: h.o.x, z: h.o.z};
+      } else {
+        drag.type = 'tap';
+      }
+    }
+    redraw();
+  });
+
+  cv.addEventListener('pointermove', ev => {
+    const p = pt(ev);
+    if (ptrs.has(ev.pointerId)) ptrs.set(ev.pointerId, p);
+    updateCoords(p);
+    if (pinch && ptrs.size === 2) { doPinch(); return; }
+    if (!drag || drag.id !== ev.pointerId) { if (!ptrs.size) updateHover(p); return; }
+    const dx = p.x - drag.x, dy = p.y - drag.y;
+    if (!drag.moved && Math.hypot(dx, dy) > MOVE_SLOP) {
+      drag.moved = true;
+      clearTimeout(drag.timer);
+      if (drag.type === 'tap') drag.type = 'pan';
+      if (drag.type === 'node' && drag.snap) pushUndo(drag.snap);
+    }
+    if (!drag.moved) return;
+    if (drag.type === 'pan') {
+      view.cx = drag.cx - dx / view.s;
+      view.cz = drag.cz - dy / view.s;
+      scheduleEnsure();
+    } else if (drag.type === 'obj') {
+      drag.pos = {x: wx(p.x) - drag.ox, z: wz(p.y) - drag.oz};
+    } else if (drag.type === 'node') {
+      const n = S.path[drag.i];
+      if (n) { n[0] = wx(p.x); n[2] = wz(p.y); }
+    }
+    redraw();
+  });
+
+  const finish = ev => {
+    const had = ptrs.delete(ev.pointerId);
+    if (pinch) { if (ptrs.size < 2) pinch = null; drag = null; return; }
+    const d = drag;
+    if (!d || d.id !== ev.pointerId || !had) return;
+    drag = null;
+    clearTimeout(d.timer);
+    const p = pt(ev);
+    if (d.type === 'obj' && d.moved) commitMove(d.o, d.pos);
+    else if (d.type === 'tap' && !d.moved) selectObj(d.o.kind, d.o.id);
+    else if (d.type === 'node' && (d.moved || d.inserted)) { syncPathUI(); schedulePathSave(); if (S.tab === 'movement') renderBody(); }
+    else if (d.type === 'pan' && !d.moved && S.drawing && S.cur) appendPoint(wx(p.x), wz(p.y));
+    redraw();
+  };
+  cv.addEventListener('pointerup', finish);
+  cv.addEventListener('pointercancel', ev => { ptrs.delete(ev.pointerId); cancelDrag(); pinch = null; redraw(); });
+  cv.addEventListener('pointerleave', () => { if (hoverObj) { hoverObj = null; redraw(); } });
+  cv.addEventListener('contextmenu', ev => {
+    ev.preventDefault();
+    if (drag && drag.type === 'node') { clearTimeout(drag.timer); drag = null; }
+    const p = pt(ev);
+    const h = hit(p.x, p.y);
+    if (h && h.t === 'node') deleteNode(h.i);
+  });
+  cv.addEventListener('wheel', ev => {
+    ev.preventDefault();
+    const p = pt(ev);
+    const dy = ev.deltaMode === 1 ? ev.deltaY * 16 : ev.deltaY;
+    zoomAt(p.x, p.y, Math.exp(-dy * WHEEL_K));
+  }, {passive: false});
+  if ('ResizeObserver' in window) new ResizeObserver(resizeMap).observe(cv.parentElement);
+  else window.addEventListener('resize', resizeMap);
+}
+
+async function pollMe() {
+  if (document.hidden || !$('#gate').hidden) return;
+  try { S.me = await api('/api/me'); } catch (e) { return; }
+  $('#locP').disabled = !(S.me && S.me.online);
+  redraw();
 }
 
 function openNew() {
-  const npc = S.tab === 'npc';
-  $('#newTitle').textContent = npc ? 'New NPC' : 'New hologram';
-  $('#newTypeWrap').hidden = !npc;
-  $('#newId').value = '';
-  if (npc) {
-    const prop = S.schema.kinds.npc.sections.flatMap(s => s.props).find(p => p.id === 'entity-type');
-    const sel = $('#newType');
-    sel.replaceChildren(...(prop ? prop.options : []).map(o => el('option', {value: o.id, text: o.label})));
-    sel.value = S.cfg.defaultNpcType;
-  }
+  const kind = S.filter === 'npc' ? 'npc' : 'hologram';
+  setNewKind(kind);
+  $('#newId').value = suggestId(kind);
   $('#newDlg').showModal();
   $('#newId').focus();
+  $('#newId').select();
+}
+
+function suggestId(kind) {
+  let n = 1;
+  while (S.objects.some(o => o.kind === kind && o.id === kind + '_' + n)) n++;
+  return kind + '_' + n;
+}
+
+let newType = null;
+function setNewKind(kind) {
+  $('#newDlg').dataset.kind = kind;
+  for (const b of $('#newKind').children) b.classList.toggle('on', b.dataset.k === kind);
+  $('#newTypeWrap').hidden = kind !== 'npc';
+  if (kind === 'npc') {
+    newType = S.cfg.defaultNpcType;
+    $('#newMob').replaceChildren(mobGrid(newType, v => { newType = v; }));
+  }
+  const cur = $('#newId').value;
+  if (!cur || /^(hologram|npc)_\d+$/.test(cur)) $('#newId').value = suggestId(kind);
 }
 
 async function submitNew() {
   const id = $('#newId').value.trim();
-  const kind = S.tab;
+  const kind = $('#newDlg').dataset.kind || 'hologram';
   let ok = true;
   try { ok = new RegExp('^(?:' + S.cfg.idPattern + ')$').test(id); } catch (e) { ok = id.length > 0; }
   if (!ok) { toast('Invalid id', 'err'); return; }
-  if (S.dirty && !confirm('Discard unsaved changes?')) return;
   const body = {kind, id};
-  if (kind === 'npc') body.entityType = $('#newType').value;
-  const btn = $('#newOk');
-  await run(btn, async () => {
+  if (kind === 'npc') body.entityType = newType;
+  await run($('#newOk'), async () => {
+    await flushAll();
     await api('/api/create', body);
     $('#newDlg').close();
-    clean();
     await refreshList();
     toast('Created', 'ok');
-    await select(kind, id, []);
+    await selectObj(kind, id, {center: true});
   });
+}
+
+function bind() {
+  bindMap();
+  bindPicker();
+  $('#search').addEventListener('input', ev => { S.search = ev.target.value; renderList(); });
+  $('#refreshBtn').addEventListener('click', ev => run(ev.currentTarget, refreshList));
+  $('#menuBtn').addEventListener('click', () => { $('#side').classList.add('open'); $('#scrim').classList.add('on'); });
+  $('#inspToggle').addEventListener('click', () => $('#insp').classList.toggle('open'));
+  $('#scrim').addEventListener('click', closeSide);
+  $('#newBtn').addEventListener('click', openNew);
+  $('#newCancel').addEventListener('click', () => $('#newDlg').close());
+  $('#newForm').addEventListener('submit', ev => { ev.preventDefault(); submitNew(); });
+  $('#newKind').addEventListener('click', ev => { const b = ev.target.closest('[data-k]'); if (b) setNewKind(b.dataset.k); });
+  $('#zIn').addEventListener('click', () => zoomAt(W / 2, H / 2, 1.4));
+  $('#zOut').addEventListener('click', () => zoomAt(W / 2, H / 2, 1 / 1.4));
+  $('#locP').addEventListener('click', () => {
+    if (!S.me || !S.me.online) return;
+    view.world = S.me.world;
+    refreshWorldSel();
+    centerOn(S.me.x, S.me.z);
+  });
+  $('#locO').addEventListener('click', () => {
+    if (!S.cur) return;
+    view.world = S.cur.world;
+    refreshWorldSel();
+    centerOn(S.cur.x, S.cur.z);
+  });
+  $('#refT').addEventListener('click', () => {
+    tiles.clear();
+    tq.length = 0;
+    redraw();
+    ensureTiles();
+  });
+  $('#worldSel').addEventListener('change', ev => {
+    view.world = ev.target.value;
+    if (S.me && S.me.online && S.me.world === view.world) centerOn(S.me.x, S.me.z);
+    else {
+      const o = S.objects.find(x => x.world === view.world);
+      if (o) centerOn(o.x, o.z);
+    }
+    redraw();
+  });
+  $('#mapDraw').addEventListener('click', toggleDraw);
+  $('#mapUndo').addEventListener('click', undoPath);
+  document.addEventListener('keydown', ev => {
+    const typing = ev.target && /^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName);
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's') {
+      ev.preventDefault();
+      if (S.cur) flushAll().then(() => { if (!busy()) toast('Saved', 'ok'); }, e => toast(e.message, 'err'));
+      return;
+    }
+    if (typing) return;
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); undoPath(); return; }
+    if (ev.key === 'Escape') {
+      if (S.drawing) { S.drawing = false; syncDrawUI(); } else if (S.cur) deselect();
+    }
+  });
+  window.addEventListener('beforeunload', ev => { if (busy()) { ev.preventDefault(); ev.returnValue = ''; } });
+}
+
+function initView() {
+  const m = S.me;
+  if (m && m.online) { view.world = m.world; view.cx = m.x; view.cz = m.z; }
+  else if (S.objects.length) { const o = S.objects[0]; view.world = o.world; view.cx = o.x; view.cz = o.z; }
+  refreshWorldSel();
 }
 
 async function boot() {
@@ -826,7 +2638,16 @@ async function boot() {
     const schema = await api('/api/schema');
     S.schema = schema;
     S.cfg = schema.config;
-    await refreshList();
+    S.assets = S.cfg.assets || {};
+    loadFont();
+    await Promise.all([refreshList(), pollMe()]);
+    initView();
+    renderInspector();
+    renderList();
+    syncDrawUI();
+    setInd('saved');
+    resizeMap();
+    setInterval(pollMe, ME_MS);
   } catch (e) {
     if (!$('#gate').hidden) return;
     toast(e.message, 'err');
