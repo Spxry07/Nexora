@@ -1,4 +1,4 @@
-file-version: 4
+file-version: 5
 id-prefix: "demo-"
 skin-property: "textures"
 objects:
@@ -46,6 +46,10 @@ objects:
       particle-radius: 0.8
       particle-interval: 4
       actions: "[sound] block.enchantment_table.use\n[message] &#B455F0&lᴡɪᴢᴀʀᴅ &7» &fBehold my levitating blocks, &#B455F0{player}&f!"
+      look-trigger-range: 10
+      triggers: "look -> particle WITCH 12 head 0.4; sound block.amethyst_block.chime 1 1.4\nholding trident every 2 -> particle! DUST_TRANSITION:#B455F0:#40CEFC:1.2 3 hand 0.15\nuse -> particle! ENCHANT 30 hand 0.5; sound! entity.illusioner.cast_spell\nswing -> particle! END_ROD 8 hand 0.3 0.05\nclick -> particle! TOTEM_OF_UNDYING 25 body 0.7"
+      nameplate: true
+      nameplate-height: 0.35
     equipment:
       HAND: "BLAZE_ROD"
       OFF_HAND: "ENCHANTED_BOOK"
@@ -295,6 +299,11 @@ objects:
       particle-radius: 1.8
       particle-interval: 6
       actions: "[sound] entity.iron_golem.hurt\n[message] &#FF3B3B&lᴛɪᴛᴀɴ &7» &fAny entity type, any scale."
+      approach-range: 6
+      look-trigger-range: 14
+      triggers: "approach cooldown 100 -> sound! entity.ravager.roar 1 0.7; particle! LARGE_SMOKE 25 body 1.2; title &#FF3B3B&lᴛʜᴇ ᴛɪᴛᴀɴ|&7has noticed you\nlook -> particle DUST:#FF2020:2 6 head 0.3\nleave -> actionbar &7The titan lets you go..."
+      nameplate: true
+      nameplate-height: 0.6
   puppet:
     kind: npc
     offset: {forward: 6, right: -1.8, up: 0, yaw: 180}

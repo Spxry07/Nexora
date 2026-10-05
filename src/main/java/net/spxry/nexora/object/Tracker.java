@@ -54,13 +54,23 @@ public final class Tracker implements Listener {
         if (!player.isOnline()) return;
         var location = player.getLocation();
         var eye = player.getEyeLocation();
+        var direction = eye.getDirection();
         var uuid = player.getUniqueId();
         for (var object : plugin.objects().all()) {
+            var npc = object instanceof Npc found ? found : null;
             boolean inRange = !object.isRemoved() && object.inRange(location);
             boolean viewing = object.isViewer(uuid);
-            if (inRange && !viewing) object.show(player);
-            else if (!inRange && viewing) object.hide(player);
-            if (inRange && object instanceof Npc npc) npc.look(player, eye);
+            if (inRange && !viewing) {
+                object.show(player);
+                if (npc != null && object.isViewer(uuid)) npc.shown(player);
+            } else if (!inRange && viewing) {
+                if (npc != null) npc.departed(player);
+                object.hide(player);
+            }
+            if (inRange && npc != null) {
+                npc.look(player, eye);
+                if (object.isViewer(uuid)) npc.observe(player, eye, direction);
+            }
         }
     }
 

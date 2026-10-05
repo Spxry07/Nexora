@@ -748,6 +748,8 @@ public final class WebServer {
         view.put("idPattern", config.getString("ids.pattern", ""));
         view.put("defaultNpcType", config.getString("npc.default-type", DEFAULT_NPC_TYPE));
         view.put("lineDefaults", plugin.objects().defaults(NexoraObject.LINE));
+        view.put("nameplateSuffix", config.getString("npc.nameplate.id-suffix", ""));
+        view.put("lookAngle", config.getDouble("npc.triggers.look-angle", 10));
         return view;
     }
 

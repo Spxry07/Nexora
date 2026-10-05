@@ -35,6 +35,14 @@ public final class ActionRunner {
         }
     }
 
+    public void runConsole(String command, Map<String, String> placeholders) {
+        console(MessageManager.apply(command, placeholders));
+    }
+
+    public void runPlayer(Player player, String command, Map<String, String> placeholders) {
+        command(player, MessageManager.apply(command, placeholders));
+    }
+
     private void dispatch(Player player, String line, Map<String, String> values) {
         if (tagged(line, "actions.console")) console(payload(line, "actions.console", values));
         else if (tagged(line, "actions.player")) command(player, payload(line, "actions.player", values));

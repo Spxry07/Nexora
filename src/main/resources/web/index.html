@@ -195,6 +195,8 @@ input[type=color]{width:38px;height:32px;padding:0;border:2px solid var(--lo);ba
 .fr.on{background:#2f4f99;color:#fff;border-color:var(--accent2) #1b2c57 #1b2c57 var(--accent2)}
 .fr.cur{outline:2px solid var(--ok);outline-offset:-2px}
 .limbrow{background:var(--btn-lo);border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);padding:6px 8px 8px;margin-bottom:6px}
+.limbrow.dim{opacity:.6}
+.gpair{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 12px;align-items:start}
 .limbrow.on{border-color:var(--accent2) #1b2c57 #1b2c57 var(--accent2);background:#1f2a47}
 .limbrow .lh{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:2px}
 .limbrow .lh button.nm{background:none;border:0;padding:0;font-weight:600;color:var(--text)}
@@ -235,6 +237,18 @@ dialog .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;align
 #gate{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;text-align:center;padding:24px;z-index:400}
 #gate div{max-width:420px}
 #gate h2{color:var(--accent);margin:0 0 8px}
+.rule{border:2px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);margin-bottom:10px;background:var(--btn-lo)}
+.rule-h{display:flex;gap:6px;align-items:center;padding:6px;background:#00000030}
+.rule-h select{width:100%}
+.ev-ico{width:24px;height:24px;flex:none;color:var(--accent2)}
+.rule-p{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 12px;padding:8px 10px 0}
+.rule-n{padding:6px 10px 0}
+.acts{padding:4px 10px 10px}
+.arow{border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);background:var(--panel2);margin-top:6px}
+.arow-h{display:flex;gap:4px;align-items:center;padding:4px 6px;background:#00000030}
+.arow-b{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 12px;padding:8px}
+.arow>.note{padding:0 8px 6px;margin:0}
+.rule.raw input{font-family:var(--pix)}
 @media (max-width:1180px){
 #app{grid-template-columns:268px minmax(0,1fr)}
 #insp{position:fixed;top:0;right:0;bottom:0;width:min(var(--inspw),100vw);z-index:50;transform:translateX(104%);transition:transform .18s;box-shadow:-8px 0 24px #0008}
@@ -373,6 +387,55 @@ const ANIM_TICK_MAX = 1200;
 const ANIM_TICK_DEF = 10;
 const ANIM_TEXT_MAX = 8192;
 const TICKS_PER_MS = 0.02;
+const POSES = [['STANDING', 'Standing'], ['SNEAKING', 'Sneaking'], ['SWIMMING', 'Swimming'], ['FALL_FLYING', 'Gliding'], ['SPIN_ATTACK', 'Riptide'], ['SLEEPING', 'Sleeping'], ['SITTING', 'Sitting']];
+const POSE_IDS = new Set(POSES.map(p => p[0]));
+const USE_MODES = [['none', 'None'], ['main', 'Main'], ['off', 'Off']];
+const SWING_MODES = [['', 'None'], ['main', 'Main'], ['off', 'Off']];
+const GEST_DEFAULT = {pose: 'STANDING', use: 'none', item: '', offitem: '', swing: ''};
+const GEST_KEYS = ['pose', 'use', 'item', 'offitem'];
+const GEST_EMIT = {pose: v => 'pose=' + v, use: v => 'use=' + v, item: v => 'item=' + (v || 'none'), offitem: v => 'offitem=' + (v || 'none')};
+const MATERIAL_RE = /^[a-z0-9_:.\-]+$/;
+const SWING_TICKS = 6;
+const SWING_ARC = 95;
+const SWING_STATIC = 0.5;
+const STROKE_K = 0.35;
+const BOB_K = 0.5;
+const SPIN_K = 0.5;
+const HALF_PI = Math.PI / 2;
+const LYING_ZOOM = 0.6;
+const STAND_ZOOM = 0.85;
+const SPRITE_UNITS = 10;
+const USE_KIND = {bow: 'aim', crossbow: 'aim', trident: 'throw', spyglass: 'scope', goat_horn: 'horn', shield: 'block'};
+const USE_ARMS = {
+  aim: {using: [-92, -8, 0], other: [-86, 18, 0]},
+  throw: {using: [-170, 0, 12]},
+  scope: {using: [-118, -24, 0]},
+  horn: {using: [-125, -38, 0]},
+  block: {using: [-60, 35, 0]},
+  eat: {using: [-105, -30, 0], bob: 7}
+};
+const POSE_FX = {
+  SNEAKING: p => { p.body[0] += 28; p.head[0] += 12; p.lleg[0] += 18; p.rleg[0] += 18; },
+  SITTING: p => { p.lleg = [-90, 0, -1]; p.rleg = [-90, 0, 1]; },
+  SLEEPING: (p, xf) => { xf.rx = -HALF_PI; },
+  FALL_FLYING: (p, xf) => { xf.rx = HALF_PI; p.head[0] -= 60; },
+  SWIMMING: (p, xf, now) => {
+    const s = Math.sin(now * STROKE_K);
+    xf.rx = HALF_PI;
+    p.head[0] -= 60;
+    p.larm = [-170 + 40 * s, 0, -8];
+    p.rarm = [-170 - 40 * s, 0, 8];
+    p.lleg[0] += 14 * s;
+    p.rleg[0] -= 14 * s;
+  },
+  SPIN_ATTACK: (p, xf, now) => {
+    xf.rx = HALF_PI;
+    xf.ry = now * SPIN_K;
+    p.head[0] -= 60;
+    p.larm = [-170, 0, -8];
+    p.rarm = [-170, 0, 8];
+  }
+};
 const AXES = ['X', 'Y', 'Z'];
 const VIEW_FOV = 0.8;
 const NEAR = 0.05;
@@ -396,6 +459,16 @@ const LOOK_MODES = [['NONE', 'Normal'], ['SOLID', 'One color'], ['FLICKER', 'Fli
 const MODE_B = new Set(['FLICKER', 'FADE', 'WAVE']);
 const MODE_A = new Set(['SOLID', 'FLICKER', 'FADE', 'WAVE']);
 const POSE_NAME = 'ARMOR_STAND';
+const BLOCK_UNITS = 16;
+const HEAD_HALF = 4;
+const PLATE_FONT_K = 0.8;
+const PLATE_FONT_MIN = 9;
+const PLATE_FONT_MAX = 40;
+const MS_PER_TICK = 50;
+const NPC_EYE = 1.62;
+const NPC_H = 1.8;
+const NPC_HALF_W = 0.3;
+const NPC_EDGES = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
 const COLORS = {'0':'#000000','1':'#0000AA','2':'#00AA00','3':'#00AAAA','4':'#AA0000','5':'#AA00AA','6':'#FFAA00','7':'#AAAAAA','8':'#555555','9':'#5555FF','a':'#55FF55','b':'#55FFFF','c':'#FF5555','d':'#FF55FF','e':'#FFFF55','f':'#FFFFFF'};
 const GLOW_HEX = {white:'#FFFFFF',gray:'#AAAAAA',dark_gray:'#555555',black:'#000000',red:'#FF5555',dark_red:'#AA0000',gold:'#FFAA00',yellow:'#FFFF55',green:'#55FF55',dark_green:'#00AA00',aqua:'#55FFFF',dark_aqua:'#00AAAA',blue:'#5555FF',dark_blue:'#0000AA',light_purple:'#FF55FF',dark_purple:'#AA00AA'};
 const RESET = {c:'#FFFFFF',b:false,i:false,u:false,s:false,k:false};
@@ -439,7 +512,7 @@ const GEN = {
   fig8: r => Array.from({length: MAX_GEN_POINTS}, (_, i) => { const a = i / MAX_GEN_POINTS * Math.PI * 2; return [Math.sin(a) * r, Math.sin(2 * a) * r / 2]; })
 };
 const TABS = {
-  npc: [['quick','Quick'],['animate','Animate'],['movement','Movement'],['appearance','Appearance'],['advanced','Advanced']],
+  npc: [['quick','Quick'],['animate','Animate'],['triggers','Triggers'],['nameplate','Nameplate'],['movement','Movement'],['appearance','Appearance'],['advanced','Advanced']],
   hologram: [['quick','Quick'],['movement','Movement'],['appearance','Appearance'],['advanced','Advanced'],['lines','Lines']]
 };
 const NPC_APPEARANCE = [
@@ -464,7 +537,7 @@ try {
 }
 if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 
-const S = {schema: null, cfg: null, assets: {}, objects: [], filter: 'all', search: '', cur: null, props: {}, lines: [], pm: {}, path: [], undo: [], tab: 'quick', pending: false, pathPending: false, me: null, mats: null, drawing: false, ui: {radius: 5, shape: null}, skin: null, anim: null, scene: null, wide: false};
+const S = {schema: null, cfg: null, assets: {}, objects: [], filter: 'all', search: '', cur: null, props: {}, lines: [], pm: {}, path: [], undo: [], tab: 'quick', pending: false, pathPending: false, np: null, attached: new Set(), me: null, mats: null, drawing: false, ui: {radius: 5, shape: null}, skin: null, anim: null, scene: null, wide: false};
 let uid = 0;
 let T0 = performance.now();
 let fontEpoch = 0;
@@ -827,9 +900,20 @@ function vDot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
 function vCross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
 function vNorm(a) { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }
 
+function HS() {
+  return S.np && S.cur && S.cur.kind === 'npc' && S.tab === 'nameplate' ? S.np : S;
+}
+
+function attachOf(hs) {
+  if (!String(hs.props['attach-to'] || '').trim() && hs === S) return null;
+  return hs === S ? num(hs.props['attach-height']) : num(S.props['nameplate-height']);
+}
+
 function holoParams() {
-  const p = S.props;
+  const hs = HS();
+  const p = hs.props;
   return {
+    attach: attachOf(hs),
     layout: String(p.layout || 'STACK').toUpperCase(),
     radius: num(p['layout-radius']),
     layoutSpeed: num(p['layout-speed']),
@@ -846,7 +930,7 @@ function holoParams() {
     pulseS: num(p['pulse-speed']),
     swayA: num(p['sway-angle']),
     swayS: num(p['sway-speed']),
-    yaw: S.cur ? num(S.cur.yaw) : 0
+    yaw: hs.cur ? num(hs.cur.yaw) : 0
   };
 }
 
@@ -1111,14 +1195,15 @@ function drawQuad(g, cam, q, dpr) {
 
 function sceneQuads(sc, cam, secs, tick) {
   const h = holoParams();
-  const n = S.lines.length;
+  const lines = HS().lines;
+  const n = lines.length;
   const center = holoCenter(h, secs);
   const spin = h.spin * DEG * secs;
   const sway = h.swayA * DEG * Math.sin(TAU * h.swayS * secs);
   const pulse = 1 + h.pulseA * Math.sin(TAU * h.pulseS * secs);
   const out = [];
   for (let i = 0; i < n; i++) {
-    const l = S.lines[i].props;
+    const l = lines[i].props;
     const lp = lineParams(l);
     const p = holoPlace(h, lp, i, n, center, secs);
     const base = [p[0], p[1], p[2]];
@@ -1177,6 +1262,21 @@ function sceneQuads(sc, cam, secs, tick) {
   return out;
 }
 
+function drawNpcBox(g, cam, y0) {
+  const hw = NPC_HALF_W, y1 = y0 + NPC_H;
+  const c = [[-hw, y0, -hw], [hw, y0, -hw], [hw, y0, hw], [-hw, y0, hw], [-hw, y1, -hw], [hw, y1, -hw], [hw, y1, hw], [-hw, y1, hw]];
+  g.strokeStyle = 'rgba(255,200,120,.55)';
+  g.lineWidth = 1.5;
+  for (const [a, b] of NPC_EDGES) {
+    const s = projectSegment(cam, c[a], c[b]);
+    if (!s) continue;
+    g.beginPath();
+    g.moveTo(s[0].x, s[0].y);
+    g.lineTo(s[1].x, s[1].y);
+    g.stroke();
+  }
+}
+
 function drawGround(g, cam, h) {
   g.lineWidth = 1;
   for (let i = -GRID_HALF; i <= GRID_HALF; i++) {
@@ -1191,6 +1291,7 @@ function drawGround(g, cam, h) {
       g.stroke();
     }
   }
+  if (h.attach != null) drawNpcBox(g, cam, -(NPC_EYE + h.attach));
   const yawRad = h.yaw * DEG;
   const fwd = [-Math.sin(yawRad) * 1.3, 0, Math.cos(yawRad) * 1.3];
   const arrow = projectSegment(cam, [0, 0, 0], fwd);
@@ -1222,18 +1323,20 @@ function holoScene() {
   const cvs = el('canvas');
   node.append(cvs);
   const g = cvs.getContext('2d');
-  const sc = {az: -(S.cur ? num(S.cur.yaw) : 0) * DEG + 0.5, el: 0.38, dist: 5, target: [0, 0.5, 0], tex: [], W: 0, H: 0, dpr: 1, dead: false, raf: 0, fitted: false};
-  const keep = S.sceneCam && S.cur && S.sceneCam.id === S.cur.kind + S.cur.id ? S.sceneCam : null;
+  const hs0 = HS();
+  const camId = hs0.cur ? hs0.cur.kind + hs0.cur.id : '';
+  const sc = {az: -(hs0.cur ? num(hs0.cur.yaw) : 0) * DEG + 0.5, el: 0.38, dist: 5, target: [0, 0.5, 0], tex: [], W: 0, H: 0, dpr: 1, dead: false, raf: 0, fitted: false};
+  const keep = S.sceneCam && S.sceneCam.id === camId ? S.sceneCam : null;
   if (keep) Object.assign(sc, {az: keep.az, el: keep.el, dist: keep.dist, target: keep.target, fitted: true});
   const fit = () => {
     const h = holoParams();
-    const n = S.lines.length;
+    const n = HS().lines.length;
     let ymin = Infinity, ymax = -Infinity, r = 0.8;
     for (let s = 0; s < 8; s++) {
       const secs = s * 0.9;
       const c = holoCenter(h, secs);
       for (let i = 0; i < n; i++) {
-        const lp = lineParams(S.lines[i].props);
+        const lp = lineParams(HS().lines[i].props);
         const p = holoPlace(h, lp, i, n, c, secs);
         ymin = Math.min(ymin, p[1]);
         ymax = Math.max(ymax, p[1] + 0.3 * lp.scale);
@@ -1241,6 +1344,7 @@ function holoScene() {
       }
     }
     if (!Number.isFinite(ymin)) { ymin = 0; ymax = 0.6; }
+    if (h.attach != null) ymin = Math.min(ymin, -(NPC_EYE + h.attach));
     sc.target = [0, (ymin + ymax) / 2, 0];
     sc.dist = clamp(Math.max(r * 2.3, (ymax - ymin) * 1.8, 3.2), SCENE_MIN_DIST, SCENE_MAX_DIST);
     sc.fitted = true;
@@ -1256,7 +1360,7 @@ function holoScene() {
       cvs.width = Math.round(w * sc.dpr);
       cvs.height = Math.round(hh * sc.dpr);
     }
-    if (!sc.fitted && S.lines.length) fit();
+    if (!sc.fitted && HS().lines.length) fit();
     g.setTransform(sc.dpr, 0, 0, sc.dpr, 0, 0);
     const bg = g.createLinearGradient(0, 0, 0, hh);
     bg.addColorStop(0, '#1b2438');
@@ -1284,7 +1388,7 @@ function holoScene() {
   const destroy = () => {
     sc.dead = true;
     cancelAnimationFrame(sc.raf);
-    if (S.cur && sc.fitted) S.sceneCam = {id: S.cur.kind + S.cur.id, az: sc.az, el: sc.el, dist: sc.dist, target: sc.target};
+    if (camId && sc.fitted) S.sceneCam = {id: camId, az: sc.az, el: sc.el, dist: sc.dist, target: sc.target};
   };
   let drag = null;
   cvs.addEventListener('pointerdown', ev => {
@@ -1316,24 +1420,25 @@ function holoScene() {
     destroy,
     refresh: () => { sc.tex = []; },
     top: () => setView(sc.az, 1.45),
-    side: () => setView(-(S.cur ? num(S.cur.yaw) : 0) * DEG, 0.05)
+    side: () => setView(-(hs0.cur ? num(hs0.cur.yaw) : 0) * DEG, 0.05)
   };
 }
 
 function pvCard() {
+  if (S.scene) S.scene.destroy();
   const scene = holoScene();
   S.scene = scene;
   const tools = el('span', {class: 'row2'},
     el('button', {class: 'btn sm', type: 'button', text: 'Fit', onclick: scene.fit}),
     el('button', {class: 'btn sm', type: 'button', text: 'Front', onclick: scene.side}),
     el('button', {class: 'btn sm', type: 'button', text: 'Top', onclick: scene.top}));
-  return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Live 3D preview'}), tools), el('div', {class: 'body'}, scene.node, el('div', {class: 'pv-meta', id: 'pvMeta', text: S.lines.length + ' line(s)'})));
+  return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Live 3D preview'}), tools), el('div', {class: 'body'}, scene.node, el('div', {class: 'pv-meta', id: 'pvMeta', text: HS().lines.length + ' line(s)'})));
 }
 
 function buildPreview() {
   if (S.scene) S.scene.refresh();
   const meta = $('#pvMeta');
-  if (meta) meta.textContent = S.lines.length + ' line(s)';
+  if (meta) meta.textContent = HS().lines.length + ' line(s)';
 }
 
 
@@ -1357,6 +1462,48 @@ function touch() {
   saveTimer = setTimeout(runSave, SAVE_MS);
 }
 
+let npTimer = 0;
+let npSaving = null;
+
+function htouch() {
+  if (HS() === S) touch();
+  else touchNp();
+}
+
+function touchNp() {
+  if (!S.np) return;
+  S.np.pending = true;
+  setInd('pending');
+  clearTimeout(npTimer);
+  npTimer = setTimeout(runSaveNp, SAVE_MS);
+}
+
+async function runSaveNp() {
+  clearTimeout(npTimer);
+  if (npSaving) await npSaving;
+  const n = S.np;
+  if (!n || !n.pending) return;
+  n.pending = false;
+  const props = {};
+  for (const [k, v] of Object.entries(n.props)) if (n.pm[k]) props[k] = v;
+  const snap = n.lines.slice();
+  const body = {kind: 'hologram', id: n.cur.id, props, lines: snap.map(l => ({ref: l.ref, props: l.props}))};
+  setInd('saving');
+  npSaving = (async () => {
+    try {
+      await api('/api/save', body);
+      snap.forEach((l, i) => { l.ref = i; });
+      setInd(S.pending || S.pathPending || n.pending ? 'pending' : 'saved');
+    } catch (e) {
+      n.pending = true;
+      setInd('error');
+      toast(e.message, 'err');
+    }
+  })();
+  await npSaving;
+  npSaving = null;
+}
+
 function ref() { return {kind: S.cur.kind, id: S.cur.id}; }
 
 async function runSave() {
@@ -1376,7 +1523,7 @@ async function runSave() {
     try {
       const res = await api('/api/save', body);
       snap.forEach((l, i) => { l.ref = i; });
-      setInd(S.pending || S.pathPending ? 'pending' : 'saved');
+      setInd(S.pending || S.pathPending || (S.np && S.np.pending) ? 'pending' : 'saved');
       if (res && res.invalid && res.invalid.length) {
         toast('Invalid values reset: ' + res.invalid.join(', '), 'err');
         if (S.cur === c && !S.pending) await reloadCurrent();
@@ -1428,9 +1575,11 @@ async function flushAll() {
   clearTimeout(pathTimer);
   if (S.pending || saving) await runSave();
   if (S.pathPending || pathSaving) await runPathSave();
+  clearTimeout(npTimer);
+  if ((S.np && S.np.pending) || npSaving) await runSaveNp();
 }
 
-function busy() { return S.pending || S.pathPending || saving || pathSaving; }
+function busy() { return S.pending || S.pathPending || saving || pathSaving || (S.np && S.np.pending) || npSaving; }
 
 function curEntry() {
   return S.cur ? S.objects.find(o => o.kind === S.cur.kind && o.id === S.cur.id) : null;
@@ -1649,7 +1798,7 @@ function lineCard(l, index, rerender) {
     for (const sec of S.schema.kinds.line.sections) {
       body.append(sectionCard(sec, l.props, (id, v) => {
         l.props[id] = v;
-        touch();
+        htouch();
         summary.textContent = lineSummary(l);
         buildPreview();
       }, true));
@@ -1665,15 +1814,15 @@ function lineCard(l, index, rerender) {
   }}, el('span', {class: 'i', text: '#' + (index + 1)}), summary);
   const move = (d, label, glyph) => el('button', {class: 'btn sm', type: 'button', 'aria-label': label, text: glyph, onclick: () => {
     const j = index + d;
-    if (j < 0 || j >= S.lines.length) return;
-    [S.lines[index], S.lines[j]] = [S.lines[j], S.lines[index]];
-    touch();
+    if (j < 0 || j >= HS().lines.length) return;
+    [HS().lines[index], HS().lines[j]] = [HS().lines[j], HS().lines[index]];
+    htouch();
     rerender();
     buildPreview();
   }});
   const del = el('button', {class: 'btn sm danger', type: 'button', 'aria-label': 'Delete line', text: 'X', onclick: () => {
-    S.lines.splice(index, 1);
-    touch();
+    HS().lines.splice(index, 1);
+    htouch();
     rerender();
     buildPreview();
   }});
@@ -1681,9 +1830,9 @@ function lineCard(l, index, rerender) {
 }
 
 function addLine(open) {
-  if (S.lines.length >= S.cfg.maxLines) return false;
-  S.lines.push({ref: -1, props: Object.assign({}, S.cfg.lineDefaults), hasItem: false, open: !!open});
-  touch();
+  if (HS().lines.length >= S.cfg.maxLines) return false;
+  HS().lines.push({ref: -1, props: Object.assign({}, S.cfg.lineDefaults), hasItem: false, open: !!open});
+  htouch();
   return true;
 }
 
@@ -1691,9 +1840,9 @@ function linesPanel() {
   const list = el('div');
   const count = el('span', {class: 'muted'});
   const render = () => {
-    list.replaceChildren(...S.lines.map((l, i) => lineCard(l, i, render)));
-    count.textContent = S.lines.length + ' / ' + S.cfg.maxLines;
-    add.disabled = S.lines.length >= S.cfg.maxLines;
+    list.replaceChildren(...HS().lines.map((l, i) => lineCard(l, i, render)));
+    count.textContent = HS().lines.length + ' / ' + S.cfg.maxLines;
+    add.disabled = HS().lines.length >= S.cfg.maxLines;
   };
   const add = el('button', {class: 'btn sm', type: 'button', text: '+ Add line', onclick: () => {
     if (!addLine(true)) return;
@@ -1708,9 +1857,9 @@ function quickLines() {
   const list = el('div');
   const count = el('span', {class: 'muted'});
   const render = () => {
-    list.replaceChildren(...S.lines.map((l, i) => quickLine(l, i, render)));
-    count.textContent = S.lines.length + ' / ' + S.cfg.maxLines;
-    add.disabled = S.lines.length >= S.cfg.maxLines;
+    list.replaceChildren(...HS().lines.map((l, i) => quickLine(l, i, render)));
+    count.textContent = HS().lines.length + ' / ' + S.cfg.maxLines;
+    add.disabled = HS().lines.length >= S.cfg.maxLines;
   };
   const add = el('button', {class: 'btn sm', type: 'button', text: '+ Add line', onclick: () => {
     if (!addLine(false)) return;
@@ -1725,19 +1874,19 @@ function quickLine(l, i, rerender) {
   const typeProp = S.schema.kinds.line.sections.flatMap(s => s.props).find(p => p.id === 'type');
   const sel = el('select', {'aria-label': 'Line type'}, (typeProp ? typeProp.options : []).map(o => el('option', {value: o.id, text: o.label})));
   sel.value = l.props.type;
-  sel.addEventListener('change', () => { l.props.type = sel.value; touch(); rerender(); buildPreview(); });
+  sel.addEventListener('change', () => { l.props.type = sel.value; htouch(); rerender(); buildPreview(); });
   let main;
   if (l.props.type === 'TEXT') {
     main = el('textarea', {rows: 2, 'aria-label': 'Line text'});
     main.value = l.props.text || '';
-    main.addEventListener('input', () => { l.props.text = main.value; touch(); buildPreview(); });
+    main.addEventListener('input', () => { l.props.text = main.value; htouch(); buildPreview(); });
   } else {
     const mp = {id: 'material', label: 'Material', type: 'text', max: 64};
-    main = materialControl(mp, l.props.material, v => { l.props.material = v; touch(); buildPreview(); });
+    main = materialControl(mp, l.props.material, v => { l.props.material = v; htouch(); buildPreview(); });
   }
   const del = el('button', {class: 'btn sm danger', type: 'button', 'aria-label': 'Delete line', text: 'X', onclick: () => {
-    S.lines.splice(i, 1);
-    touch();
+    HS().lines.splice(i, 1);
+    htouch();
     rerender();
     buildPreview();
   }});
@@ -1888,21 +2037,45 @@ function sameVec(a, b) { return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 function fmtAngle(v) { return String(Math.round(v * 10) / 10); }
 function r1(v) { return Math.round(v * 10) / 10; }
 
+function mkFrame(ticks, limbs, g) { return Object.assign({ticks, limbs}, GEST_DEFAULT, g || {}); }
+function gestOf(f) {
+  const o = {};
+  for (const k of GEST_KEYS) o[k] = f[k];
+  return o;
+}
+function cloneFrame(f) { return Object.assign({}, f, {limbs: clonePose(f.limbs)}); }
+function carryFrame(f) { return mkFrame(ANIM_TICK_DEF, defaultPose(), f ? gestOf(f) : null); }
+
+function readGesture(g, key, val) {
+  if (key === 'pose') { if (POSE_IDS.has(val.toUpperCase())) g.pose = val.toUpperCase(); }
+  else if (key === 'use') { if (val === 'main' || val === 'off' || val === 'none') g.use = val; }
+  else if (key === 'swing') { if (val === 'main' || val === 'off') g.swing = val; }
+  else if (val === 'none') g[key] = '';
+  else if (MATERIAL_RE.test(val)) g[key] = val;
+}
+
 function parseAnim(text) {
   const frames = [];
   let prev = defaultPose();
+  let gs = Object.assign({}, GEST_DEFAULT);
   for (const raw of String(text || '').split(/\r?\n/)) {
     const toks = raw.trim().split(/\s+/);
     if (!/^\d+$/.test(toks[0])) continue;
     const limbs = clonePose(prev);
+    const g = Object.assign({}, gs, {swing: ''});
     for (const t of toks.slice(1)) {
       const m = /^(head|body|larm|rarm|lleg|rleg)=([^,]+),([^,]+),([^,]+)$/i.exec(t);
-      if (!m) continue;
-      const v = [m[2], m[3], m[4]].map(Number);
-      if (v.every(Number.isFinite)) limbs[m[1].toLowerCase()] = v;
+      if (m) {
+        const v = [m[2], m[3], m[4]].map(Number);
+        if (v.every(Number.isFinite)) limbs[m[1].toLowerCase()] = v;
+        continue;
+      }
+      const kv = /^(pose|use|item|offitem|swing)=(\S+)$/i.exec(t);
+      if (kv) readGesture(g, kv[1].toLowerCase(), kv[2].toLowerCase());
     }
-    frames.push({ticks: clamp(parseInt(toks[0], 10), ANIM_TICK_MIN, ANIM_TICK_MAX), limbs});
+    frames.push(mkFrame(clamp(parseInt(toks[0], 10), ANIM_TICK_MIN, ANIM_TICK_MAX), limbs, g));
     prev = limbs;
+    gs = g;
     if (frames.length >= ANIM_MAX_FRAMES) break;
   }
   return frames;
@@ -1910,11 +2083,17 @@ function parseAnim(text) {
 
 function serializeAnim(frames) {
   let prev = POSE_DEFAULT;
-  return frames.map(f => {
+  let pg = GEST_DEFAULT;
+  const last = frames[frames.length - 1];
+  return frames.map((f, i) => {
     const parts = [String(f.ticks)];
     for (const k of LIMBS) if (!sameVec(f.limbs[k].map(r1), prev[k].map(r1))) parts.push(k + '=' + f.limbs[k].map(fmtAngle).join(','));
+    const wrap = i === 0 && last !== f;
+    for (const k of GEST_KEYS) if (f[k] !== pg[k] || (wrap && last[k] !== f[k])) parts.push(GEST_EMIT[k](f[k]));
+    if (f.swing) parts.push('swing=' + f.swing);
     if (parts.length === 1) parts.push('head=' + f.limbs.head.map(fmtAngle).join(','));
     prev = f.limbs;
+    pg = f;
     return parts.join(' ');
   }).join('\n');
 }
@@ -1942,6 +2121,57 @@ function frameStart(frames, idx) {
   let t = 0;
   for (let i = 0; i < idx && i < frames.length; i++) t += frames[i].ticks;
   return t;
+}
+
+function frameGesture(f, swingT) { return Object.assign(gestOf(f), {swing: f.swing, swingT}); }
+
+function gestureSummary(f) {
+  const parts = [f.pose.toLowerCase().replace(/_/g, ' ')];
+  if (f.use !== 'none') parts.push('use ' + f.use);
+  if (f.item) parts.push('main ' + f.item);
+  if (f.offitem) parts.push('off ' + f.offitem);
+  if (f.swing) parts.push('swing ' + f.swing);
+  return parts.join(', ');
+}
+
+function gestureAt(frames, t) {
+  const at = frameAt(frames, t);
+  const f = frames[at.i];
+  return frameGesture(f, at.f * f.ticks / animSpeed() / SWING_TICKS);
+}
+
+function eqMaterial(slot) {
+  const s = ((S.cur && S.cur.equipment) || []).find(x => x.slot === slot);
+  return s && s.material ? String(s.material).toLowerCase() : '';
+}
+
+function withHeld(g) {
+  g.skinned = (S.props['entity-type'] || S.cfg.defaultNpcType) !== POSE_NAME;
+  g.main = g.item || eqMaterial('HAND');
+  g.off = g.offitem || eqMaterial('OFF_HAND');
+  return g;
+}
+
+function gesturePose(base, g, now) {
+  const p = clonePose(base);
+  const xf = {rx: 0, ry: 0};
+  const fx = POSE_FX[g.pose];
+  if (fx) fx(p, xf, now);
+  if (g.use !== 'none') {
+    const left = g.use === 'off';
+    const spec = USE_ARMS[USE_KIND[left ? g.off : g.main] || 'eat'];
+    const mir = v => left ? [v[0], -v[1], -v[2]] : v.slice();
+    const uk = left ? 'larm' : 'rarm';
+    p[uk] = mir(spec.using);
+    if (spec.bob) p[uk][0] += spec.bob * Math.sin(now * BOB_K);
+    if (spec.other) p[left ? 'rarm' : 'larm'] = mir(spec.other);
+  }
+  if (g.swing && g.swingT < 1) {
+    const k = g.swing === 'off' ? 'larm' : 'rarm';
+    p[k] = p[k].slice();
+    p[k][0] -= SWING_ARC * Math.sin(Math.PI * clamp(g.swingT, 0, 1));
+  }
+  return {pose: p, xf};
 }
 
 function applyPose(skin, pose) {
@@ -1972,6 +2202,47 @@ function quickPose() {
   return poseAt(frames, (performance.now() - T0) * TICKS_PER_MS * animSpeed());
 }
 
+function quickGesture() {
+  if (!isOn('animation-enabled')) return null;
+  const frames = animState().frames;
+  if (!frames.length) return null;
+  return withHeld(gestureAt(frames, (performance.now() - T0) * TICKS_PER_MS * animSpeed()));
+}
+
+function plateText(g, chars, cx, y, fs) {
+  const runs = [];
+  for (const c of chars) {
+    if (c.ch === '\n') continue;
+    const last = runs[runs.length - 1];
+    if (last && sameStyle(last.st, c.st)) last.t += c.ch;
+    else runs.push({t: c.ch, st: c.st});
+  }
+  g.textAlign = 'left';
+  g.textBaseline = 'alphabetic';
+  g.lineJoin = 'round';
+  g.lineWidth = Math.max(2, fs / 5);
+  g.strokeStyle = 'rgba(0,0,0,.85)';
+  let total = 0;
+  for (const r of runs) {
+    g.font = (r.st.i ? 'italic ' : '') + (r.st.b ? '700 ' : '500 ') + fs + 'px ' + FONT_PIX;
+    r.w = g.measureText(r.t).width;
+    total += r.w;
+  }
+  let x = cx - total / 2;
+  for (const r of runs) {
+    g.font = (r.st.i ? 'italic ' : '') + (r.st.b ? '700 ' : '500 ') + fs + 'px ' + FONT_PIX;
+    g.strokeText(r.t, x, y);
+    g.fillStyle = r.st.c;
+    g.fillText(r.t, x, y);
+    x += r.w;
+  }
+}
+
+function plateModel() {
+  const n = S.np;
+  return n && S.cur && n.owner === S.cur.id && isOn('nameplate') ? n : null;
+}
+
 function npcViewer(opt) {
   const node = el('div', {class: 'nv' + (opt.tall ? ' tall' : '')});
   const canvas = el('canvas');
@@ -1980,10 +2251,7 @@ function npcViewer(opt) {
   node.append(canvas, ov, fb, el('div', {class: 'cap', text: opt.caption || ''}));
   const st = {viewer: null, lib: null, dead: false, raf: 0, seq: 0, manual: false, hover: null, drag: null, broken: false};
 
-  const screenOf = limb => {
-    const part = st.viewer.playerObject.skin[LIMB_PART[limb]];
-    if (!part) return null;
-    const obj = part.children && part.children[0] ? part.children[0] : part;
+  const projOf = obj => {
     obj.updateWorldMatrix(true, false);
     const p = st.viewer.camera.position.clone();
     obj.getWorldPosition(p);
@@ -1991,6 +2259,96 @@ function npcViewer(opt) {
     p.project(st.viewer.camera);
     const w = node.clientWidth, h = node.clientHeight;
     return {x: (p.x + 1) / 2 * w, y: (1 - p.y) / 2 * h, px: (h / 2) / Math.tan(st.viewer.camera.fov * Math.PI / 360) / d};
+  };
+
+  const centerObj = limb => {
+    const part = st.viewer.playerObject.skin[LIMB_PART[limb]];
+    if (!part) return null;
+    return part.children && part.children[0] ? part.children[0] : part;
+  };
+
+  const screenOf = limb => {
+    const obj = centerObj(limb);
+    return obj ? projOf(obj) : null;
+  };
+
+  const handOf = limb => {
+    const obj = centerObj(limb);
+    if (!obj) return null;
+    const c = projOf(obj);
+    const pv = projOf(st.viewer.playerObject.skin[LIMB_PART[limb]]);
+    return {x: 2 * c.x - pv.x, y: 2 * c.y - pv.y, px: c.px};
+  };
+
+  const drawSprites = (g, gest) => {
+    g.imageSmoothingEnabled = false;
+    for (const [key, limb] of [['main', 'rarm'], ['off', 'larm']]) {
+      if (!gest[key]) continue;
+      const e = texNow(gest[key]);
+      const hd = handOf(limb);
+      if (!e || !hd) continue;
+      const s = SPRITE_UNITS * hd.px;
+      g.drawImage(e.img, hd.x - s / 2, hd.y - s / 2, s, s);
+    }
+  };
+
+  const drawPlate = g => {
+    const m = opt.getPlate();
+    const head = m && m.lines.length ? screenOf('head') : null;
+    if (!head) return;
+    const px = head.px;
+    const spacing = (num(m.props['line-spacing']) || 0.3) * BLOCK_UNITS * px;
+    const fs = clamp(spacing * PLATE_FONT_K, PLATE_FONT_MIN, PLATE_FONT_MAX);
+    const tick = Math.floor((performance.now() - T0) / MS_PER_TICK);
+    const top = head.y - (HEAD_HALF + num(S.props['nameplate-height']) * BLOCK_UNITS) * px;
+    const n = m.lines.length;
+    m.lines.forEach((l, i) => {
+      const y = top - (n - 1 - i) * spacing;
+      if (String(l.props.type || 'TEXT').toUpperCase() !== 'TEXT') {
+        const e = l.props.material ? texNow(String(l.props.material).toLowerCase()) : null;
+        if (e) g.drawImage(e.img, head.x - fs, y - fs * 1.6, fs * 2, fs * 2);
+        return;
+      }
+      plateText(g, textChars(l.props.text, l.props, tick, i), head.x, y, fs);
+    });
+  };
+
+  const centerLocal = () => {
+    const obj = centerObj('body');
+    const v = st.tmp;
+    obj.getWorldPosition(v);
+    const par = st.viewer.playerObject.parent;
+    if (par) {
+      par.updateWorldMatrix(true, false);
+      par.worldToLocal(v);
+    }
+    return [v.x, v.y, v.z];
+  };
+
+  const initBase = () => {
+    if (st.base) return;
+    const o = st.viewer.playerObject;
+    st.tmp = st.viewer.camera.position.clone();
+    st.base = {p: [o.position.x, o.position.y, o.position.z], c: centerLocal()};
+  };
+
+  const xform = x => {
+    const b = st.base;
+    if (!b) return;
+    const rx = x ? x.rx : 0;
+    const lying = rx !== 0;
+    if (!lying && !st.lying) return;
+    const o = st.viewer.playerObject;
+    o.rotation.set(rx, x ? x.ry : 0, 0);
+    o.position.set(b.p[0], b.p[1], b.p[2]);
+    if (lying) {
+      const c = centerLocal();
+      o.position.set(b.p[0] + b.c[0] - c[0], b.p[1] + b.c[1] - c[1], b.p[2] + b.c[2] - c[2]);
+    }
+    if (lying !== st.lying) {
+      st.lying = lying;
+      st.viewer.zoom = lying ? LYING_ZOOM : STAND_ZOOM;
+    }
   };
 
   const pick = (x, y) => {
@@ -2018,7 +2376,10 @@ function npcViewer(opt) {
   const drawOverlay = () => {
     const g = ov.getContext('2d');
     g.clearRect(0, 0, ov.width, ov.height);
-    if (!opt.editable || !st.viewer || st.broken) return;
+    if (!st.viewer || st.broken || !st.viewer.playerObject) return;
+    if (st.gest) drawSprites(g, st.gest);
+    if (opt.getPlate) drawPlate(g);
+    if (!opt.editable) return;
     const sel = opt.getSel ? opt.getSel() : null;
     if (st.hover && st.hover !== sel) ring(g, st.hover, 'rgba(255,255,255,.45)', 1.5);
     if (sel) {
@@ -2053,11 +2414,15 @@ function npcViewer(opt) {
   const poseTick = () => {
     if (!st.viewer || st.broken || !st.viewer.playerObject) return;
     const pose = opt.getPose ? opt.getPose() : null;
+    st.gest = pose && opt.getGesture ? opt.getGesture() : null;
     if (pose) {
-      if (!st.manual) { st.viewer.animation = null; st.manual = true; }
-      applyPose(st.viewer.playerObject.skin, pose);
+      if (!st.manual) { initBase(); st.viewer.animation = null; st.manual = true; }
+      const gp = st.gest && st.gest.skinned ? gesturePose(pose, st.gest, performance.now() * TICKS_PER_MS) : null;
+      applyPose(st.viewer.playerObject.skin, gp ? gp.pose : pose);
+      xform(gp ? gp.xf : null);
     } else if (st.manual) {
       st.manual = false;
+      xform(null);
       st.viewer.animation = new st.lib.IdleAnimation();
     }
   };
@@ -2180,7 +2545,12 @@ function makePoseable() {
 function poseHintBox() {
   const type = S.props['entity-type'] || S.cfg.defaultNpcType;
   const ok = type === POSE_NAME;
-  const box = el('div', {class: 'hintbox' + (ok ? ' good' : '')}, el('span', {text: ok ? 'Poseable armor stand: all six limbs animate in game. The preview uses a player model as an approximation.' : 'Full limb poses render in game on "Poseable" (armor stand) NPCs. Player-skin NPCs only play head and body turning.'}));
+  const msg = ok
+    ? 'Poseable armor stand: all six limbs animate in game and the stand wears skin-colored armor. Pose and held items also work. The preview uses a player model as an approximation.'
+    : isPlayerType(type)
+      ? 'Player-skin NPCs animate through gestures (pose, hand use, held items, swing) plus head and body turning. Full limb angles need a Poseable NPC, which gets skin-colored armor.'
+      : 'This NPC type supports gestures and head and body turning only. Switch to Player or Poseable for the 3D model and limb animations.';
+  const box = el('div', {class: 'hintbox' + (ok || isPlayerType(type) ? ' good' : '')}, el('span', {text: msg}));
   if (!ok) box.append(el('button', {class: 'btn primary', type: 'button', text: 'Make poseable', onclick: makePoseable}));
   return box;
 }
@@ -2190,7 +2560,14 @@ const poseOf = patch => {
   for (const k of Object.keys(patch)) limbs[k] = patch[k].slice();
   return limbs;
 };
-const fr = (ticks, patch) => ({ticks, limbs: poseOf(patch || {})});
+const fr = (ticks, patch) => mkFrame(ticks, poseOf(patch || {}));
+function gseq(steps) {
+  let st = Object.assign({}, GEST_DEFAULT);
+  return steps.map(s => {
+    st = Object.assign({}, st, s.g || {});
+    return mkFrame(s.t, poseOf(s.l || {}), Object.assign({}, st, {swing: s.sw || ''}));
+  });
+}
 const BOW = {head: [40, 0, 0], body: [35, 0, 0], larm: [20, 0, -10], rarm: [20, 0, 10]};
 const SALUTE = {rarm: [-125, -35, 0], head: [-5, 0, 0]};
 const POINT = {rarm: [-90, -12, 0], head: [0, -18, 0], body: [0, -8, 0]};
@@ -2212,6 +2589,36 @@ const ANIM_PRESETS = [
   {id: 'zombie', label: 'Zombie', hint: 'Arms out, shuffle', icon: 'orbit', make: () => [
     fr(10, {larm: [-90, 0, -5], rarm: [-90, 0, 5], lleg: [-14, 0, -1], rleg: [14, 0, 1], body: [0, 6, 0], head: [10, 0, 0]}),
     fr(10, {larm: [-90, 0, -5], rarm: [-90, 0, 5], lleg: [14, 0, -1], rleg: [-14, 0, 1], body: [0, -6, 0], head: [10, 0, 0]})]}
+];
+
+const GESTURE_PRESETS = [
+  {id: 'archer', label: 'Archer', hint: 'Draw, hold, release a bow', icon: 'look', make: () => gseq([
+    {t: 12, g: {item: 'bow'}}, {t: 36, g: {use: 'main'}, l: {head: [0, -6, 0]}}, {t: 6, g: {use: 'none'}, l: {head: [0, -6, 0]}}])},
+  {id: 'crossbow', label: 'Crossbow', hint: 'Charge and fire', icon: 'square', make: () => gseq([
+    {t: 10, g: {item: 'crossbow'}}, {t: 25, g: {use: 'main'}}, {t: 8, g: {use: 'none'}, sw: 'main'}, {t: 8}])},
+  {id: 'trident', label: 'Trident throw', hint: 'Wind up and hurl', icon: 'sway', make: () => gseq([
+    {t: 10, g: {item: 'trident'}}, {t: 28, g: {use: 'main'}, l: {head: [-8, 0, 0]}}, {t: 8, g: {use: 'none'}, sw: 'main', l: {body: [8, 0, 0]}}, {t: 14}])},
+  {id: 'spyglass', label: 'Spyglass scout', hint: 'Scan the horizon', icon: 'circle', make: () => gseq([
+    {t: 10, g: {item: 'spyglass'}}, {t: 30, g: {use: 'main'}, l: {head: [0, -30, 0]}}, {t: 30, l: {head: [0, 30, 0]}}, {t: 10, g: {use: 'none'}}])},
+  {id: 'horn', label: 'Horn call', hint: 'Sound a goat horn', icon: 'dance', make: () => gseq([
+    {t: 10, g: {item: 'goat_horn'}}, {t: 40, g: {use: 'main'}, l: {head: [-10, 0, 0]}}, {t: 16, g: {use: 'none'}}])},
+  {id: 'shield', label: 'Shield guard', hint: 'Block, then strike', icon: 'guard', make: () => gseq([
+    {t: 10, g: {item: 'iron_sword', offitem: 'shield'}}, {t: 30, g: {use: 'off'}}, {t: 6, sw: 'main'}, {t: 30}, {t: 10, g: {use: 'none'}}])},
+  {id: 'feast', label: 'Feast', hint: 'Eat cooked beef', icon: 'bob', make: () => gseq([
+    {t: 10, g: {item: 'cooked_beef'}}, {t: 32, g: {use: 'main'}}, {t: 12, g: {use: 'none'}}])},
+  {id: 'potion', label: 'Potion drink', hint: 'Drink a potion', icon: 'pulse', make: () => gseq([
+    {t: 10, g: {item: 'potion'}}, {t: 32, g: {use: 'main'}, l: {head: [-12, 0, 0]}}, {t: 14, g: {use: 'none'}}])},
+  {id: 'gwave', label: 'Wave', hint: 'Alternate swings, head tilt', icon: 'wave', make: () => gseq([
+    {t: 8, sw: 'main', l: {head: [0, 10, 8]}}, {t: 8, sw: 'off', l: {head: [0, -10, -8]}}, {t: 8, sw: 'main', l: {head: [0, 10, 8]}}, {t: 8, sw: 'off', l: {head: [0, -10, -8]}}])},
+  {id: 'crouch', label: 'Crouch dance', hint: 'Sneak toggles and swings', icon: 'dance', make: () => gseq([
+    {t: 6, g: {pose: 'SNEAKING'}, sw: 'main', l: {head: [0, 20, 0]}}, {t: 6, g: {pose: 'STANDING'}, sw: 'off', l: {head: [0, -20, 0]}},
+    {t: 6, g: {pose: 'SNEAKING'}, sw: 'main', l: {head: [10, -20, 0]}}, {t: 6, g: {pose: 'STANDING'}, sw: 'off', l: {head: [10, 20, 0]}}])},
+  {id: 'swimmer', label: 'Swimmer', hint: 'Crawl stroke', icon: 'wave', make: () => gseq([
+    {t: 8, g: {pose: 'SWIMMING'}, sw: 'main', l: {head: [0, 6, 0]}}, {t: 8, sw: 'off', l: {head: [0, -6, 0]}}])},
+  {id: 'riptide', label: 'Riptide spin', hint: 'Launch into a spin', icon: 'spin', make: () => gseq([
+    {t: 10, g: {item: 'trident'}}, {t: 30, g: {pose: 'SPIN_ATTACK'}}, {t: 12, g: {pose: 'STANDING'}}])},
+  {id: 'sleepy', label: 'Sleepy', hint: 'Lie down and doze', icon: 'idle', make: () => gseq([
+    {t: 50, g: {pose: 'SLEEPING'}}, {t: 50, l: {head: [0, 8, 6]}}])}
 ];
 
 function bodyAnimate() {
@@ -2242,7 +2649,7 @@ function bodyAnimate() {
 
   const ensureFrame = () => {
     if (!A.frames.length) {
-      A.frames.push({ticks: ANIM_TICK_DEF, limbs: defaultPose()});
+      A.frames.push(mkFrame(ANIM_TICK_DEF, defaultPose()));
       A.sel = 0;
       renderTl();
     }
@@ -2272,13 +2679,34 @@ function bodyAnimate() {
   };
 
   const renderTl = () => {
-    ui.chips = A.frames.map((f, i) => el('button', {type: 'button', class: 'fr' + (i === A.sel ? ' on' : ''), onclick: () => selectFrame(i)}, el('b', {text: '#' + (i + 1)}), el('span', {text: f.ticks + 't'})));
+    ui.chips = A.frames.map((f, i) => el('button', {type: 'button', class: 'fr' + (i === A.sel ? ' on' : ''), title: gestureSummary(f), onclick: () => selectFrame(i)}, el('b', {text: '#' + (i + 1)}), el('span', {text: f.ticks + 't'})));
     ui.tl.replaceChildren(...ui.chips);
     if (!ui.chips.length) ui.tl.append(el('span', {class: 'muted', text: 'No frames yet. Pick a preset or add a frame.'}));
     ui.curIdx = -1;
   };
 
-  const syncAll = () => { renderTl(); syncSliders(); syncTotal(); syncPlay(); };
+  const syncGesture = () => {
+    const f = frameNow();
+    const g = ui.gest;
+    g.pose.value = f ? f.pose : GEST_DEFAULT.pose;
+    g.use.sync(f);
+    g.swing.sync(f);
+    g.item.sync(f);
+    g.offitem.sync(f);
+  };
+
+  const syncAll = () => { renderTl(); syncSliders(); syncGesture(); syncTotal(); syncPlay(); };
+
+  const setGesture = (key, v) => {
+    const f = ensureFrame();
+    f[key] = v;
+    A.scrub = false;
+    A.playing = false;
+    commit(false);
+    renderTl();
+    syncGesture();
+    syncPlay();
+  };
 
   const selectFrame = i => {
     A.sel = i;
@@ -2294,7 +2722,7 @@ function bodyAnimate() {
     add: () => {
       if (A.frames.length >= ANIM_MAX_FRAMES) return toast('Maximum ' + ANIM_MAX_FRAMES + ' frames', 'err');
       const at = A.frames.length ? A.sel + 1 : 0;
-      A.frames.splice(at, 0, {ticks: ANIM_TICK_DEF, limbs: defaultPose()});
+      A.frames.splice(at, 0, carryFrame(frameNow()));
       A.sel = at;
       A.scrub = false;
       changed(false);
@@ -2303,7 +2731,7 @@ function bodyAnimate() {
       const f = frameNow();
       if (!f) return;
       if (A.frames.length >= ANIM_MAX_FRAMES) return toast('Maximum ' + ANIM_MAX_FRAMES + ' frames', 'err');
-      A.frames.splice(A.sel + 1, 0, {ticks: f.ticks, limbs: clonePose(f.limbs)});
+      A.frames.splice(A.sel + 1, 0, cloneFrame(f));
       A.sel++;
       A.scrub = false;
       changed(false);
@@ -2370,6 +2798,12 @@ function bodyAnimate() {
     return f ? clonePose(f.limbs) : defaultPose();
   };
 
+  const animGesture = () => {
+    if ((A.playing || A.scrub) && A.frames.length) return withHeld(gestureAt(A.frames, A.pos));
+    const f = frameNow();
+    return withHeld(f ? frameGesture(f, SWING_STATIC) : Object.assign({swingT: 1}, GEST_DEFAULT));
+  };
+
   const syncPlay = () => {
     ui.play.textContent = A.playing ? 'Pause' : 'Play';
     ui.play.classList.toggle('on', A.playing);
@@ -2390,9 +2824,10 @@ function bodyAnimate() {
     if (document.activeElement !== ui.scrub) ui.scrub.value = String(A.pos);
   };
 
-  const nv = npcViewer({tall: true, editable: true, autoRotate: false, caption: 'Click a limb, drag to rotate (Shift = roll). Drag empty space to orbit, scroll to zoom.', getPose: animPose, getSel: () => A.limb, onPick: k => { A.limb = k; syncSliders(); }, onDrag: dragLimb, onFrame: tick});
+  const nv = npcViewer({tall: true, editable: true, autoRotate: false, caption: 'Click a limb, drag to rotate (Shift = roll). Drag empty space to orbit, scroll to zoom.', getPose: animPose, getGesture: animGesture, getPlate: plateModel, getSel: () => A.limb, onPick: k => { A.limb = k; syncSliders(); }, onDrag: dragLimb, onFrame: tick});
   S.skin = nv;
   nv.reload();
+  ensurePlate();
   root.append(el('div', {class: 'nvwrap'}, nv.node, equipBadges()));
 
   ui.play = el('button', {class: 'btn', type: 'button', onclick: () => {
@@ -2441,6 +2876,44 @@ function bodyAnimate() {
       op('◀', () => frameOps.move(-1)), op('▶', () => frameOps.move(1)),
       el('span', {class: 'grow'}), el('label', {class: 'muted', text: 'Ticks'}), el('div', {style: 'width:84px'}, ui.ticks)))));
 
+  const npcType = S.props['entity-type'] || S.cfg.defaultNpcType;
+  const poseable = npcType === POSE_NAME;
+  const skinnedFirst = isPlayerType(npcType);
+
+  const seg = (opts, key) => {
+    const btns = opts.map(o => el('button', {type: 'button', class: 'btn sm', text: o[1], onclick: () => setGesture(key, o[0])}));
+    return {node: el('div', {class: 'tbar', style: 'margin-top:0'}, btns), sync: f => btns.forEach((b, i) => b.classList.toggle('on', (f ? f[key] : GEST_DEFAULT[key]) === opts[i][0]))};
+  };
+
+  const itemCell = (key, label, slot) => {
+    const btn = el('button', {type: 'button', class: 'slot-mc', 'aria-label': label, onclick: async () => {
+      const r = await pickMaterial({clear: true});
+      if (r != null) setGesture(key, r.trim().toLowerCase());
+    }});
+    const cap = el('span', {class: 'muted'});
+    const clr = el('button', {type: 'button', class: 'btn sm', text: 'Default', onclick: () => setGesture(key, '')});
+    const sync = f => {
+      const m = f ? f[key] : '';
+      btn.replaceChildren(m ? texEl(m, 36) : el('span', {class: 'plus', text: '+'}));
+      const d = eqMaterial(slot);
+      cap.textContent = m || 'Default' + (d ? ' (' + d + ')' : '');
+      clr.disabled = !m;
+    };
+    return {node: el('div', {class: 'field'}, el('label', {text: label}), el('div', {class: 'row2'}, btn, el('div', {class: 'stack-col', style: 'gap:4px;align-items:flex-start;min-width:0'}, cap, clr))), sync};
+  };
+
+  const poseSel = el('select', {'aria-label': 'Pose'}, POSES.map(p => el('option', {value: p[0], text: p[1]})));
+  poseSel.addEventListener('change', () => setGesture('pose', poseSel.value));
+  const useSeg = seg(USE_MODES, 'use');
+  const swingSeg = seg(SWING_MODES, 'swing');
+  const mainCell = itemCell('item', 'Main-hand item', 'HAND');
+  const offCell = itemCell('offitem', 'Off-hand item', 'OFF_HAND');
+  ui.gest = {pose: poseSel, use: useSeg, swing: swingSeg, item: mainCell, offitem: offCell};
+  const gfield = (label, n) => el('div', {class: 'field'}, el('label', {text: label}), n);
+  const gestCard = el('section', {class: 'card'}, el('h2', {text: 'Gesture of selected frame'}), el('div', {class: 'body'},
+    el('div', {class: 'grid'}, gfield('Pose', poseSel), gfield('Hand use', useSeg.node), gfield('Swing arm', swingSeg.node), mainCell.node, offCell.node),
+    el('p', {class: 'note', text: 'Pose, hand use and items carry forward and new frames inherit them. Swing plays once as its frame starts. Hand use shows the vanilla arm pose for the held item (bow, crossbow, trident, spyglass, goat horn, shield, food, potion).'})));
+
   const limbCards = el('div');
   for (const k of LIMBS) {
     const cells = AXES.map((ax, j) => {
@@ -2459,13 +2932,15 @@ function bodyAnimate() {
       commit(false);
       syncSliders();
     };
-    const row = el('div', {class: 'limbrow'},
+    const row = el('div', {class: 'limbrow' + (!poseable && k !== 'head' && k !== 'body' ? ' dim' : '')},
       el('div', {class: 'lh'}, el('button', {class: 'nm', type: 'button', text: LIMB_LABEL[k], onclick: () => { A.limb = k; syncSliders(); }}), el('button', {class: 'btn sm', type: 'button', text: 'Reset', onclick: reset})),
       el('div', {class: 'axes'}, cells.map(c => c.node)));
     ui.rows[k] = {row, cells};
     limbCards.append(row);
   }
-  root.append(el('section', {class: 'card'}, el('h2', {text: 'Pose of selected frame'}), el('div', {class: 'body'}, limbCards, el('p', {class: 'note', text: 'Angles are degrees. Arms: x -90 points forward, x -180 straight up. Head: x positive nods down.'}))));
+  const limbNote = 'Angles are degrees. Arms: x -90 points forward, x -180 straight up. Head: x positive nods down.' + (poseable ? '' : ' Only head and body turning applies to this NPC type; arms and legs need Poseable.');
+  const limbCard = el('section', {class: 'card'}, el('h2', {text: 'Pose of selected frame'}), el('div', {class: 'body'}, limbCards, el('p', {class: 'note', text: limbNote})));
+  root.append(el('div', {class: 'gpair'}, skinnedFirst ? [gestCard, limbCard] : [limbCard, gestCard]));
 
   const applyPreset = d => {
     if (A.frames.length && !confirm('Replace the current keyframes with the ' + d.label + ' preset?')) return;
@@ -2477,7 +2952,10 @@ function bodyAnimate() {
     A.last = performance.now();
     changed(true);
   };
-  root.append(el('section', {class: 'card'}, el('h2', {text: 'Presets'}), el('div', {class: 'body'}, el('div', {class: 'cards'}, ANIM_PRESETS.map(d => pcard(d.label, d.hint, svgIcon(ICONS[d.icon], 30), false, () => applyPreset(d)))))));
+  const presetCard = (title, list) => el('section', {class: 'card'}, el('h2', {text: title}), el('div', {class: 'body'}, el('div', {class: 'cards'}, list.map(d => pcard(d.label, d.hint, svgIcon(ICONS[d.icon], 30), false, () => applyPreset(d))))));
+  const limbPresets = presetCard('Limb presets', ANIM_PRESETS);
+  const gestPresets = presetCard('Gesture presets', GESTURE_PRESETS);
+  root.append(...(skinnedFirst ? [gestPresets, limbPresets] : [limbPresets, gestPresets]));
 
   syncAll();
   const initial = serializeAnim(A.frames);
@@ -2747,7 +3225,8 @@ function bodyQuickNpc() {
   const player = isPlayerType(type);
   const modeled = player || type === POSE_NAME;
   if (modeled) {
-    const nv = npcViewer({autoRotate: true, caption: (type === POSE_NAME ? 'Poseable armor stand' : 'Player') + '  |  drag to orbit, scroll to zoom', getPose: quickPose});
+    const nv = npcViewer({autoRotate: true, caption: (type === POSE_NAME ? 'Poseable armor stand' : 'Player') + '  |  drag to orbit, scroll to zoom', getPose: quickPose, getGesture: quickGesture, getPlate: plateModel});
+    ensurePlate();
     S.skin = nv;
     nv.reload();
     root.append(el('div', {class: 'nvwrap'}, nv.node, equipBadges()));
@@ -2797,16 +3276,16 @@ function lineProp(id) {
 }
 
 function setAllLines(map, textOnly) {
-  for (const l of S.lines) {
+  for (const l of HS().lines) {
     if (textOnly && l.props.type !== 'TEXT') continue;
     for (const [k, v] of Object.entries(map)) l.props[k] = String(v);
   }
-  touch();
+  htouch();
   buildPreview();
 }
 
 function firstLine(textOnly) {
-  const l = S.lines.find(x => !textOnly || x.props.type === 'TEXT');
+  const l = HS().lines.find(x => !textOnly || x.props.type === 'TEXT');
   return l ? l.props : S.cfg.lineDefaults;
 }
 
@@ -2884,13 +3363,610 @@ function bodyLines() {
   return root;
 }
 
+const EV_ICO = {
+  click: 'M5 3l14 8-6 2-3 6z',
+  rightclick: 'M7 3h10a3 3 0 013 3v12a3 3 0 01-3 3H7a3 3 0 01-3-3V6a3 3 0 013-3zM12 3v7h8',
+  leftclick: 'M7 3h10a3 3 0 013 3v12a3 3 0 01-3 3H7a3 3 0 01-3-3V6a3 3 0 013-3zM12 3v7H4',
+  look: ICONS.look,
+  lookaway: ICONS.look + 'M3 3l18 18',
+  approach: 'M4 12h12M12 6l6 6-6 6',
+  leave: 'M20 12H8M12 6l-6 6 6 6',
+  holding: 'M14 4h6v6L9 21l-4-4zM5 17l-2 4 4-2',
+  frame: 'M4 4h16v16H4zM4 9h16M4 15h16M9 4v16M15 4v16',
+  swing: 'M4 18c0-8 6-14 14-14M18 4l-5 1M18 4l-1 5',
+  use: 'M6 4c8 2 8 14 0 16M6 12h13M15 8l4 4-4 4',
+  usestop: 'M6 6h12v12H6z',
+  interval: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 2',
+  spawn: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2',
+  note: 'M5 5h14v10H9l-4 4z',
+  raw: 'M8 7l-5 5 5 5M16 7l5 5-5 5'
+};
+const EVENTS = [
+  {id: 'click', label: 'Click', scope: 'player', hint: 'A player clicks the NPC (right or left).'},
+  {id: 'rightclick', label: 'Right click', scope: 'player', hint: 'A player right-clicks the NPC.'},
+  {id: 'leftclick', label: 'Left click', scope: 'player', hint: 'A player left-clicks the NPC.'},
+  {id: 'look', label: 'Look at', scope: 'player', hint: 'A player starts looking at the NPC. Re-arms after they look away.'},
+  {id: 'lookaway', label: 'Look away', scope: 'player', hint: 'A player stops looking at the NPC.'},
+  {id: 'approach', label: 'Approach', scope: 'player', hint: 'A player walks inside the approach range.'},
+  {id: 'leave', label: 'Leave', scope: 'player', hint: 'A player walks back outside the approach range.'},
+  {id: 'holding', label: 'Holding item', scope: 'npc', arg: 'material', every: true, hint: 'Runs repeatedly while the NPC holds this item in its main hand.'},
+  {id: 'frame', label: 'Animation frame', scope: 'npc', arg: 'int', hint: 'Runs when keyframe number N of the animation starts.'},
+  {id: 'swing', label: 'Swing', scope: 'npc', hint: 'Any arm swing, from the swing interval or a gesture.'},
+  {id: 'use', label: 'Starts using item', scope: 'npc', hint: 'The NPC starts using its held item (gesture hand use turns on).'},
+  {id: 'usestop', label: 'Stops using item', scope: 'npc', hint: 'The NPC stops using its held item.'},
+  {id: 'interval', label: 'Every N ticks', scope: 'npc', arg: 'int', hint: 'Runs every N ticks (20 ticks = 1 second).'},
+  {id: 'spawn', label: 'Becomes visible', scope: 'player', hint: 'The NPC becomes visible to a player.'}
+];
+const EV = Object.fromEntries(EVENTS.map(e => [e.id, e]));
+const DEF_ARG = {holding: 'diamond_sword', frame: '1', interval: '20'};
+const ACTIONS = [['particle', 'Particle'], ['sound', 'Sound'], ['message', 'Message'], ['actionbar', 'Action bar'], ['title', 'Title and subtitle'], ['console', 'Console command'], ['player', 'Player command'], ['swing', 'Swing arm'], ['glow', 'Glow'], ['animate', 'Animation'], ['item', 'Hold item'], ['look', 'Look at player'], ['hurt', 'Hurt']];
+const ACT_IDS = new Set(ACTIONS.map(a => a[0]));
+const ACT_MODES = {swing: ['main', 'off'], glow: ['on', 'off', 'toggle'], animate: ['on', 'off', 'restart']};
+const ACT_MODE_LABELS = {
+  swing: [['main', 'Main hand'], ['off', 'Off hand']],
+  glow: [['on', 'On'], ['off', 'Off'], ['toggle', 'Toggle']],
+  animate: [['on', 'On'], ['off', 'Off'], ['restart', 'Restart']]
+};
+const PLAYER_ONLY = new Set(['console', 'player']);
+const ANCHORS = ['head', 'hand', 'offhand', 'feet', 'body', 'above', 'around'];
+const ANCHOR_LABEL = {head: 'Head', hand: 'Main hand', offhand: 'Off hand', feet: 'Feet', body: 'Body', above: 'Above nameplate', around: 'Around body'};
+const DATA_PARTICLES = ['DUST', 'DUST_TRANSITION', 'ITEM', 'BLOCK'];
+const DATA_LABEL = {DUST: 'Dust (color)', DUST_TRANSITION: 'Dust transition (2 colors)', ITEM: 'Item crumbs', BLOCK: 'Block crumbs'};
+const PARTICLES = ['HEART', 'FLAME', 'SOUL_FIRE_FLAME', 'CRIT', 'ENCHANTED_HIT', 'HAPPY_VILLAGER', 'ANGRY_VILLAGER', 'NOTE', 'TOTEM_OF_UNDYING', 'END_ROD', 'FIREWORK', 'ELECTRIC_SPARK', 'GLOW', 'WAX_ON', 'SNOWFLAKE', 'SOUL', 'CLOUD', 'SMOKE', 'LARGE_SMOKE', 'POOF', 'EXPLOSION', 'SWEEP_ATTACK', 'DAMAGE_INDICATOR', 'ENCHANT', 'PORTAL', 'REVERSE_PORTAL', 'WITCH', 'SCULK_SOUL', 'CHERRY_LEAVES', 'SPLASH', 'DRIPPING_WATER', 'DRIPPING_LAVA', 'LAVA', 'FALLING_NECTAR', 'SPIT', 'SQUID_INK', 'GLOW_SQUID_INK', 'COMPOSTER', 'CAMPFIRE_COSY_SMOKE', 'WHITE_ASH', 'ASH', 'NAUTILUS'];
+const KNOWN_PARTICLES = new Set(DATA_PARTICLES.concat(PARTICLES));
+const OTHER = '__other';
+const SOUNDS = ['entity.player.levelup', 'entity.experience_orb.pickup', 'entity.villager.yes', 'entity.villager.no', 'entity.villager.celebrate', 'entity.villager.ambient', 'entity.arrow.hit_player', 'block.note_block.pling', 'block.note_block.bell', 'block.note_block.chime', 'block.note_block.harp', 'block.anvil.use', 'block.beacon.activate', 'block.beacon.power_select', 'block.enchantment_table.use', 'block.amethyst_block.chime', 'block.bell.use', 'block.respawn_anchor.charge', 'entity.firework_rocket.blast', 'entity.firework_rocket.twinkle', 'item.totem.use', 'entity.ender_dragon.growl', 'entity.wither.spawn', 'ui.toast.challenge_complete', 'entity.player.attack.sweep', 'entity.player.attack.crit', 'entity.cat.purr', 'entity.cat.ambient', 'entity.wolf.howl', 'entity.generic.explode', 'entity.lightning_bolt.thunder', 'block.portal.ambient', 'entity.evoker.cast_spell', 'entity.zombie_villager.cure', 'entity.allay.ambient_with_item', 'item.trident.thunder'];
+const PH_CHIPS = ['{player}', '{npc}', '{uuid}'];
+const MAT_ANY = /^[a-z0-9_:.\-]+$/i;
+const HEX6 = /^#[0-9a-f]{6}$/i;
+const UINT = /^\d+$/;
+const isNum = v => v !== '' && Number.isFinite(Number(v));
+const RECIPES = [
+  {label: 'Look: hearts and sound', hint: 'Hearts pop up when a player looks', icon: 'look', text: 'look cooldown 100 -> particle HEART 8 head 0.4 0.02; sound entity.villager.yes 1 1.2'},
+  {label: 'Approach: greeting', hint: 'Message when a player walks up', icon: 'approach', text: 'approach cooldown 200 -> message Welcome, {player}!; sound entity.experience_orb.pickup 0.8 1.2'},
+  {label: 'Holding sword: flame trail', hint: 'Flames from the hand while armed', icon: 'holding', text: 'holding diamond_sword every 5 -> particle FLAME 3 hand 0.1 0.01'},
+  {label: 'Click: totem burst', hint: 'Totem particles and sound on click', icon: 'click', text: 'click cooldown 40 -> particle TOTEM_OF_UNDYING 30 body 0.6 0.4; sound item.totem.use 0.6 1'},
+  {label: 'Frame 2: crit sparks', hint: 'Sparks when animation frame 2 starts', icon: 'frame', text: 'frame 2 -> particle CRIT 10 hand 0.2 0.3'},
+  {label: 'Every 5s: glow pulse', hint: 'Toggle glow every 100 ticks', icon: 'interval', text: 'interval 100 -> glow toggle'}
+];
+const NP_TRIES = 8;
+const NP_RETRY_MS = 500;
+
+function pretty(n) { return n.charAt(0) + n.slice(1).toLowerCase().replace(/_/g, ' '); }
+
+function newAction(t) {
+  const a = {t, src: null};
+  switch (t) {
+    case 'particle': return Object.assign(a, {everyone: false, custom: false, ptype: 'HEART', c1: '#FF5555', c2: '#FFFFFF', size: '1', mat: 'diamond', count: '8', anchor: 'head', spread: '0.3', speed: '0.05'});
+    case 'sound': return Object.assign(a, {everyone: false, key: 'entity.player.levelup', vol: '1', pitch: '1'});
+    case 'message': return Object.assign(a, {text: 'Hello {player}!'});
+    case 'actionbar': return Object.assign(a, {text: 'Hello {player}!'});
+    case 'title': return Object.assign(a, {title: 'Welcome', sub: '{player}'});
+    case 'console': return Object.assign(a, {text: 'say Hello {player}'});
+    case 'player': return Object.assign(a, {text: 'spawn'});
+    case 'swing': return Object.assign(a, {mode: 'main'});
+    case 'glow': return Object.assign(a, {mode: 'toggle'});
+    case 'animate': return Object.assign(a, {mode: 'restart'});
+    case 'item': return Object.assign(a, {mat: ''});
+    default: return a;
+  }
+}
+
+function ptypeText(a) {
+  if (a.ptype === 'DUST') return 'DUST:' + a.c1 + ':' + a.size;
+  if (a.ptype === 'DUST_TRANSITION') return 'DUST_TRANSITION:' + a.c1 + ':' + a.c2 + ':' + a.size;
+  if (a.ptype === 'ITEM' || a.ptype === 'BLOCK') return a.ptype + ':' + a.mat;
+  return a.ptype;
+}
+
+function actText(a) {
+  if (a.src != null) return a.src;
+  switch (a.t) {
+    case 'particle': return 'particle' + (a.everyone ? '!' : '') + ' ' + [ptypeText(a), a.count, a.anchor, a.spread, a.speed].join(' ');
+    case 'sound': return 'sound' + (a.everyone ? '!' : '') + ' ' + [a.key, a.vol, a.pitch].join(' ');
+    case 'message':
+    case 'actionbar':
+    case 'console':
+    case 'player': return a.t + ' ' + a.text;
+    case 'title': return 'title ' + a.title + '|' + a.sub;
+    case 'swing':
+    case 'glow':
+    case 'animate': return a.t + ' ' + a.mode;
+    case 'item': return 'item ' + (a.mat || 'none');
+    default: return a.t;
+  }
+}
+
+function parseParticle(a, rest, bang) {
+  const p = rest.split(/\s+/).filter(Boolean);
+  if (!p.length || p.length > 5) return null;
+  const parts = p[0].split(':');
+  const base = parts[0].toUpperCase();
+  if (!/^[A-Z0-9_]+$/.test(base)) return null;
+  if (base === 'DUST') {
+    if (parts.length < 2 || parts.length > 3 || !HEX6.test(parts[1]) || (parts[2] != null && !isNum(parts[2]))) return null;
+    a.c1 = parts[1].toUpperCase();
+    if (parts[2] != null) a.size = parts[2];
+  } else if (base === 'DUST_TRANSITION') {
+    if (parts.length < 3 || parts.length > 4 || !HEX6.test(parts[1]) || !HEX6.test(parts[2]) || (parts[3] != null && !isNum(parts[3]))) return null;
+    a.c1 = parts[1].toUpperCase();
+    a.c2 = parts[2].toUpperCase();
+    if (parts[3] != null) a.size = parts[3];
+  } else if (base === 'ITEM' || base === 'BLOCK') {
+    if (parts.length !== 2 || !MAT_ANY.test(parts[1])) return null;
+    a.mat = parts[1].toLowerCase();
+  } else if (parts.length > 1) return null;
+  if (p[1] != null) {
+    if (!UINT.test(p[1])) return null;
+    a.count = p[1];
+  }
+  if (p[2] != null) {
+    if (!ANCHORS.includes(p[2].toLowerCase())) return null;
+    a.anchor = p[2].toLowerCase();
+  }
+  if (p[3] != null) {
+    if (!isNum(p[3])) return null;
+    a.spread = p[3];
+  }
+  if (p[4] != null) {
+    if (!isNum(p[4])) return null;
+    a.speed = p[4];
+  }
+  a.ptype = base;
+  a.everyone = bang;
+  return a;
+}
+
+function parseAction(s) {
+  const raw = {t: 'raw', src: s};
+  const sp = s.search(/\s/);
+  const verb = sp < 0 ? s : s.slice(0, sp);
+  const rest = sp < 0 ? '' : s.slice(sp).trim();
+  const bang = verb.endsWith('!');
+  const name = verb.replace(/!$/, '').toLowerCase();
+  if (!ACT_IDS.has(name) || (bang && name !== 'particle' && name !== 'sound')) return raw;
+  const a = newAction(name);
+  a.src = s;
+  switch (name) {
+    case 'particle': return parseParticle(a, rest, bang) || raw;
+    case 'sound': {
+      const p = rest.split(/\s+/).filter(Boolean);
+      if (!p.length || p.length > 3 || !p.slice(1).every(isNum)) return raw;
+      a.everyone = bang;
+      a.key = p[0];
+      if (p[1] != null) a.vol = p[1];
+      if (p[2] != null) a.pitch = p[2];
+      return a;
+    }
+    case 'message':
+    case 'actionbar':
+    case 'console':
+    case 'player':
+      a.text = rest;
+      return a;
+    case 'title': {
+      const i = rest.indexOf('|');
+      a.title = i < 0 ? rest : rest.slice(0, i);
+      a.sub = i < 0 ? '' : rest.slice(i + 1);
+      return a;
+    }
+    case 'swing':
+    case 'glow':
+    case 'animate': {
+      const v = rest.toLowerCase();
+      if (name === 'swing' && !v) return a;
+      if (!ACT_MODES[name].includes(v)) return raw;
+      a.mode = v;
+      return a;
+    }
+    case 'item':
+      if (!rest || /\s/.test(rest)) return raw;
+      a.mat = rest.toLowerCase() === 'none' ? '' : rest.toLowerCase();
+      return a;
+    default:
+      return rest ? raw : a;
+  }
+}
+
+function parseRule(line) {
+  const raw = {raw: line};
+  const i = line.indexOf('->');
+  if (i < 0) return raw;
+  const left = line.slice(0, i).trim().split(/\s+/).filter(Boolean);
+  const ev = EV[(left[0] || '').toLowerCase()];
+  if (!ev) return raw;
+  const r = {ev: ev.id, arg: '', every: '', cooldown: '', actions: [], src: line, dirty: false};
+  let k = 1;
+  if (ev.arg) {
+    const v = left[k++];
+    if (v == null) return raw;
+    if (ev.arg === 'int' ? !UINT.test(v) || Number(v) < 1 : !MAT_ANY.test(v)) return raw;
+    r.arg = ev.arg === 'int' ? v : v.toLowerCase();
+  }
+  while (k < left.length) {
+    const key = left[k].toLowerCase();
+    const v = left[k + 1];
+    if ((key !== 'every' && key !== 'cooldown') || v == null || !UINT.test(v) || r[key] !== '') return raw;
+    r[key] = v;
+    k += 2;
+  }
+  r.actions = line.slice(i + 2).split(';').map(s => s.trim()).filter(Boolean).map(parseAction);
+  return r;
+}
+
+function parseTriggers(text) {
+  const out = [];
+  for (const line of String(text || '').split(/\r?\n/)) {
+    const t = line.trim();
+    if (!t) continue;
+    out.push(t.startsWith('#') ? {raw: t} : parseRule(t));
+  }
+  return out;
+}
+
+function ruleText(r) {
+  if (r.raw != null) return r.raw;
+  if (!r.dirty) return r.src;
+  const left = [r.ev];
+  if (EV[r.ev].arg) left.push(r.arg);
+  if (r.every !== '') left.push('every', r.every);
+  if (r.cooldown !== '') left.push('cooldown', r.cooldown);
+  return left.join(' ') + ' -> ' + r.actions.map(actText).join('; ');
+}
+
+function nfield(label, value, attrs, set) {
+  const id = 'f' + (++uid);
+  const i = el('input', Object.assign({type: 'number', id}, attrs));
+  i.value = value;
+  i.addEventListener('input', () => set(i.value));
+  return el('div', {class: 'field'}, el('label', {for: id, text: label}), i);
+}
+
+function tfield(T, label, value, set, attrs) {
+  const id = 'f' + (++uid);
+  const i = el('input', Object.assign({type: 'text', id, spellcheck: 'false', autocomplete: 'off'}, attrs || {}));
+  i.value = value;
+  i.addEventListener('input', () => set(i.value));
+  i.addEventListener('focus', () => { T.focus = i; });
+  return el('div', {class: 'field wide'}, el('label', {for: id, text: label}), i);
+}
+
+function sfield(label, opts, value, set, wide) {
+  const id = 'f' + (++uid);
+  const s = el('select', {id}, opts.map(o => el('option', {value: o[0], text: o[1]})));
+  s.value = value;
+  if (s.value !== value && value) {
+    s.append(el('option', {value, text: value}));
+    s.value = value;
+  }
+  s.addEventListener('change', () => set(s.value));
+  return el('div', {class: 'field' + (wide ? ' wide' : '')}, el('label', {for: id, text: label}), s);
+}
+
+function nf(label, type, min, max, step, value, set) {
+  return control({label, type, min, max, step}, value, set);
+}
+
+function listOps(arr, i, done) {
+  const mv = (d, glyph, label) => el('button', {class: 'btn sm', type: 'button', 'aria-label': label, text: glyph, onclick: () => {
+    const j = i + d;
+    if (j < 0 || j >= arr.length) return;
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    done();
+  }});
+  const del = el('button', {class: 'btn sm danger', type: 'button', 'aria-label': 'Remove', text: 'X', onclick: () => { arr.splice(i, 1); done(); }});
+  return [mv(-1, '↑', 'Move up'), mv(1, '↓', 'Move down'), del];
+}
+
+function particleFields(T, a, mark, paint) {
+  const kinds = DATA_PARTICLES.map(k => [k, DATA_LABEL[k]]).concat(PARTICLES.map(p => [p, pretty(p)]), [[OTHER, 'Other...']]);
+  const custom = a.custom || !KNOWN_PARTICLES.has(a.ptype);
+  const out = [sfield('Particle', kinds, custom ? OTHER : a.ptype, v => {
+    if (v === OTHER) {
+      a.custom = true;
+      if (KNOWN_PARTICLES.has(a.ptype)) a.ptype = '';
+    } else {
+      a.custom = false;
+      a.ptype = v;
+    }
+    mark();
+    paint();
+  }, true)];
+  if (custom) out.push(tfield(T, 'Particle name', a.ptype, v => { a.ptype = v.trim().toUpperCase(); mark(); }, {placeholder: 'CHERRY_LEAVES'}));
+  const dust = a.ptype === 'DUST' || a.ptype === 'DUST_TRANSITION';
+  if (dust) out.push(colorControl({label: a.ptype === 'DUST' ? 'Color' : 'From color'}, 'f' + (++uid), a.c1, v => { a.c1 = v; mark(); }));
+  if (a.ptype === 'DUST_TRANSITION') out.push(colorControl({label: 'To color'}, 'f' + (++uid), a.c2, v => { a.c2 = v; mark(); }));
+  if (dust) out.push(nf('Size', 'number', 0.1, 4, 0.1, a.size, v => { a.size = v; mark(); }));
+  if (a.ptype === 'ITEM' || a.ptype === 'BLOCK') out.push(materialControl({label: a.ptype === 'ITEM' ? 'Item' : 'Block', id: 'material', type: 'text', max: 64}, a.mat, v => { a.mat = v.trim().toLowerCase(); mark(); }));
+  out.push(
+    nf('Count', 'integer', 1, 200, 1, a.count, v => { a.count = v; mark(); }),
+    sfield('Anchor', ANCHORS.map(x => [x, ANCHOR_LABEL[x]]), a.anchor, v => { a.anchor = v; mark(); }),
+    nf('Spread', 'number', 0, 5, 0.05, a.spread, v => { a.spread = v; mark(); }),
+    nf('Speed', 'number', 0, 2, 0.01, a.speed, v => { a.speed = v; mark(); }),
+    control({label: 'Visible to everyone', type: 'bool'}, String(a.everyone), v => { a.everyone = v === 'true'; mark(); }));
+  return out;
+}
+
+function actionFields(T, a, mark, paint) {
+  switch (a.t) {
+    case 'particle': return particleFields(T, a, mark, paint);
+    case 'sound': return [
+      tfield(T, 'Sound key', a.key, v => { a.key = v.replace(/\s+/g, ''); mark(); }, {list: 'nxSounds', placeholder: 'entity.player.levelup'}),
+      nf('Volume', 'number', 0, 4, 0.05, a.vol, v => { a.vol = v; mark(); }),
+      nf('Pitch', 'number', 0.5, 2, 0.05, a.pitch, v => { a.pitch = v; mark(); }),
+      control({label: 'Audible to everyone', type: 'bool'}, String(a.everyone), v => { a.everyone = v === 'true'; mark(); })];
+    case 'message':
+    case 'actionbar': return [tfield(T, a.t === 'message' ? 'Chat message' : 'Action bar text', a.text, v => { a.text = v; mark(); })];
+    case 'title': return [
+      tfield(T, 'Title', a.title, v => { a.title = v.replace(/\|/g, ''); mark(); }),
+      tfield(T, 'Subtitle', a.sub, v => { a.sub = v; mark(); })];
+    case 'console':
+    case 'player': return [tfield(T, a.t === 'console' ? 'Console command' : 'Command run as the player', a.text, v => { a.text = v; mark(); }, {placeholder: 'without the leading /'})];
+    case 'swing':
+    case 'glow':
+    case 'animate': return [sfield(pretty(a.t), ACT_MODE_LABELS[a.t], a.mode, v => { a.mode = v; mark(); }, true)];
+    case 'item': return [materialControl({label: 'Item (empty = nothing)', id: 'material', type: 'text', max: 64}, a.mat, v => { a.mat = v.trim().toLowerCase(); mark(); })];
+    case 'raw': return [tfield(T, 'Unrecognised action, kept exactly as written', a.src, v => { a.src = v; mark(); })];
+    default: return [el('p', {class: 'note', text: 'No options.'})];
+  }
+}
+
+function actionRow(T, r, a, j, render, commit) {
+  const mark = () => {
+    r.dirty = true;
+    if (a.t !== 'raw') a.src = null;
+    commit();
+  };
+  const done = () => {
+    r.dirty = true;
+    commit();
+    render();
+  };
+  const body = el('div', {class: 'arow-b'});
+  const paint = () => body.replaceChildren(...actionFields(T, a, mark, paint));
+  paint();
+  let label;
+  if (a.t === 'raw') label = el('span', {class: 'grow muted', text: 'Raw action'});
+  else {
+    const typeSel = el('select', {'aria-label': 'Action type'}, ACTIONS.map(x => el('option', {value: x[0], text: x[1]})));
+    typeSel.value = a.t;
+    typeSel.addEventListener('change', () => {
+      r.actions[j] = newAction(typeSel.value);
+      done();
+    });
+    label = el('div', {class: 'grow'}, typeSel);
+  }
+  const rows = [el('div', {class: 'arow-h'}, label, listOps(r.actions, j, done)), body];
+  if (PLAYER_ONLY.has(a.t) && EV[r.ev].scope === 'npc') rows.push(el('p', {class: 'note warn', text: 'This action only runs for player events (click, look, approach, leave, becomes visible).'}));
+  return el('div', {class: 'arow'}, rows);
+}
+
+function ruleCard(T, r, i, render, commit) {
+  const done = () => {
+    commit();
+    render();
+  };
+  const ops = listOps(T.rules, i, done);
+  if (r.raw != null) {
+    const comment = r.raw.startsWith('#');
+    const inp = el('input', {type: 'text', spellcheck: 'false', 'aria-label': 'Raw line'});
+    inp.value = r.raw;
+    inp.addEventListener('input', () => { r.raw = inp.value; commit(); });
+    return el('div', {class: 'rule raw'},
+      el('div', {class: 'rule-h'}, svgIcon(comment ? EV_ICO.note : EV_ICO.raw, 22, 'ev-ico'), el('span', {class: 'grow muted', text: comment ? 'Comment' : 'Unrecognised line, kept exactly as written'}), ops),
+      el('div', {class: 'rule-p'}, el('div', {class: 'field wide'}, inp)));
+  }
+  const ev = EV[r.ev];
+  const mark = () => {
+    r.dirty = true;
+    commit();
+  };
+  const evSel = el('select', {'aria-label': 'Event'}, EVENTS.map(e => el('option', {value: e.id, text: e.label})));
+  evSel.value = r.ev;
+  evSel.addEventListener('change', () => {
+    const next = EV[evSel.value];
+    const keep = ev.arg && ev.arg === next.arg;
+    r.ev = next.id;
+    r.arg = next.arg ? (keep ? r.arg : DEF_ARG[next.id]) : '';
+    r.dirty = true;
+    done();
+  });
+  const dup = el('button', {class: 'btn sm', type: 'button', 'aria-label': 'Duplicate rule', text: 'Copy', onclick: () => {
+    const c = JSON.parse(JSON.stringify(r));
+    c.dirty = true;
+    T.rules.splice(i + 1, 0, c);
+    done();
+  }});
+  const params = el('div', {class: 'rule-p'});
+  if (ev.arg === 'material') params.append(materialControl({label: 'Item', id: 'material', type: 'text', max: 64}, r.arg, v => { r.arg = v.trim().toLowerCase(); mark(); }));
+  if (ev.arg === 'int') params.append(nfield(ev.id === 'frame' ? 'Frame number (1-based)' : 'Interval (ticks)', r.arg, {min: 1, step: 1}, v => {
+    if (UINT.test(v) && Number(v) >= 1) { r.arg = v; mark(); }
+  }));
+  const opt = key => v => {
+    if (v === '') { r[key] = ''; mark(); } else if (UINT.test(v)) { r[key] = v; mark(); }
+  };
+  if (ev.every || r.every !== '') params.append(nfield('Every (ticks)', r.every, {min: 1, step: 1, placeholder: '20'}, opt('every')));
+  params.append(nfield('Cooldown (ticks)', r.cooldown, {min: 0, step: 1, placeholder: ev.scope === 'player' ? 'default' : '0'}, opt('cooldown')));
+  const notes = [el('p', {class: 'note', style: 'margin:0', text: ev.hint + (ev.scope === 'player' ? ' Runs per player.' : ' Runs for everyone who can see the NPC.')})];
+  if (ev.arg && !r.arg) notes.push(el('p', {class: 'note warn', style: 'margin:0', text: 'This event needs a value or the rule is skipped.'}));
+  if (!r.actions.length) notes.push(el('p', {class: 'note warn', style: 'margin:0', text: 'Add at least one action.'}));
+  const acts = el('div', {class: 'acts'}, r.actions.map((a, j) => actionRow(T, r, a, j, render, commit)));
+  const addSel = el('select', {'aria-label': 'New action type'}, ACTIONS.map(x => el('option', {value: x[0], text: x[1]})));
+  const add = el('div', {class: 'tbar'}, addSel, el('button', {class: 'btn sm primary', type: 'button', text: '+ Add action', onclick: () => {
+    r.actions.push(newAction(addSel.value));
+    r.dirty = true;
+    done();
+  }}));
+  return el('div', {class: 'rule'},
+    el('div', {class: 'rule-h'}, svgIcon(EV_ICO[ev.id], 24, 'ev-ico'), el('div', {class: 'grow'}, evSel), ops, dup),
+    params,
+    el('div', {class: 'rule-n'}, notes),
+    acts,
+    el('div', {class: 'acts'}, add));
+}
+
+function bodyTriggers() {
+  const root = el('div');
+  if (!S.pm.triggers) {
+    root.append(el('div', {class: 'empty', text: 'This server has no trigger support.'}));
+    return root;
+  }
+  const T = {rules: parseTriggers(S.props.triggers), focus: null};
+  const max = S.pm.triggers.max > 0 ? S.pm.triggers.max : ANIM_TEXT_MAX;
+  const count = el('span', {class: 'muted'});
+  const list = el('div');
+  const showCount = text => {
+    count.textContent = text.length + ' / ' + max + ' chars';
+    count.classList.toggle('warn', text.length > max);
+  };
+  const commit = () => {
+    const text = T.rules.map(ruleText).join('\n');
+    showCount(text);
+    if (text.length <= max) setProp('triggers', text);
+  };
+  const render = () => {
+    list.replaceChildren(...T.rules.map((r, i) => ruleCard(T, r, i, render, commit)));
+    if (!T.rules.length) list.append(el('div', {class: 'empty', text: 'No rules yet. Pick a starter recipe below or add a rule.'}));
+  };
+  const insert = text => {
+    const i = T.focus;
+    if (!i || !i.isConnected) { toast('Click a text field first, then a placeholder', 'err'); return; }
+    const s = i.selectionStart == null ? i.value.length : i.selectionStart;
+    const e = i.selectionEnd == null ? s : i.selectionEnd;
+    i.value = i.value.slice(0, s) + text + i.value.slice(e);
+    i.dispatchEvent(new Event('input'));
+    i.focus();
+    i.setSelectionRange(s + text.length, s + text.length);
+  };
+  const ranges = el('div', {class: 'grid'});
+  for (const id of ['look-trigger-range', 'approach-range']) {
+    const c = pc(id);
+    if (c) ranges.append(c);
+  }
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Ranges'}), el('div', {class: 'body'}, ranges,
+    el('p', {class: 'note', text: 'Looking at the NPC counts when you are inside the look range and your crosshair is close enough to it' + (S.cfg.lookAngle != null ? ' (within ' + num(S.cfg.lookAngle) + ' degrees, a server setting).' : '.')}))));
+  const chips = el('div', {class: 'modechips'}, PH_CHIPS.map(c => el('button', {type: 'button', class: 'chip', text: c, onmousedown: ev => ev.preventDefault(), onclick: () => insert(c)})));
+  const evSel = el('select', {'aria-label': 'New rule event'}, EVENTS.map(e => el('option', {value: e.id, text: e.label})));
+  const addRule = el('button', {class: 'btn sm primary', type: 'button', text: '+ New rule', onclick: () => {
+    const id = evSel.value;
+    T.rules.push({ev: id, arg: DEF_ARG[id] || '', every: '', cooldown: '', actions: [newAction('particle')], src: '', dirty: true});
+    commit();
+    render();
+  }});
+  root.append(el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Rules'}), count),
+    el('div', {class: 'body'},
+      el('div', {class: 'sub', style: 'margin-top:0', text: 'PLACEHOLDERS (click a text field first)'}), chips,
+      el('div', {style: 'margin-top:10px'}, list),
+      el('div', {class: 'tbar'}, evSel, addRule),
+      el('p', {class: 'note', text: 'Rules save automatically. Lines the builder does not understand are kept exactly as written. Use ; only to separate actions.'}))));
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Starter recipes'}), el('div', {class: 'body'}, el('div', {class: 'cards'}, RECIPES.map(rc => pcard(rc.label, rc.hint, svgIcon(EV_ICO[rc.icon], 30), false, () => {
+    T.rules.push(parseRule(rc.text));
+    commit();
+    render();
+    toast('Rule added', 'ok');
+  }))))));
+  showCount(String(S.props.triggers || ''));
+  render();
+  return root;
+}
+
+function npId() { return S.cur.id + (S.cfg.nameplateSuffix || ''); }
+
+function adoptNp(d, owner) {
+  const props = S.schema.kinds.hologram.sections.flatMap(s => s.props);
+  const pm = Object.fromEntries(props.map(p => [p.id, p]));
+  const pr = {};
+  for (const [k, v] of Object.entries(d.props || {})) if (pm[k]) pr[k] = v;
+  S.np = {
+    owner,
+    cur: {kind: 'hologram', id: d.id, world: d.world, x: d.x, y: d.y, z: d.z, yaw: d.yaw},
+    pm,
+    props: pr,
+    lines: (d.lines || []).map((l, i) => ({ref: i, props: Object.assign({}, l.props), hasItem: !!l.hasItem, open: false})),
+    pending: false
+  };
+}
+
+async function loadNp(tries, delay) {
+  if (!S.cur || S.cur.kind !== 'npc') return false;
+  const owner = S.cur.id;
+  const id = npId();
+  for (let i = 0; i < tries; i++) {
+    try {
+      const d = await api('/api/object', {kind: 'hologram', id});
+      if (!S.cur || S.cur.id !== owner) return false;
+      if (!(S.np && S.np.pending && S.np.owner === owner)) adoptNp(d, owner);
+      trackAttached(d);
+      if (!S.objects.some(o => o.kind === 'hologram' && o.id === id)) refreshList().catch(() => {});
+      return true;
+    } catch (e) {
+      if (i < tries - 1) await new Promise(res => setTimeout(res, delay));
+    }
+  }
+  return false;
+}
+
+function ensurePlate() {
+  if (S.cur && S.cur.kind === 'npc' && isOn('nameplate') && !plateModel()) loadNp(1, 0);
+}
+
+function npEditor() {
+  const n = S.np;
+  const root = el('div');
+  root.append(el('div', {class: 'actions', style: 'margin-bottom:12px;align-items:center'},
+    el('span', {class: 'muted grow', text: 'Editing hologram ' + n.cur.id}),
+    el('button', {class: 'btn sm', type: 'button', text: 'Open as hologram', onclick: () => selectObj('hologram', n.cur.id, {center: true})})));
+  root.append(pvCard(), lookCard(), quickLines());
+  const grid = el('div', {class: 'grid'});
+  for (const id of ['line-spacing', 'view-range']) {
+    if (n.pm[id]) grid.append(controlFor(n.pm[id], n.props[id], v => { n.props[id] = v; touchNp(); buildPreview(); }));
+  }
+  if (grid.children.length) root.append(el('section', {class: 'card'}, el('h2', {text: 'Spacing'}), el('div', {class: 'body'}, grid)));
+  return root;
+}
+
+function bodyNameplate() {
+  const root = el('div');
+  if (!S.pm.nameplate) {
+    root.append(el('div', {class: 'empty', text: 'This server has no nameplate support.'}));
+    return root;
+  }
+  const host = el('div');
+  let seq = 0;
+  const note = (text, retry) => el('div', {class: 'hintbox'}, el('span', {text}), retry ? el('button', {class: 'btn primary', type: 'button', text: 'Retry', onclick: retry}) : null);
+  const fill = async () => {
+    const my = ++seq;
+    if (!isOn('nameplate')) {
+      host.replaceChildren(note('Turn the nameplate on to float your own hologram lines above this NPC. The NPC name tag is hidden while it is on.'));
+      return;
+    }
+    if (!plateModel()) {
+      host.replaceChildren(note('Preparing nameplate hologram ' + npId() + '...'));
+      await flushAll();
+      const ok = await loadNp(NP_TRIES, NP_RETRY_MS);
+      if (my !== seq || !host.isConnected || S.tab !== 'nameplate') return;
+      if (!ok) {
+        host.replaceChildren(note('The nameplate hologram is not available yet.', fill));
+        return;
+      }
+    }
+    host.replaceChildren(npEditor());
+  };
+  const fields = el('div', {class: 'grid'}, control(S.pm.nameplate, S.props.nameplate, v => { setProp('nameplate', v); fill(); }), pc('nameplate-height'));
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Hologram nameplate'}), el('div', {class: 'body'}, fields,
+    el('p', {class: 'note', text: 'The nameplate is a hologram attached to this NPC. It follows the NPC when it walks and shows above its head. Height is in blocks above the head.'}))));
+  root.append(host);
+  fill();
+  return root;
+}
+
 function renderBody() {
   if (S.skin) { S.skin.destroy(); S.skin = null; }
   if (S.scene) { S.scene.destroy(); S.scene = null; }
   const body = $('#inspBody');
   const top = body.scrollTop;
   body.replaceChildren();
-  $('#app').classList.toggle('wide', !!S.cur && (S.wide || (S.cur.kind === 'npc' && S.tab === 'animate')));
+  $('#app').classList.toggle('wide', !!S.cur && (S.wide || (S.cur.kind === 'npc' && (S.tab === 'animate' || S.tab === 'triggers'))));
   if (!S.cur) {
     body.append(el('div', {class: 'empty', text: 'Click an icon on the map or pick an object from the list. Use + New to create one at your position.'}));
     return;
@@ -2901,6 +3977,8 @@ function renderBody() {
   let node;
   if (S.tab === 'quick') node = k === 'npc' ? bodyQuickNpc() : bodyQuickHolo();
   else if (S.tab === 'animate') node = bodyAnimate();
+  else if (S.tab === 'triggers') node = bodyTriggers();
+  else if (S.tab === 'nameplate') node = bodyNameplate();
   else if (S.tab === 'movement') node = k === 'npc' ? bodyMoveNpc() : bodyMoveHolo();
   else if (S.tab === 'appearance') node = bodyAppearance();
   else if (S.tab === 'advanced') node = bodyAdvanced();
@@ -2971,6 +4049,8 @@ function adopt(data) {
   S.anim = null;
   S.pending = false;
   S.pathPending = false;
+  if (!(S.np && S.np.pending)) S.np = null;
+  if (data.kind === 'hologram') trackAttached(data);
 }
 
 async function reloadCurrent() {
@@ -3039,8 +4119,10 @@ async function deleteCur() {
   if (!confirm('Delete ' + S.cur.id + '? This cannot be undone.')) return;
   clearTimeout(saveTimer);
   clearTimeout(pathTimer);
+  clearTimeout(npTimer);
   S.pending = false;
   S.pathPending = false;
+  S.np = null;
   await api('/api/delete', ref());
   S.cur = null;
   S.path = [];
@@ -3262,8 +4344,23 @@ function groundY(x, z) {
   return Math.abs(h + 1 - fb) <= GROUND_SLOP ? h + 1 : fb;
 }
 
+function trackAttached(data) {
+  const a = String((data.props || {})['attach-to'] || '').trim();
+  if (a && S.objects.some(o => o.kind === 'npc' && o.id === a)) S.attached.add(data.id);
+  else S.attached.delete(data.id);
+}
+
+function isPlate(o) {
+  if (o.kind !== 'hologram') return false;
+  if (S.attached.has(o.id)) return true;
+  const suf = S.cfg && S.cfg.nameplateSuffix;
+  if (!suf || o.id.length <= suf.length || !o.id.endsWith(suf)) return false;
+  const base = o.id.slice(0, -suf.length);
+  return S.objects.some(n => n.kind === 'npc' && n.id === base);
+}
+
 function viewObjs() {
-  const list = S.objects.filter(o => o.world === view.world);
+  const list = S.objects.filter(o => o.world === view.world && (isSel(o) || !isPlate(o)));
   const sel = S.cur ? list.findIndex(o => o.kind === S.cur.kind && o.id === S.cur.id) : -1;
   if (sel >= 0) list.push(list.splice(sel, 1)[0]);
   return list;
@@ -3762,6 +4859,7 @@ async function submitNew() {
 function bind() {
   bindMap();
   bindPicker();
+  document.body.append(el('datalist', {id: 'nxSounds'}, SOUNDS.map(s => el('option', {value: s}))));
   $('#search').addEventListener('input', ev => { S.search = ev.target.value; renderList(); });
   $('#refreshBtn').addEventListener('click', ev => run(ev.currentTarget, refreshList));
   $('#menuBtn').addEventListener('click', () => { $('#side').classList.add('open'); $('#scrim').classList.add('on'); });

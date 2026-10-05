@@ -53,9 +53,16 @@ npc:
     default-cooldown: 40
     max-rules: 64
     max-actions: 16
+    max-particles: 200
+    look-hold-ticks: 40
+    title:
+      fade-in: 500
+      stay: 3500
+      fade-out: 1000
   nameplate:
     id-suffix: "-tag"
     base-height: 1.8
+    line-spacing: 0.28
   skin-palette:
     enabled: true
     texture-url: "http://textures.minecraft.net/texture/{hash}"
