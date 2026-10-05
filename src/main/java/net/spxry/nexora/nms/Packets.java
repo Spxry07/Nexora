@@ -41,10 +41,14 @@ import java.util.logging.Level;
 
 public final class Packets {
     private static final String INTERPOLATION_START_FIELD = "DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID";
+    private static final String LIVING_FLAGS_FIELD = "DATA_LIVING_ENTITY_FLAGS";
+    private static final byte FLAG_USING = 1;
+    private static final byte FLAG_OFF_HAND = 2;
     private static final float ANGLE_SCALE = 256.0F / 360.0F;
     private static final int BYTE_MASK = 0xFF;
 
     private static EntityDataAccessor<Integer> interpolationStart;
+    private static EntityDataAccessor<Byte> livingFlags;
     private static Scoreboard scoreboard;
 
     private Packets() {}
@@ -55,6 +59,9 @@ public final class Packets {
             var field = Display.class.getDeclaredField(INTERPOLATION_START_FIELD);
             field.setAccessible(true);
             interpolationStart = (EntityDataAccessor<Integer>) field.get(null);
+            var flags = LivingEntity.class.getDeclaredField(LIVING_FLAGS_FIELD);
+            flags.setAccessible(true);
+            livingFlags = (EntityDataAccessor<Byte>) flags.get(null);
             scoreboard = new Scoreboard();
             return true;
         } catch (Throwable t) {
@@ -74,6 +81,15 @@ public final class Packets {
     public static Packet<?> fullData(Entity handle) {
         var values = handle.getEntityData().getNonDefaultValues();
         return values == null || values.isEmpty() ? null : new ClientboundSetEntityDataPacket(handle.getId(), values);
+    }
+
+    public static void useItem(Entity handle, boolean using, boolean offHand) {
+        if (!(handle instanceof LivingEntity)) return;
+        byte current = handle.getEntityData().get(livingFlags);
+        byte flags = (byte) (current & ~(FLAG_USING | FLAG_OFF_HAND));
+        if (using) flags |= FLAG_USING;
+        if (using && offHand) flags |= FLAG_OFF_HAND;
+        if (flags != current) handle.getEntityData().set(livingFlags, flags);
     }
 
     public static void clearDirty(Entity handle) {

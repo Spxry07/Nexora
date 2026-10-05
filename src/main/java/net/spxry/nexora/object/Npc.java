@@ -2,14 +2,17 @@ package net.spxry.nexora.object;
 
 import com.destroystokyo.paper.profile.ProfileProperty;
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.DyedItemColor;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
+import net.spxry.nexora.npc.SkinPalette;
 import net.spxry.nexora.Nexora;
 import net.spxry.nexora.edit.Binding;
 import net.spxry.nexora.nms.Packets;
 import net.spxry.nexora.util.ColorUtil;
 import net.spxry.nexora.util.ItemCodec;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -33,9 +36,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 public final class Npc extends NexoraObject {
@@ -52,6 +57,7 @@ public final class Npc extends NexoraObject {
     private static final Pattern TEXTURE_HASH = Pattern.compile("texture/([0-9a-fA-F]{32,})");
     private static final String EXTRA_EQUIPMENT = "equipment";
     private static final String DEFAULT_TYPE_KEY = "npc.default-type";
+    private static final String PALETTE_ENABLED_KEY = "npc.skin-palette.enabled";
 
     public static final Map<String, Binding<Npc>> BINDINGS = bindings();
 
@@ -98,6 +104,11 @@ public final class Npc extends NexoraObject {
     private volatile float headPitch;
     private volatile ItemStack skinHead;
     private long rotationKey;
+    private int lastFrame = -1;
+    private boolean itemsChanged;
+    private Keyframes.State state = Keyframes.State.NONE;
+    private volatile Map<EquipmentSlot, ItemStack> tint = Map.of();
+    private volatile String tintId = "";
     private final float[] limbs = new float[Keyframes.SIZE];
     private final float[] appliedPose = new float[Keyframes.SIZE];
 
@@ -182,8 +193,12 @@ public final class Npc extends NexoraObject {
         var parsed = animationEnabled ? Keyframes.parse(animation) : Keyframes.EMPTY;
         keyframes = parsed.isEmpty() ? null : parsed;
         skinHead = living instanceof ArmorStand ? headItem() : null;
+        tint(living);
         Arrays.fill(appliedPose, Float.NaN);
-        animate(living);
+        state = Keyframes.State.NONE;
+        itemsChanged = false;
+        lastFrame = animate(living);
+        if (keyframes != null) applyState(living, keyframes.state(lastFrame));
         rotationKey = rotationKey(currentYaw);
         setPosition(anchor.getX(), anchor.getY(), anchor.getZ());
         var spawn = spawnPackets();
@@ -238,30 +253,113 @@ public final class Npc extends NexoraObject {
         return item;
     }
 
-    private Map<EquipmentSlot, ItemStack> visibleEquipment() {
-        var head = skinHead;
-        var current = equipment.get(EquipmentSlot.HEAD);
-        if (head == null || (current != null && !current.getType().isAir())) return Map.copyOf(equipment);
+    private boolean emptySlot(EquipmentSlot slot) {
+        var current = equipment.get(slot);
+        return current == null || current.getType().isAir();
+    }
+
+    private Map<EquipmentSlot, ItemStack> shownEquipment() {
         Map<EquipmentSlot, ItemStack> merged = new EnumMap<>(EquipmentSlot.class);
         merged.putAll(equipment);
-        merged.put(EquipmentSlot.HEAD, head);
+        var head = skinHead;
+        if (head != null && emptySlot(EquipmentSlot.HEAD)) merged.put(EquipmentSlot.HEAD, head);
+        for (var entry : tint.entrySet()) if (emptySlot(entry.getKey())) merged.put(entry.getKey(), entry.getValue());
+        if (state.item() != null) merged.put(EquipmentSlot.HAND, new ItemStack(state.item()));
+        if (state.offItem() != null) merged.put(EquipmentSlot.OFF_HAND, new ItemStack(state.offItem()));
         return merged;
     }
 
-    private void animate(LivingEntity entity) {
+    private Map<EquipmentSlot, ItemStack> equipmentUpdate() {
+        var items = shownEquipment();
+        items.computeIfAbsent(EquipmentSlot.HAND, slot -> new ItemStack(Material.AIR));
+        items.computeIfAbsent(EquipmentSlot.OFF_HAND, slot -> new ItemStack(Material.AIR));
+        return items;
+    }
+
+    private void tint(LivingEntity living) {
+        tint = Map.of();
+        tintId = "";
+        if (!(living instanceof ArmorStand) || skinHead == null || !plugin.getConfig().getBoolean(PALETTE_ENABLED_KEY, true)) return;
+        var skin = skinId();
+        if (skin.isBlank()) return;
+        var cached = plugin.skins().cached(skin);
+        if (cached.isPresent()) {
+            tint = dye(cached.get());
+            tintId = skin;
+            return;
+        }
+        plugin.skins().request(skin)
+            .thenAccept(found -> retint(skin, found.isPresent()))
+            .exceptionally(e -> {
+                plugin.getLogger().log(Level.WARNING, id(), e);
+                return null;
+            });
+    }
+
+    private void retint(String skin, boolean found) {
+        if (!found || isRemoved() || skin.equals(tintId) || !skin.equals(skinId())) return;
+        plugin.objects().mutate(this, n -> {}).exceptionally(e -> {
+            if (!isRemoved()) plugin.getLogger().log(Level.WARNING, id(), e);
+            return null;
+        });
+    }
+
+    private static Map<EquipmentSlot, ItemStack> dye(SkinPalette.Palette palette) {
+        Map<EquipmentSlot, ItemStack> items = new EnumMap<>(EquipmentSlot.class);
+        items.put(EquipmentSlot.CHEST, dyed(Material.LEATHER_CHESTPLATE, palette.torso()));
+        items.put(EquipmentSlot.LEGS, dyed(Material.LEATHER_LEGGINGS, palette.legs()));
+        items.put(EquipmentSlot.FEET, dyed(Material.LEATHER_BOOTS, palette.feet()));
+        return items;
+    }
+
+    private static ItemStack dyed(Material material, Color color) {
+        var item = new ItemStack(material);
+        item.setData(DataComponentTypes.DYED_COLOR, DyedItemColor.dyedItemColor(color));
+        return item;
+    }
+
+    private int animate(LivingEntity entity) {
         var frames = keyframes;
         bodyOffset = NO_PITCH;
         headOffset = NO_PITCH;
         headPitch = NO_PITCH;
-        if (frames == null) return;
-        frames.sample(ticks * animationSpeed, limbs);
+        if (frames == null) return -1;
+        int frame = frames.sample(ticks * animationSpeed, limbs);
         if (entity instanceof ArmorStand stand) {
             applyPose(stand);
-            return;
+            return frame;
         }
         bodyOffset = limbs[Keyframes.at(Keyframes.BODY, Keyframes.YAW)];
         headOffset = limbs[Keyframes.at(Keyframes.HEAD, Keyframes.YAW)];
         headPitch = limbs[Keyframes.at(Keyframes.HEAD, Keyframes.PITCH)];
+        return frame;
+    }
+
+    private void gesture(LivingEntity entity, int frame, List<Packet<?>> out) {
+        lastFrame = frame;
+        var frames = keyframes;
+        if (frames == null) return;
+        if (applyState(entity, frames.state(frame))) {
+            itemsChanged = true;
+            out.add(Packets.equipment(entityId, equipmentUpdate()));
+        }
+        var swing = frames.swing(frame);
+        if (swing != Keyframes.Hand.NONE) out.add(Packets.swing(handle, swing == Keyframes.Hand.OFF));
+    }
+
+    private boolean applyState(LivingEntity entity, Keyframes.State next) {
+        var previous = state;
+        if (next.equals(previous)) return false;
+        state = next;
+        entity.setPose(currentPose(entity), true);
+        if (!(entity instanceof ArmorStand)) Packets.useItem(handle, next.use() != Keyframes.Hand.NONE, next.use() == Keyframes.Hand.OFF);
+        return !Objects.equals(next.item(), previous.item()) || !Objects.equals(next.offItem(), previous.offItem());
+    }
+
+    private Pose currentPose(LivingEntity entity) {
+        if (sneaking) return validPose(entity, Pose.SNEAKING);
+        var gesture = state.pose();
+        return gesture == null ? basePose : validPose(entity, gesture);
     }
 
     private void applyPose(ArmorStand stand) {
@@ -310,7 +408,7 @@ public final class Npc extends NexoraObject {
         list.add(Packets.spawn(h, x(), y(), z(), bodyYaw(yaw), headPitch));
         list.add(Packets.fullData(h));
         list.add(Packets.head(h, headYaw(yaw)));
-        var items = visibleEquipment();
+        var items = shownEquipment();
         if (!items.isEmpty()) list.add(Packets.equipment(entityId, items));
         if (scale != UNIT_SCALE) list.add(Packets.attributes(h));
         list.add(Packets.teamCreate(teamName(), template.getUniqueId().toString(), glowColor));
@@ -325,7 +423,8 @@ public final class Npc extends NexoraObject {
         if (entity == null || h == null) return;
         List<Packet<?>> everyone = new ArrayList<>();
         List<Packet<?>> rotation = new ArrayList<>();
-        animate(entity);
+        int frame = animate(entity);
+        if (frame != lastFrame) gesture(entity, frame, everyone);
         double seconds = ticks / (double) TICKS_PER_SECOND;
         float yaw = currentYaw;
         var point = pathPoint(seconds);
@@ -347,7 +446,7 @@ public final class Npc extends NexoraObject {
         currentYaw = yaw;
         if (crossed(sneakInterval, interval)) {
             sneaking = !sneaking;
-            entity.setPose(sneaking ? validPose(entity, Pose.SNEAKING) : basePose, true);
+            entity.setPose(currentPose(entity), true);
         }
         if (crossed(swingInterval, interval)) everyone.add(Packets.swing(h, false));
         if (crossed(hurtInterval, interval)) everyone.add(Packets.hurt(entityId, yaw));
@@ -390,6 +489,7 @@ public final class Npc extends NexoraObject {
         list.add(Packets.head(h, headYaw(currentYaw)));
         var data = Packets.fullData(h);
         if (data != null) list.add(data);
+        if (itemsChanged) list.add(Packets.equipment(entityId, equipmentUpdate()));
         return list;
     }
 

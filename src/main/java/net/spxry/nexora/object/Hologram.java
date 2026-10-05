@@ -97,6 +97,9 @@ public final class Hologram extends NexoraObject {
     double helixStep;
     double waveHeight;
     double waveSpeed;
+    String attachTo = "";
+    double attachHeight;
+    private volatile double attachScale = 1;
 
     public Hologram(Nexora plugin, String id, Location anchor) {
         super(plugin, id, anchor);

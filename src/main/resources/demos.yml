@@ -1,4 +1,4 @@
-file-version: 3
+file-version: 4
 id-prefix: "demo-"
 skin-property: "textures"
 objects:
@@ -26,6 +26,9 @@ objects:
     kind: npc
     offset: {forward: 8.5, right: -4.5, up: 0, yaw: 180}
     props:
+      animation-enabled: true
+      animation-speed: 1
+      animation: "20 use=none head=0,0,0\n18 item=trident use=main head=-25,0,0\n6 use=none swing=main item=blaze_rod\n16 head=10,0,0\n10 offitem=enchanted_book use=off head=15,0,0\n10 use=none head=0,0,0"
       entity-type: "MANNEQUIN"
       name: "&#B455F0&lᴀʀᴄᴀɴᴇ ᴡɪᴢᴀʀᴅ"
       description: "&7Levitating blocks"
@@ -234,6 +237,9 @@ objects:
     offset: {forward: 5, right: -4.5, up: 0, yaw: 180}
     copy-skin: true
     props:
+      animation-enabled: true
+      animation-speed: 1
+      animation: "20 item=bow use=none head=0,0,0\n25 use=main head=-5,0,0\n6 use=none swing=main\n14 head=0,25,0\n14 head=0,-25,0\n10 head=0,0,0"
       entity-type: "MANNEQUIN"
       name: "&#6293F0&lʏᴏᴜʀ ᴄʟᴏɴᴇ"
       description: "&7Right-click me"
