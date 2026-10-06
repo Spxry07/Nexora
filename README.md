@@ -32,3 +32,10 @@ CI (`.github/workflows/build.yml`) runs `mvn paper-nms:init` (Mojang-mapped Pape
 3. Set an NPC's type to **Skinned Model (posable)** (web editor → Pose tab → "Switch to Skinned Model").
 The NPC's skin is cut into 10 part textures and uploaded once through MineSkin (cached in `skin-parts.yml`; takes a minute or two per new skin). Until then it shows as a normal skinned NPC. Pose every limb in the web Pose tab or use the animation presets (Walk, Dance, Salute, Dab, ...).
 The 180° item-display flip is handled automatically. If parts still look off in your client, `model.part-yaw` adds an extra turn (default 0), and `model.cube-size` / `model.cube-offset-y` adjust size and height; apply with `/nexora reload`.
+
+## License
+Copyright (C) 2026 Spxry Studios
+
+Nexora is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. It is distributed WITHOUT ANY WARRANTY; see [LICENSE](LICENSE) for the full text.
+
+Minecraft is a trademark of Mojang Synergies AB. Nexora is not affiliated with Mojang or Microsoft.
