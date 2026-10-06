@@ -3,7 +3,7 @@
 Packet-based animated holograms and NPCs for Paper / Folia **1.21.11**, with an in-game Dialog editor and a web editor served straight from the plugin jar. No dependencies.
 
 ## Install
-1. Drop `Nexora-1.0.jar` into `plugins/` on a Paper or Folia 1.21.11 server and start it.
+1. Download the latest `Nexora-<version>.jar` from [Releases](https://github.com/Spxry07/Nexora/releases), drop it into `plugins/` on a Paper or Folia 1.21.11 server and start it.
 2. The web editor picks a random port (saved in `web-port.txt`); open it on your firewall, or pin one with `/nexora web port <number>`. `/nexora web info` shows the address.
 3. In game: `/nexora` opens the menu. `/nexora web` gives you a private link to the web editor.
 
@@ -24,7 +24,7 @@ The link uses the backend server IP (server-ip, then auto-detected public IP). O
 The web editor is plain HTTP on `0.0.0.0:8155`. Links carry a random token that expires after `web.session-minutes`. For public servers put it behind HTTPS (nginx/Caddy) and set `web.public-url`, or bind to `127.0.0.1` and tunnel.
 
 ## Build
-CI (`.github/workflows/build.yml`) runs `mvn paper-nms:init` (Mojang-mapped Paper) then `mvn package`.
+CI (`.github/workflows/build.yml`) runs `mvn paper-nms:init` (Mojang-mapped Paper) then `mvn package` on every push. Publishing a GitHub release `v<version>` runs `.github/workflows/release.yml`, which builds that tag and attaches the jar. The version lives only in `pom.xml`; `plugin.yml` reads it at build time.
 
 ## Skinned Model NPCs (posable skinned limbs, no resource pack)
 1. Get a free API key at https://account.mineskin.org/keys

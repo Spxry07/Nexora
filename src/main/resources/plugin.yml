@@ -1,5 +1,5 @@
 name: Nexora
-version: '1.0'
+version: '${project.version}'
 main: net.spxry.nexora.Nexora
 description: Packet-based animated holograms and NPCs with in-game and web editors
 api-version: '1.21'
