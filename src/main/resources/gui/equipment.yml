@@ -1,0 +1,50 @@
+title: "&#6293F0&lᴇQᴜɪᴘᴍᴇɴᴛ &8» &7{id}"
+size: 27
+
+slots:
+  HEAD: 10
+  CHEST: 11
+  LEGS: 12
+  FEET: 13
+  HAND: 15
+  OFF_HAND: 16
+
+slot-names:
+  HEAD: "ʜᴇᴀᴅ"
+  CHEST: "ᴄʜᴇꜱᴛ"
+  LEGS: "ʟᴇɢꜱ"
+  FEET: "ꜰᴇᴇᴛ"
+  HAND: "ᴍᴀɪɴ ʜᴀɴᴅ"
+  OFF_HAND: "ᴏꜰꜰ ʜᴀɴᴅ"
+
+placeholder:
+  name: "&#6293F0{slot}"
+  lore:
+    - "&8Description:"
+    - ""
+    - "&fThis slot is empty."
+    - ""
+    - "&#6293F0&l➥ &nCLICK&#6293F0 with an item to equip it"
+  materials:
+    HEAD: "LEATHER_HELMET"
+    CHEST: "LEATHER_CHESTPLATE"
+    LEGS: "LEATHER_LEGGINGS"
+    FEET: "LEATHER_BOOTS"
+    HAND: "WOODEN_SWORD"
+    OFF_HAND: "SHIELD"
+
+items:
+  back:
+    slot: 18
+  info:
+    slot: 22
+    material: "KNOWLEDGE_BOOK"
+    name: "&#6293F0ᴇQᴜɪᴘᴍᴇɴᴛ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fClick a slot with an item on your cursor to equip it."
+      - "&fClick an equipped slot to take the item back."
+      - "&fShift-click an item in your inventory to equip it."
+      - ""
+      - "&8Changes are saved instantly."

@@ -14,6 +14,7 @@ The link uses the backend server IP (server-ip, then auto-detected public IP). O
 - `/nexora npc skin guard Notch` – copy a skin (online player = exact textures, otherwise by name).
 - `/nexora npc equip guard hand` – put your held item in the NPC's hand.
 - `/nexora npc path guard add` (repeat at each point) + set *walk speed* – patrol route.
+- `/nexora gui` – admin GUI for everything. Sneak + right-click any NPC or hologram to open its editor directly.
 
 
 ## Permissions
@@ -39,3 +40,16 @@ Copyright (C) 2026 Spxry Studios
 Nexora is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. It is distributed WITHOUT ANY WARRANTY; see [LICENSE](LICENSE) for the full text.
 
 Minecraft is a trademark of Mojang Synergies AB. Nexora is not affiliated with Mojang or Microsoft.
+
+## Triggers, signals and linking
+NPCs and holograms share one rule language (`triggers` setting, or the visual builder in the web editor):
+```
+click -> signal gate.open; particle! TOTEM_OF_UNDYING 20 center 0.5
+signal gate.open -> layout STAR; spin 720 40; delay 60; layout RING
+signal gate.open -> animation CAST; particle! DUST:#40CEFC:1.2 40 hand 0 0 to holo:orb:center
+approach -> message &aHey {player}!
+```
+- Events: `click`, `rightclick`, `leftclick`, `look`, `lookaway`, `approach`, `leave`, `spawn`, `interval <ticks>`, `holding <item>`, `frame <n>`, `swing`, `use`, `usestop`, `signal <name>`.
+- Actions: `particle` (at anchors, `at`/`to` targets incl. `npc:<id>`, `holo:<id>`, `player`, `~x,~y,~z`, beams), `sound`, `message`, `actionbar`, `title`, `console`, `player`, `signal`, `delay`, plus NPC verbs (`swing`, `glow`, `animate`, `animation <preset>`, `item`, `look`, `hurt`) and hologram verbs (`text`, `layout`, `spin`, `pulse`, `scale`, `move`, `glow`, `hide`, `show`, `effect`).
+- Holograms become clickable with `clickable: true` (hitbox size/offset configurable) and can face, follow or grow toward nearby players.
+- Hologram shapes: stack, ring, helix, row, wheel, sphere, tornado, triangle, square, polygon, star, heart, grid, arc, spiral, cube, infinity, diamond, pyramid, cross — with size, width, height, tilt and per-line X/Y/Z scale.

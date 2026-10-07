@@ -1,0 +1,37 @@
+title: "&#FF0000&lᴅᴇʟᴇᴛᴇ &8» &7{id}"
+size: 27
+
+items:
+  cancel:
+    slot: 10
+    material: "RED_STAINED_GLASS_PANE"
+    name: "&#FF0000ᴄᴀɴᴄᴇʟ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fKeep it and go back."
+      - ""
+      - "&#FF0000&l➥ &nCLICK&#FF0000 to cancel"
+  info:
+    slot: 13
+    material: "TNT"
+    name: "&#FF0000{id}"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fKind: &7{kind}"
+      - "&fWorld: &7{world}"
+      - "&fPosition: &7{x} {y} {z}"
+      - ""
+      - "&#FF0000This cannot be undone."
+  confirm:
+    slot: 16
+    material: "LIME_STAINED_GLASS_PANE"
+    glow: true
+    name: "&#00FF5Aᴄᴏɴꜰɪʀᴍ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fPermanently delete it."
+      - ""
+      - "&#00FF5A&l➥ &nCLICK&#00FF5A to confirm"

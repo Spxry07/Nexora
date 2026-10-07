@@ -24,6 +24,9 @@ public final class HoloLine {
     String colorB = "#FFFFFF";
     int scrollWidth = 16;
     double scale = 1;
+    double scaleX = 1;
+    double scaleY = 1;
+    double scaleZ = 1;
     double offsetX;
     double offsetY;
     double offsetZ;
@@ -58,6 +61,9 @@ public final class HoloLine {
         map.put("color-b", Binding.text(l -> l.colorB, (l, v) -> l.colorB = v));
         map.put("scroll-width", Binding.integer(l -> l.scrollWidth, (l, v) -> l.scrollWidth = v));
         map.put("scale", Binding.number(l -> l.scale, (l, v) -> l.scale = v));
+        map.put("scale-x", Binding.number(l -> l.scaleX, (l, v) -> l.scaleX = v));
+        map.put("scale-y", Binding.number(l -> l.scaleY, (l, v) -> l.scaleY = v));
+        map.put("scale-z", Binding.number(l -> l.scaleZ, (l, v) -> l.scaleZ = v));
         map.put("offset-x", Binding.number(l -> l.offsetX, (l, v) -> l.offsetX = v));
         map.put("offset-y", Binding.number(l -> l.offsetY, (l, v) -> l.offsetY = v));
         map.put("offset-z", Binding.number(l -> l.offsetZ, (l, v) -> l.offsetZ = v));

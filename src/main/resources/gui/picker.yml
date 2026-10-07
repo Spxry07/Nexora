@@ -1,0 +1,118 @@
+size: 54
+slots:
+  - "10-16"
+  - "19-25"
+  - "28-34"
+  - "37-43"
+
+entry:
+  name: "&#6293F0{label}"
+  lore:
+    - "&8Description:"
+    - ""
+    - "&fValue: &7{id}"
+    - ""
+    - "&#6293F0&l➥ &nCLICK&#6293F0 to select"
+  selected-lore:
+    - "&8Description:"
+    - ""
+    - "&fValue: &7{id}"
+    - "&#00FF5ACurrently selected"
+    - ""
+    - "&#6293F0&l➥ &nCLICK&#6293F0 to keep this value"
+
+pickers:
+  animation:
+    title: "&#6293F0&lᴀɴɪᴍᴀᴛɪᴏɴ &8» &7{id}{suffix}"
+    default-icon: "NOTE_BLOCK"
+    icons:
+      NONE: "BARRIER"
+      WAVE: "WHITE_BANNER"
+      NOD: "LEVER"
+      LOOK_AROUND: "ENDER_EYE"
+      CHEER: "FIREWORK_ROCKET"
+      CROUCH_DANCE: "NOTE_BLOCK"
+      ARCHER: "BOW"
+      CROSSBOW: "CROSSBOW"
+      TRIDENT: "TRIDENT"
+      CAST: "BLAZE_ROD"
+      SPYGLASS: "SPYGLASS"
+      HORN: "GOAT_HORN"
+      SHIELD: "SHIELD"
+      GUARD: "IRON_SWORD"
+      FEAST: "COOKED_BEEF"
+      POTION: "POTION"
+      SWIMMER: "WATER_BUCKET"
+      RIPTIDE: "PRISMARINE_SHARD"
+      SLEEPY: "RED_BED"
+      WALK: "LEATHER_BOOTS"
+      SALUTE: "IRON_HELMET"
+      POINT: "ARROW"
+      BOW: "LEAD"
+      DAB: "ENDER_PEARL"
+      ZOMBIE: "ROTTEN_FLESH"
+      DANCE: "JUKEBOX"
+  shape:
+    title: "&#6293F0&lꜱʜᴀᴘᴇ &8» &7{id}{suffix}"
+    default-icon: "ENDER_EYE"
+    icons:
+      STACK: "BOOKSHELF"
+      RING: "ENDER_EYE"
+      HELIX: "TWISTING_VINES"
+      ROW: "RAIL"
+      WHEEL: "CLOCK"
+      SPHERE: "HEART_OF_THE_SEA"
+      TORNADO: "WIND_CHARGE"
+      TRIANGLE: "GOLD_NUGGET"
+      SQUARE: "ITEM_FRAME"
+      POLYGON: "HONEYCOMB"
+      STAR: "NETHER_STAR"
+      HEART: "RED_DYE"
+      GRID: "IRON_BARS"
+      ARC: "BOW"
+      SPIRAL: "NAUTILUS_SHELL"
+      CUBE: "GLASS"
+      INFINITY: "ENDER_PEARL"
+      DIAMOND: "DIAMOND"
+      PYRAMID: "SANDSTONE"
+      CROSS: "GOLDEN_SWORD"
+  effect:
+    title: "&#6293F0&lᴛᴇxᴛ ᴇꜰꜰᴇᴄᴛ &8» &7{id}{suffix}"
+    default-icon: "BLAZE_POWDER"
+    icons:
+      NONE: "BARRIER"
+      SOLID: "WHITE_DYE"
+      FLICKER: "REDSTONE_TORCH"
+      FADE: "AMETHYST_SHARD"
+      TYPEWRITER: "WRITABLE_BOOK"
+      RAINBOW: "FIREWORK_STAR"
+      WAVE: "PRISMARINE_SHARD"
+      SCROLL: "PAPER"
+      BLINK: "LANTERN"
+  entity-type:
+    title: "&#6293F0&lᴇɴᴛɪᴛʏ ᴛʏᴘᴇ"
+    default-icon: "VILLAGER_SPAWN_EGG"
+    mode: "egg"
+  choice:
+    title: "{prop} &8» &7{id}{suffix}"
+    default-icon: "COMPARATOR"
+
+items:
+  back:
+    slot: 45
+  prev:
+    slot: 48
+  info:
+    slot: 49
+    material: "KNOWLEDGE_BOOK"
+    name: "&#6293F0{title}"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fOptions: &#6293F0{count}"
+      - "&fPage: &#6293F0{page}&f / &#6293F0{pages}"
+      - "&fCurrent: &7{current}"
+      - ""
+      - "&8Click an option to select it."
+  next:
+    slot: 50

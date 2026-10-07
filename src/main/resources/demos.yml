@@ -1,4 +1,4 @@
-file-version: 7
+file-version: 8
 id-prefix: "demo-"
 skin-property: "textures"
 objects:
@@ -46,7 +46,7 @@ objects:
       particle-interval: 4
       actions: "[sound] block.enchantment_table.use\n[message] &#B455F0&lᴡɪᴢᴀʀᴅ &7» &fBehold my levitating blocks, &#B455F0{player}&f!"
       look-trigger-range: 10
-      triggers: "look -> particle WITCH 12 head 0.4; sound block.amethyst_block.chime 1 1.4\nholding trident every 2 -> particle! DUST_TRANSITION:#B455F0:#40CEFC:1.2 3 hand 0.15\nuse -> particle! ENCHANT 30 hand 0.5; sound! entity.illusioner.cast_spell\nswing -> particle! END_ROD 8 hand 0.3 0.05\nclick -> particle! TOTEM_OF_UNDYING 25 body 0.7"
+      triggers: "look -> particle WITCH 12 head 0.4; sound block.amethyst_block.chime 1 1.4\nholding trident every 2 -> particle! DUST_TRANSITION:#B455F0:#40CEFC:1.2 3 hand 0.15\nuse -> particle! ENCHANT 30 hand 0.5; sound! entity.illusioner.cast_spell\nswing -> particle! END_ROD 8 hand 0.3 0.05\nclick -> particle! TOTEM_OF_UNDYING 25 body 0.7\nsignal demo.cast -> animation CAST; sound! entity.illusioner.cast_spell; particle! DUST_TRANSITION:#B455F0:#40CEFC:1.4 40 hand 0 0 to holo:demo-link-orb:center"
       nameplate: true
       nameplate-height: 0.35
     equipment:
@@ -56,6 +56,7 @@ objects:
     kind: hologram
     offset: {forward: 8.5, right: -4.5, up: 1.2, yaw: 180}
     props:
+      triggers: "signal demo.cast -> layout STAR; spin 720 40; pulse 0.4 20; particle! WITCH 30 center 1.2; delay 60; layout RING"
       layout: "RING"
       layout-radius: 1.3
       layout-speed: 160
@@ -335,3 +336,61 @@ objects:
     lines:
       - {type: "TEXT", text: "&lᴡᴇʟᴄᴏᴍᴇ", effect: "FLICKER", effect-speed: 2, color-a: "#40CEFC", color-b: "#B266FF", scale: 1.6, billboard: "FIXED", rot-x: -90, background-default: false, background: "#00000000", offset-z: 0.9}
       - {type: "TEXT", text: "ɴᴇᴏɴ ꜰʟᴏᴏʀ ᴛᴇxᴛ", effect: "FADE", effect-speed: 1, color-a: "#6293F0", color-b: "#FFFFFF", billboard: "FIXED", rot-x: -90, background-default: false, background: "#00000000", offset-z: 0.3}
+  link-orb:
+    kind: hologram
+    offset: {forward: 6.2, right: -6.8, up: 1.3, yaw: 180}
+    props:
+      line-spacing: 0.45
+      bob-height: 0.12
+      bob-speed: 0.5
+      clickable: true
+      hitbox-width: 1.2
+      hitbox-height: 1.4
+      hitbox-offset-y: 0
+      cooldown: 40
+      triggers: "click -> signal demo.cast; particle! TOTEM_OF_UNDYING 25 center 0.5; sound! block.beacon.activate 1 1.6\nlook -> particle END_ROD 4 center 0.3"
+      face-player: true
+      proximity-scale: 0.4
+      proximity-range: 5
+    lines:
+      - {type: "TEXT", text: "&#40CEFC&lᴄʟɪᴄᴋ ᴍᴇ", effect: "FADE", effect-speed: 1, color-a: "#40CEFC", color-b: "#B455F0"}
+      - {type: "ITEM", material: "NETHER_STAR", scale: 0.9, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
+  triangle:
+    kind: hologram
+    offset: {forward: 16.5, right: 3, up: 1.4, yaw: 180}
+    props:
+      layout: "TRIANGLE"
+      layout-radius: 1.4
+      shape-tilt: 90
+      shape-width: 1.2
+      layout-speed: 25
+      proximity-scale: 0.6
+      proximity-range: 8
+      particle: "ELECTRIC_SPARK"
+      particle-count: 2
+      particle-radius: 1
+      particle-interval: 8
+    lines:
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.25, scale-x: 1.4, billboard: "FIXED", glow: true, glow-color: "#FFD700"}
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.25, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.25, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.25, billboard: "FIXED", glow: true, glow-color: "#FFD700"}
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.25, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.25, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.25, billboard: "FIXED", glow: true, glow-color: "#FFD700"}
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.25, billboard: "FIXED"}
+      - {type: "BLOCK", material: "GOLD_BLOCK", scale: 0.25, billboard: "FIXED"}
+  follower:
+    kind: hologram
+    offset: {forward: 2.5, right: 0, up: 2.2, yaw: 180}
+    props:
+      follow-player: true
+      follow-range: 10
+      follow-distance: 2.2
+      follow-speed: 3
+      face-player: true
+      bob-height: 0.08
+      bob-speed: 0.6
+    lines:
+      - {type: "TEXT", text: "&#6293F0&lɪ'ᴍ ꜰᴏʟʟᴏᴡɪɴɢ ʏᴏᴜ", effect: "WAVE", effect-speed: 1, color-a: "#6293F0", color-b: "#FFFFFF"}
+      - {type: "TEXT", text: "&7walk around and I tag along", scale: 0.7}

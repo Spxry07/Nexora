@@ -39,6 +39,10 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private static final String EQUIP = "equip";
     private static final String SKIN = "skin";
     private static final String DEMO = "demo";
+    private static final String GUI = "gui";
+    private static final String DIALOG = "dialog";
+    private static final String DEFAULT_MENU_PATH = "admin.default-menu";
+    private static final String GUI_MENU = "GUI";
     private static final String MINESKIN = "mineskin";
     private static final String MINESKIN_KEY_PATH = "model.mineskin.api-key";
     private static final String MINESKIN_STATUS = "status";
@@ -55,7 +59,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private static final String NEWLINE_ESCAPE = "\\n";
     private static final String NEWLINE = "\n";
     private static final String KINDS_KEY = "dialog.kinds.";
-    private static final List<String> ROOT = List.of(HELP, RELOAD, WEB, DEMO, MINESKIN, HOLO, NPC);
+    private static final List<String> ROOT = List.of(HELP, RELOAD, WEB, GUI, DIALOG, DEMO, MINESKIN, HOLO, NPC);
     private static final List<String> HOLO_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, ADD_LINE, ADD_ITEM);
     private static final List<String> NPC_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, EQUIP, SKIN);
     private static final Set<String> ID_SUBS = Set.of(EDIT, DELETE, MOVE_HERE, TP, PATH, ADD_LINE, ADD_ITEM, EQUIP, SKIN);
@@ -85,14 +89,17 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         if (sub == null) {
-            plugin.menus().openMain(player);
+            openDefaultMenu(player);
             return true;
         }
         switch (sub) {
             case RELOAD -> {
                 plugin.reloadAll();
+                plugin.guis().reload();
                 plugin.messages().send(player, "cmd.reloaded");
             }
+            case GUI -> plugin.guis().openMain(player);
+            case DIALOG -> plugin.menus().openMain(player);
             case WEB -> web(player, args);
             case MINESKIN -> mineskin(player, args);
             case DEMO -> {
@@ -186,6 +193,25 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
         }));
     }
 
+    private boolean guiMenu() {
+        return GUI_MENU.equalsIgnoreCase(plugin.getConfig().getString(DEFAULT_MENU_PATH, GUI_MENU));
+    }
+
+    private void openDefaultMenu(Player player) {
+        if (guiMenu()) plugin.guis().openMain(player);
+        else plugin.menus().openMain(player);
+    }
+
+    private void openList(Player player, String kind) {
+        if (guiMenu()) plugin.guis().openList(player, kind);
+        else plugin.menus().openList(player, kind);
+    }
+
+    private void openEditor(Player player, NexoraObject obj) {
+        if (guiMenu()) plugin.guis().openEditor(player, obj);
+        else plugin.menus().openEditor(player, obj);
+    }
+
     private void help(Player player) {
         plugin.messages().send(player, "cmd.help");
     }
@@ -270,7 +296,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
             return;
         }
         if (args.length < 3) {
-            if (EDIT.equals(sub)) plugin.menus().openList(player, kind);
+            if (EDIT.equals(sub)) openList(player, kind);
             else help(player);
             return;
         }
@@ -290,7 +316,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private void manage(Player player, NexoraObject obj, String sub, String[] args) {
         Map<String, String> ph = Map.of("id", obj.id());
         switch (sub) {
-            case EDIT -> plugin.menus().openEditor(player, obj);
+            case EDIT -> openEditor(player, obj);
             case DELETE -> {
                 plugin.objects().delete(obj);
                 plugin.messages().send(player, "cmd.deleted", ph);
@@ -331,7 +357,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
             ? objects.createHologram(id, location)
             : objects.createNpc(id, location, plugin.menus().entityType(entityType));
         plugin.messages().send(player, "cmd.created", Map.of("kind", kindName, "id", id));
-        plugin.menus().openEditor(player, created);
+        openEditor(player, created);
     }
 
     private void teleport(Player player, NexoraObject obj) {

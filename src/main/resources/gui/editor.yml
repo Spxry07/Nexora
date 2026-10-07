@@ -1,0 +1,165 @@
+title: "&#6293F0&l{kind} &8» &7{id}"
+size: 54
+
+section-slots:
+  - "10-16"
+  - "19-25"
+
+section:
+  lore:
+    - "&8Description:"
+    - ""
+    - "&fEdit the settings in this category."
+    - "&fSettings: &#6293F0{count}"
+    - ""
+    - "&#6293F0&l➥ &nCLICK&#6293F0 to open"
+
+section-icons:
+  default: "PAPER"
+  general: "COMPARATOR"
+  shape: "SHULKER_SHELL"
+  interaction: "LEVER"
+  reactive: "ENDER_PEARL"
+  motion: "FEATHER"
+  effects: "BLAZE_POWDER"
+  path: "RAIL"
+  particles: "FIREWORK_STAR"
+  identity: "NAME_TAG"
+  skin: "LEATHER_HELMET"
+  appearance: "PAINTING"
+  behaviour: "COMPASS"
+  animations: "CLOCK"
+  animation: "NOTE_BLOCK"
+  pose: "ARMOR_STAND"
+  triggers: "TRIPWIRE_HOOK"
+  nameplate: "OAK_SIGN"
+
+items:
+  info:
+    slot: 4
+    material: "{icon}"
+    name: "&#6293F0&l{id}"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fKind: &#6293F0{kind}"
+      - "&fWorld: &7{world}"
+      - "&fPosition: &7{x} {y} {z}"
+      - "&fPath points: &7{points}"
+      - ""
+      - "&8Edit it with the categories below."
+  lines:
+    slot: 29
+    material: "BOOK"
+    name: "&#6293F0ʟɪɴᴇꜱ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fAdd, reorder and edit the lines."
+      - "&fLines: &#6293F0{lines}"
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to edit lines"
+  shape:
+    slot: 30
+    material: "ENDER_EYE"
+    name: "&#6293F0ꜱʜᴀᴘᴇ ᴘɪᴄᴋᴇʀ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fPick the layout of the lines."
+      - "&fCurrent: &7{layout}"
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to pick a shape"
+  triggers:
+    slot: 31
+    material: "TRIPWIRE_HOOK"
+    name: "&#6293F0ᴛʀɪɢɢᴇʀꜱ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fAdd starter rules or edit the raw rules."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to open the trigger menu"
+  equipment:
+    slot: 29
+    material: "IRON_CHESTPLATE"
+    name: "&#6293F0ᴇQᴜɪᴘᴍᴇɴᴛ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fDrag items into the equipment slots."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to edit equipment"
+  animation:
+    slot: 30
+    material: "NOTE_BLOCK"
+    name: "&#6293F0ᴀɴɪᴍᴀᴛɪᴏɴ ᴘɪᴄᴋᴇʀ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fPick an animation preset."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to pick an animation"
+  nameplate:
+    slot: 32
+    material: "OAK_SIGN"
+    name: "&#6293F0ɴᴀᴍᴇᴘʟᴀᴛᴇ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fEdit the hologram floating above this NPC."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to edit the nameplate"
+  back:
+    slot: 45
+  move-here:
+    slot: 47
+    material: "ENDER_PEARL"
+    name: "&fᴍᴏᴠᴇ ʜᴇʀᴇ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fMove it to your position."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to move it here"
+  teleport:
+    slot: 48
+    material: "COMPASS"
+    name: "&fᴛᴇʟᴇᴘᴏʀᴛ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fTeleport to it."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to teleport"
+  path-add:
+    slot: 49
+    material: "RAIL"
+    name: "&fᴀᴅᴅ ᴘᴀᴛʜ ᴘᴏɪɴᴛ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fAdd your position as a path point."
+      - "&fPoints: &7{points}"
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to add a point"
+  path-clear:
+    slot: 50
+    material: "POWERED_RAIL"
+    name: "&fᴄʟᴇᴀʀ ᴘᴀᴛʜ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fRemove every path point."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to clear the path"
+  delete:
+    slot: 53
+    material: "TNT"
+    name: "&#FF0000ᴅᴇʟᴇᴛᴇ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fDelete it permanently."
+      - ""
+      - "&#FF0000&l➥ &nCLICK&#FF0000 to delete"

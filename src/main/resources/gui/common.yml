@@ -1,0 +1,167 @@
+filler:
+  material: "GRAY_STAINED_GLASS_PANE"
+  name: " "
+
+numbers:
+  default-step: 1
+  shift-multiplier: 10
+
+preview-length: 28
+
+prompt:
+  confirm: "&#00FF5Aᴄᴏɴꜰɪʀᴍ"
+  cancel: "&7ᴄᴀɴᴄᴇʟ"
+  default-max-length: 256
+  color-max-length: 9
+  id-max-length: 32
+
+heads:
+  property: "textures"
+  hash-pattern: "[0-9a-fA-F]{32,}"
+  url: "http://textures.minecraft.net/texture/{hash}"
+  json: "{\"textures\":{\"SKIN\":{\"url\":\"{url}\"}}}"
+  max-name-length: 16
+
+values:
+  enabled: "&#00FF5Aᴏɴ"
+  disabled: "&#FF0000ᴏꜰꜰ"
+  empty: "&8(empty)"
+  ellipsis: "…"
+  any-range: "any"
+  no-rules: "none"
+  item: "[item]"
+  block: "[block]"
+
+sounds:
+  enabled: true
+  open:
+    name: "block.chest.open"
+    volume: 0.4
+    pitch: 1.4
+  click:
+    name: "ui.button.click"
+    volume: 0.6
+    pitch: 1.2
+  success:
+    name: "entity.player.levelup"
+    volume: 0.5
+    pitch: 1.5
+  error:
+    name: "entity.villager.no"
+    volume: 0.8
+    pitch: 1.0
+  delete:
+    name: "entity.item.break"
+    volume: 0.8
+    pitch: 0.9
+  equip:
+    name: "item.armor.equip_iron"
+    volume: 0.7
+    pitch: 1.0
+
+notices:
+  saved:
+    text: "&#00FF5ASaved."
+    sound: "success"
+  invalid:
+    text: "&#FF0000Invalid value ignored: {fields}"
+    sound: "error"
+  not-found:
+    text: "&#FF0000{id} no longer exists."
+    sound: "error"
+  moved:
+    text: "&#00FF5AMoved to your position."
+    sound: "success"
+  point-added:
+    text: "&#00FF5APath point added ({count} total)."
+    sound: "success"
+  point-cleared:
+    text: "&#00FF5APath cleared."
+    sound: "success"
+  max-waypoints:
+    text: "&#FF0000The path has reached the maximum number of points."
+    sound: "error"
+  line-added:
+    text: "&#00FF5ALine added."
+    sound: "success"
+  line-max:
+    text: "&#FF0000A hologram can have at most {max} lines."
+    sound: "error"
+  line-deleted:
+    text: "&#00FF5ALine deleted."
+    sound: "delete"
+  no-item:
+    text: "&#FF0000Hold an item in your main hand."
+    sound: "error"
+  no-block:
+    text: "&#FF0000The item in your main hand is not a block."
+    sound: "error"
+  equipped:
+    text: "&#00FF5AEquipped {slot}."
+    sound: "equip"
+  unequipped:
+    text: "&#00FF5ACleared {slot}."
+    sound: "equip"
+  no-slot:
+    text: "&#FF0000No free equipment slot for that item."
+    sound: "error"
+  invalid-id:
+    text: "&#FF0000Invalid id '{id}'. Use 1-32 letters, numbers, - or _."
+    sound: "error"
+  exists:
+    text: "&#FF0000The id '{id}' is already in use."
+    sound: "error"
+  rule-added:
+    text: "&#00FF5ATrigger rule added."
+    sound: "success"
+  rules-cleared:
+    text: "&#00FF5AAll trigger rules removed."
+    sound: "delete"
+  reloaded:
+    text: "&#00FF5AConfiguration reloaded."
+    sound: "success"
+  web-disabled:
+    text: "&#FF0000The web editor is disabled."
+    sound: "error"
+
+items:
+  back:
+    slot: 45
+    material: "ARROW"
+    name: "&7ʙᴀᴄᴋ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fReturn to the previous menu."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to go back"
+  prev:
+    slot: 46
+    material: "ARROW"
+    name: "&#6293F0ᴘʀᴇᴠɪᴏᴜꜱ ᴘᴀɢᴇ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fPage &#6293F0{page}&f of &#6293F0{pages}&f."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to go to the previous page"
+  next:
+    slot: 52
+    material: "ARROW"
+    name: "&#6293F0ɴᴇxᴛ ᴘᴀɢᴇ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fPage &#6293F0{page}&f of &#6293F0{pages}&f."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to go to the next page"
+  close:
+    slot: 53
+    material: "BARRIER"
+    name: "&#FF0000ᴄʟᴏꜱᴇ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fClose this menu."
+      - ""
+      - "&#FF0000&l➥ &nCLICK&#FF0000 to close"

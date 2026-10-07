@@ -97,6 +97,21 @@ npc:
     - LEGS
     - FEET
 
+triggers:
+  max-signal-depth: 4
+  max-delay-ticks: 6000
+
+reactive:
+  ease-rate: 5
+  face-turn-speed: 360
+  morph-ticks: 40
+  pulse-amount: 0.25
+  pulse-ticks: 10
+
+admin:
+  sneak-click-edit: true
+  default-menu: "GUI"
+
 dialogs:
   columns: 2
   button-width: 150
@@ -146,6 +161,13 @@ defaults:
     helix-step: 30
     wave-height: 0
     wave-speed: 0.5
+    shape-width: 1
+    shape-height: 1
+    shape-tilt: 0
+    shape-sides: 5
+    shape-inner: 0.45
+    grid-columns: 3
+    arc-angle: 180
     spin-speed: 0
     bob-height: 0
     bob-speed: 0.5
@@ -160,6 +182,23 @@ defaults:
     particle-count: 3
     particle-radius: 0.5
     particle-interval: 10
+    clickable: false
+    hitbox-width: 1.5
+    hitbox-height: 1
+    hitbox-offset-y: 0
+    actions: ""
+    click-type: "ANY"
+    cooldown: 20
+    triggers: ""
+    approach-range: 5
+    look-trigger-range: 8
+    face-player: false
+    follow-player: false
+    follow-range: 12
+    follow-distance: 2.5
+    follow-speed: 2
+    proximity-scale: 0
+    proximity-range: 6
   line:
     type: "TEXT"
     text: "&#6293F0&lɴᴇxᴏʀᴀ\n&7Edit me with &f/nexora"
@@ -171,6 +210,9 @@ defaults:
     color-b: "#FFFFFF"
     scroll-width: 16
     scale: 1
+    scale-x: 1
+    scale-y: 1
+    scale-z: 1
     offset-y: 0
     offset-x: 0
     offset-z: 0

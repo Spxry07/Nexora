@@ -1,0 +1,106 @@
+title: "&#6293F0&l{kinds}"
+size: 54
+slots:
+  - "0-44"
+
+head-types:
+  - "MANNEQUIN"
+  - "MODEL"
+egg-suffix: "_SPAWN_EGG"
+egg-overrides:
+  IRON_GOLEM: "IRON_BLOCK"
+  SNOW_GOLEM: "CARVED_PUMPKIN"
+  ARMOR_STAND: "ARMOR_STAND"
+
+icons:
+  head: "PLAYER_HEAD"
+  hologram: "OAK_SIGN"
+  npc-fallback: "VILLAGER_SPAWN_EGG"
+
+values:
+  no-filter: "none"
+
+prompt:
+  title: "&#6293F0&lꜱᴇᴀʀᴄʜ &8» &7{kinds}"
+  body: "&7Enter part of an id. Leave empty to show everything."
+  label: "&fꜱᴇᴀʀᴄʜ"
+  max-length: 32
+
+entry:
+  name: "&#6293F0{id}"
+  hologram:
+    material: "{icon}"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fLines: &#6293F0{lines}"
+      - "&fLayout: &7{layout}"
+      - "&fWorld: &7{world}"
+      - "&fPosition: &7{x} {y} {z}"
+      - ""
+      - "&#6293F0&l➥ &nLEFT-CLICK&#6293F0 to edit"
+      - "&#6293F0&l➥ &nRIGHT-CLICK&#6293F0 to teleport"
+      - "&#FF0000&l➥ &nSHIFT-RIGHT&#FF0000 to delete"
+  npc:
+    material: "{icon}"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fType: &#6293F0{type}"
+      - "&fWorld: &7{world}"
+      - "&fPosition: &7{x} {y} {z}"
+      - ""
+      - "&#6293F0&l➥ &nLEFT-CLICK&#6293F0 to edit"
+      - "&#6293F0&l➥ &nRIGHT-CLICK&#6293F0 to teleport"
+      - "&#FF0000&l➥ &nSHIFT-RIGHT&#FF0000 to delete"
+
+items:
+  back:
+    slot: 45
+  search:
+    slot: 46
+    material: "OAK_SIGN"
+    name: "&#6293F0ꜱᴇᴀʀᴄʜ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fFilter the list by id."
+      - "&fCurrent filter: &7{filter}"
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to search"
+  clear-search:
+    slot: 47
+    material: "REDSTONE_TORCH"
+    name: "&#FF0000ᴄʟᴇᴀʀ ꜱᴇᴀʀᴄʜ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fShow every entry again."
+      - ""
+      - "&#FF0000&l➥ &nCLICK&#FF0000 to clear the filter"
+  prev:
+    slot: 48
+  info:
+    slot: 49
+    material: "KNOWLEDGE_BOOK"
+    name: "&#6293F0{kinds}"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fEntries: &#6293F0{count}"
+      - "&fPage: &#6293F0{page}&f / &#6293F0{pages}"
+      - "&fFilter: &7{filter}"
+      - ""
+      - "&8Use the arrows to flip pages."
+  next:
+    slot: 50
+  create:
+    slot: 52
+    material: "LIME_DYE"
+    name: "&#00FF5Aᴄʀᴇᴀᴛᴇ {kind}"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fCreate a new one at your position."
+      - ""
+      - "&#00FF5A&l➥ &nCLICK&#00FF5A to create"

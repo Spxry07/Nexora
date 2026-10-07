@@ -35,6 +35,8 @@ cmd:
       - "&8» &f/nexora demo &7- spawn demo NPCs and holograms in front of you"
       - "&8» &f/nexora demo clear &7- remove the demo objects"
       - "&8» &f/nexora mineskin <key|status> &7- set and verify the MineSkin key for Skinned Model NPCs"
+      - "&8» &f/nexora gui &7- open the admin GUI (sneak + right-click an NPC or hologram to edit it)"
+      - "&8» &f/nexora dialog &7- open the dialog editor"
   reloaded:
     messages:
       - "{prefix}&#00FF5AConfiguration reloaded."

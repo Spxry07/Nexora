@@ -7,7 +7,7 @@ author: Spxry Studios
 folia-supported: true
 commands:
   nexora:
-    usage: /<command> [holo|npc|web|reload|help]
+    usage: /<command> [gui|dialog|holo|npc|web|demo|mineskin|reload|help]
     description: Nexora holograms and NPCs
     aliases:
       - nx

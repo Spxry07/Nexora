@@ -1,0 +1,70 @@
+title: "&#6293F0&lʟɪɴᴇꜱ &8» &7{id}"
+size: 54
+slots:
+  - "0-44"
+
+icons:
+  TEXT: "OAK_SIGN"
+  ITEM: "ITEM_FRAME"
+  BLOCK: "GRASS_BLOCK"
+
+entry:
+  name: "&#6293F0ʟɪɴᴇ #{number}"
+  lore:
+    - "&8Description:"
+    - ""
+    - "&fType: &#6293F0{type}"
+    - "&fPreview: &7{preview}"
+    - ""
+    - "&#6293F0&l➥ &nLEFT-CLICK&#6293F0 to edit"
+    - "&#6293F0&l➥ &nSHIFT-LEFT&#6293F0 to move up"
+    - "&#6293F0&l➥ &nSHIFT-RIGHT&#6293F0 to move down"
+
+items:
+  back:
+    slot: 45
+  prev:
+    slot: 46
+  next:
+    slot: 47
+  add-text:
+    slot: 48
+    material: "OAK_SIGN"
+    name: "&#00FF5Aᴀᴅᴅ ᴛᴇxᴛ ʟɪɴᴇ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fAdd a new text line."
+      - ""
+      - "&#00FF5A&l➥ &nCLICK&#00FF5A to add a text line"
+  add-item:
+    slot: 49
+    material: "ITEM_FRAME"
+    name: "&#00FF5Aᴀᴅᴅ ʜᴇʟᴅ ɪᴛᴇᴍ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fAdd the item in your main hand."
+      - ""
+      - "&#00FF5A&l➥ &nCLICK&#00FF5A to add the held item"
+  add-block:
+    slot: 50
+    material: "GRASS_BLOCK"
+    name: "&#00FF5Aᴀᴅᴅ ʜᴇʟᴅ ʙʟᴏᴄᴋ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fAdd the block in your main hand."
+      - ""
+      - "&#00FF5A&l➥ &nCLICK&#00FF5A to add the held block"
+  info:
+    slot: 53
+    material: "KNOWLEDGE_BOOK"
+    name: "&#6293F0ʟɪɴᴇꜱ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fLines: &#6293F0{count}&f / &#6293F0{max}"
+      - "&fPage: &#6293F0{page}&f / &#6293F0{pages}"
+      - ""
+      - "&8Click a line to edit it."

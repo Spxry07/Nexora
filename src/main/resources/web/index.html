@@ -383,6 +383,12 @@ dialog .foot{display:flex;gap:var(--s2);justify-content:flex-end;margin-top:var(
 .arow-b{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s2) var(--s3);padding:var(--s3)}
 .arow>.note{padding:0 var(--s3) var(--s2);margin:0}
 .rule.raw input{font-family:var(--mono);font-size:12px}
+.lrow{border:1px solid var(--line2);background:var(--elev);border-radius:var(--r2);padding:var(--s3);margin-bottom:var(--s2)}
+.lname{font:600 13px var(--mono);color:var(--accent2);margin-bottom:var(--s2);word-break:break-all}
+.lcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--s2) var(--s3)}
+.lcols .sub{margin-top:0}
+.lchips{display:flex;flex-wrap:wrap;gap:4px}
+.lrow>.note{margin-top:var(--s2)}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition-duration:.001s!important;scroll-behavior:auto!important}}
 @media (max-width:1180px){
 #app{grid-template-columns:var(--sidew) minmax(0,1fr)}
@@ -575,8 +581,42 @@ const RESET = {c:'#FFFFFF',b:false,i:false,u:false,s:false,k:false};
 const SAMPLE_PLAYER = 'Steve';
 const ENTITY_TEX = {IRON_GOLEM:'iron_block', SNOW_GOLEM:'snowball', ARMOR_STAND:'armor_stand'};
 const EQUIP_ORDER = ['HEAD','CHEST','LEGS','FEET','HAND','OFF_HAND'];
-const SHAPES = ['STACK','RING','HELIX','TORNADO','WHEEL','SPHERE','ROW'];
-const SHAPE_LABEL = {STACK:'Stack',RING:'Ring',HELIX:'Helix',TORNADO:'Tornado',WHEEL:'Wheel',SPHERE:'Sphere',ROW:'Row'};
+const SHAPE_GROUPS = [
+  ['Classic', ['STACK', 'ROW', 'RING', 'WHEEL', 'HELIX', 'TORNADO', 'SPHERE']],
+  ['Outlines', ['TRIANGLE', 'SQUARE', 'POLYGON', 'STAR', 'HEART', 'CROSS', 'DIAMOND', 'INFINITY']],
+  ['Fills and solids', ['GRID', 'ARC', 'SPIRAL', 'CUBE', 'PYRAMID']]
+];
+const SHAPES = SHAPE_GROUPS.flatMap(g => g[1]);
+const SHAPE_LABEL = {STACK:'Stack',ROW:'Row',RING:'Ring',WHEEL:'Wheel',HELIX:'Helix',TORNADO:'Tornado',SPHERE:'Sphere',TRIANGLE:'Triangle',SQUARE:'Square',POLYGON:'Polygon',STAR:'Star',HEART:'Heart',CROSS:'Cross',DIAMOND:'Diamond',INFINITY:'Infinity',GRID:'Grid',ARC:'Arc',SPIRAL:'Spiral',CUBE:'Cube',PYRAMID:'Pyramid'};
+const FLAT_SHAPES = new Set(['TRIANGLE', 'SQUARE', 'POLYGON', 'STAR', 'HEART', 'GRID', 'ARC', 'SPIRAL', 'INFINITY', 'CROSS', 'DIAMOND']);
+const SIZED_SHAPES = new Set(SHAPES.filter(k => k !== 'STACK' && k !== 'ROW'));
+const SPACED_SHAPES = new Set(['STACK', 'ROW', 'HELIX', 'TORNADO', 'GRID']);
+const SHAPE_DEF_RADIUS = '2';
+const SHAPE_FLAT_TILT = '90';
+const SHAPE_TILE_POINTS = 12;
+const SHAPE_TILE_SPACING = 0.5;
+const SHAPE_TILE_FILL = 0.74;
+const SHAPE_TILE_ELEV = 0.5;
+const SHAPE_CURVE_SAMPLES = 256;
+const SHAPE_DEF_ARC = 180;
+const SHAPE_DEF_INNER = 0.5;
+const SHAPE_MIN_SIDES = 3;
+const SHAPE_OUTWARD_TILT = 45;
+const SHAPE_CROSS_ARM = 1 / 3;
+const SHAPE_DIAMOND_HALF = 0.6;
+const SHAPE_SPIRAL_TURNS = 3;
+const HEART_TERMS = [13, -5, -2, -1];
+const HITBOX_FILL = 'rgba(98,147,240,.14)';
+const HITBOX_EDGE = 'rgba(160,190,255,.95)';
+const RING_SEGMENTS = 72;
+const RING_FIT_MAX = 12;
+const RING_COLORS = {approach: 'rgba(120,220,160,.8)', look: 'rgba(255,200,120,.8)', follow: 'rgba(143,178,255,.85)', keep: 'rgba(255,140,160,.85)', grow: 'rgba(210,160,255,.85)'};
+const BOX_EDGES = [[0, 1], [1, 3], [3, 2], [2, 0], [4, 5], [5, 7], [7, 6], [6, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
+const BOX_FACES = [[0, 1, 3, 2], [4, 5, 7, 6], [0, 1, 5, 4], [2, 3, 7, 6], [0, 2, 6, 4], [1, 3, 7, 5]];
+const LINE_TEXT_H = 0.3;
+const SIGNAL_NAME = /^[a-z0-9_.-]{1,48}$/i;
+const SIGNAL_EVENT = /^\s*signal\s+([a-z0-9_.-]{1,48})(?![a-z0-9_.-])/i;
+const PULSE_DEFAULT = '0.2';
 const PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#3a4254"/><rect x="1" y="1" width="14" height="14" fill="#2a3040"/><path d="M6 6h4v2H8v2M8 12h1" stroke="#8b94a8" stroke-width="1.4" fill="none"/></svg>');
 const ICONS = {
   idle: 'M7 7h9l-9 10h9',
@@ -601,7 +641,7 @@ const MOTIONS = [
   {id:'sway', label:'Sway', hint:'Swing side to side', props:['sway-angle','sway-speed'], defaults:['10','0.5']},
   {id:'wave', label:'Wave', hint:'Ripple through the lines', props:['wave-height','wave-speed'], defaults:['0.2','0.5']}
 ];
-const RADIUS_SHAPES = new Set(['RING','HELIX','TORNADO','WHEEL','SPHERE']);
+const RADIUS_SHAPES = SIZED_SHAPES;
 const TURN_SHAPES = new Set(['HELIX','TORNADO']);
 const GEN = {
   circle: r => {
@@ -832,7 +872,7 @@ const IC = {
 const ANIM_ICON = {NONE: 'none', WAVE: 'wave', NOD: 'bob', LOOK_AROUND: 'look', CHEER: 'star', CROUCH_DANCE: 'dance', ARCHER: 'target', CROSSBOW: 'crossbow', TRIDENT: 'trident', CAST: 'wand', SPYGLASS: 'spyglass', HORN: 'horn', SHIELD: 'guard', GUARD: 'guard', FEAST: 'feast', POTION: 'potion', SWIMMER: 'wave', RIPTIDE: 'spin', SLEEPY: 'moon', WALK: 'route', SALUTE: 'hand', POINT: 'target', BOW: 'bob', DAB: 'star', ZOMBIE: 'user', DANCE: 'dance'};
 const TABS = {
   npc: [['quick', 'Overview', 'home', 'Name, skin and gear'], ['animate', 'Animation', 'playc', 'Pick an animation preset'], ['pose', 'Pose', 'pose', 'Pose the head, body, arms and legs of a skinned model'], ['movement', 'Behaviour', 'route', 'Looking, walking and patrol paths'], ['triggers', 'Triggers', 'bolt', 'React to clicks, looks and more'], ['nameplate', 'Nameplate', 'tag', 'Hologram text above the head'], ['appearance', 'Look', 'palette', 'Entity type, glow, particles'], ['advanced', 'Advanced', 'sliders', 'Every raw property']],
-  hologram: [['quick', 'Overview', 'home', 'Preview, text and style'], ['lines', 'Lines', 'text', 'Detailed per-line settings'], ['movement', 'Motion', 'route', 'Shape, motion and paths'], ['appearance', 'Look', 'palette', 'Range and particles'], ['advanced', 'Advanced', 'sliders', 'Every raw property']]
+  hologram: [['quick', 'Overview', 'home', 'Preview, text and style'], ['lines', 'Lines', 'text', 'Detailed per-line settings'], ['shape', 'Shape', 'layers', 'Arrange the lines as a ring, heart, star and more'], ['movement', 'Motion', 'route', 'Motion and paths'], ['interaction', 'Interaction', 'hand', 'Clickable hitbox, click actions and triggers'], ['reactive', 'Reactive', 'target', 'Turn toward, follow or grow near players'], ['appearance', 'Look', 'palette', 'Range and particles'], ['advanced', 'Advanced', 'sliders', 'Every raw property']]
 };
 const NPC_APPEARANCE = [
   ['Identity', ['entity-type', 'name', 'name-visible', 'description'], false],
@@ -904,7 +944,28 @@ const TIPS = {
   'background-default': 'Use the standard translucent background.',
   'shadow': 'Draw a text shadow.',
   'see-through': 'Visible through blocks.',
-  'opacity': 'Text opacity, 255 is solid.'
+  'opacity': 'Text opacity, 255 is solid.',
+  'clickable': 'Players can click the hologram. Adds an invisible hitbox.',
+  'hitbox-width': 'Width and depth of the invisible click box (blocks).',
+  'hitbox-height': 'Height of the invisible click box (blocks).',
+  'hitbox-offset-y': 'Moves the click box up or down from the hologram centre (blocks).',
+  'shape-width': 'Stretches the shape sideways.',
+  'shape-height': 'Stretches the shape up and down (or front to back when flat).',
+  'shape-tilt': 'Flat shapes: 0 lies on the ground, 90 stands upright.',
+  'shape-sides': 'Number of corners of a polygon, or points of a star.',
+  'shape-inner': 'Star inner radius as a fraction of the outer radius.',
+  'grid-columns': 'How many lines fit in each grid row.',
+  'arc-angle': 'How much of a circle the arc covers (degrees).',
+  'face-player': 'The hologram turns smoothly toward the nearest player.',
+  'follow-player': 'The hologram glides toward the nearest player in range.',
+  'follow-range': 'Players further than this are ignored (blocks).',
+  'follow-distance': 'It stops this far from the player (blocks).',
+  'follow-speed': 'Glide speed in blocks per second.',
+  'proximity-scale': 'Extra size added as the nearest player gets close. 0 = off.',
+  'proximity-range': 'Distance at which the growing starts (blocks).',
+  'scale-x': 'Stretches this line sideways.',
+  'scale-y': 'Stretches this line vertically.',
+  'scale-z': 'Stretches this line in depth (3D blocks and items).'
 };
 const SMALL = {'ᴀ': 'a', 'ʙ': 'b', 'ᴄ': 'c', 'ᴅ': 'd', 'ᴇ': 'e', 'ꜰ': 'f', 'ɢ': 'g', 'ʜ': 'h', 'ɪ': 'i', 'ᴊ': 'j', 'ᴋ': 'k', 'ʟ': 'l', 'ᴍ': 'm', 'ɴ': 'n', 'ᴏ': 'o', 'ᴘ': 'p', 'ǫ': 'q', 'ʀ': 'r', 'ꜱ': 's', 'ᴛ': 't', 'ᴜ': 'u', 'ᴠ': 'v', 'ᴡ': 'w', 'ʏ': 'y', 'ᴢ': 'z'};
 const SMALL_RE = /[ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡʏᴢ]/g;
@@ -1389,16 +1450,33 @@ function attachOf(hs) {
   return hs === S ? num(hs.props['attach-height']) : num(S.props['nameplate-height']);
 }
 
+function shapeParamsOf(p, radius, spacing) {
+  return {
+    radius,
+    width: num(p['shape-width']),
+    height: num(p['shape-height']),
+    tilt: num(p['shape-tilt']),
+    sides: Math.round(num(p['shape-sides'])),
+    inner: num(p['shape-inner']),
+    columns: Math.round(num(p['grid-columns'])),
+    arc: num(p['arc-angle']),
+    spacing,
+    helixStep: num(p['helix-step'])
+  };
+}
+
 function holoParams() {
   const hs = HS();
   const p = hs.props;
+  const spacing = num(p['line-spacing']) || 0.3;
   return {
     attach: attachOf(hs),
     layout: String(p.layout || 'STACK').toUpperCase(),
     radius: num(p['layout-radius']),
+    shape: shapeParamsOf(p, num(p['layout-radius']), spacing),
     layoutSpeed: num(p['layout-speed']),
     helix: num(p['helix-step']),
-    spacing: num(p['line-spacing']) || 0.3,
+    spacing,
     waveH: num(p['wave-height']),
     waveS: num(p['wave-speed']),
     spin: num(p['spin-speed']),
@@ -1417,6 +1495,9 @@ function holoParams() {
 function lineParams(l) {
   return {
     scale: Math.max(0.01, Number(l.scale) || 1),
+    sx: Math.max(0.01, Number(l['scale-x']) || 1),
+    sy: Math.max(0.01, Number(l['scale-y']) || 1),
+    sz: Math.max(0.01, Number(l['scale-z']) || 1),
     offX: num(l['offset-x']),
     offY: num(l['offset-y']),
     offZ: num(l['offset-z']),
@@ -1439,51 +1520,168 @@ function holoPlace(h, lp, i, n, c, secs) {
   let y = c[1];
   if (h.waveH > 0) y += h.waveH * Math.sin(TAU * h.waveS * secs + TAU * i / cnt);
   const turn = h.layoutSpeed * DEG * secs;
-  const circle = (yy, r, a) => {
-    const dx = Math.cos(a), dz = Math.sin(a);
-    return [c[0] + r * dx, yy, c[2] + r * dz, Math.atan2(-dx, dz) / DEG];
-  };
-  let p;
-  switch (h.layout) {
-    case 'RING':
-      p = circle(y + lp.offY, h.radius, TAU * i / cnt + turn);
-      break;
-    case 'WHEEL': {
-      const a = TAU * i / cnt + turn;
-      const side = h.radius * Math.cos(a);
-      p = [c[0] - Math.cos(yawRad) * side, y + lp.offY + h.radius * Math.sin(a), c[2] - Math.sin(yawRad) * side, h.yaw];
-      break;
-    }
-    case 'SPHERE': {
-      const uy = 1 - 2 * (i + 0.5) / cnt;
-      const ring = Math.sqrt(Math.max(0, 1 - uy * uy));
-      const th = GOLDEN_ANGLE * i + turn;
-      const dx = Math.cos(th) * ring, dz = Math.sin(th) * ring;
-      p = [c[0] + h.radius * dx, y + lp.offY + h.radius * uy, c[2] + h.radius * dz, Math.atan2(-dx, dz) / DEG];
-      break;
-    }
-    case 'TORNADO': {
-      const level = n <= 1 ? 1 : (n - 1 - i) / (n - 1);
-      p = circle(y + (n - 1 - i) * h.spacing + lp.offY, h.radius * Math.max(TORNADO_MIN_RADIUS, level), h.helix * DEG * i + turn);
-      break;
-    }
-    case 'HELIX':
-      p = circle(y + (n - 1 - i) * h.spacing + lp.offY, h.radius, h.helix * DEG * i + turn);
-      break;
-    case 'ROW': {
-      const along = (i - (n - 1) / 2) * h.spacing;
-      p = [c[0] - Math.cos(yawRad) * along, y + lp.offY, c[2] - Math.sin(yawRad) * along, h.yaw];
-      break;
-    }
-    default:
-      p = [c[0], y + (n - 1 - i) * h.spacing + lp.offY, c[2], h.yaw];
-  }
+  const q = shapePlace(h.layout, h.shape, i, cnt, turn);
+  const s = Math.sin(yawRad), co = Math.cos(yawRad);
+  const p = [c[0] - co * q[0] - s * q[2], y + q[1] + lp.offY, c[2] - s * q[0] + co * q[2], h.yaw + q[3]];
   if (lp.offX || lp.offZ) {
-    const s = Math.sin(yawRad), co = Math.cos(yawRad);
     p[0] += -co * lp.offX - s * lp.offZ;
     p[2] += -s * lp.offX + co * lp.offZ;
   }
   return p;
+}
+
+function closedCurve(fn) {
+  const out = [];
+  for (let k = 0; k < SHAPE_CURVE_SAMPLES; k++) out.push(fn(TAU * k / SHAPE_CURVE_SAMPLES));
+  return out;
+}
+
+const HEART_Y_SHIFT = 2.5;
+const HEART_Y_SCALE = 16;
+const SHAPE_DATA = {
+  SQUARE: [[-1, 1, 0], [1, 1, 0], [1, -1, 0], [-1, -1, 0]],
+  DIAMOND: [[0, 1, 0], [SHAPE_DIAMOND_HALF, 0, 0], [0, -1, 0], [-SHAPE_DIAMOND_HALF, 0, 0]],
+  CROSS: [[SHAPE_CROSS_ARM, 1, 0], [SHAPE_CROSS_ARM, SHAPE_CROSS_ARM, 0], [1, SHAPE_CROSS_ARM, 0], [1, -SHAPE_CROSS_ARM, 0], [SHAPE_CROSS_ARM, -SHAPE_CROSS_ARM, 0], [SHAPE_CROSS_ARM, -1, 0], [-SHAPE_CROSS_ARM, -1, 0], [-SHAPE_CROSS_ARM, -SHAPE_CROSS_ARM, 0], [-1, -SHAPE_CROSS_ARM, 0], [-1, SHAPE_CROSS_ARM, 0], [-SHAPE_CROSS_ARM, SHAPE_CROSS_ARM, 0], [-SHAPE_CROSS_ARM, 1, 0]],
+  HEART: closedCurve(t => {
+    let y = 0;
+    for (let k = 0; k < HEART_TERMS.length; k++) y += HEART_TERMS[k] * Math.cos((k + 1) * t);
+    return [Math.pow(Math.sin(t), 3), (y + HEART_Y_SHIFT) / HEART_Y_SCALE, 0];
+  }),
+  INFINITY: closedCurve(t => {
+    const d = 1 + Math.sin(t) * Math.sin(t);
+    return [Math.cos(t) / d, Math.sin(t) * Math.cos(t) / d, 0];
+  }),
+  SPIRAL: Array.from({length: SHAPE_CURVE_SAMPLES + 1}, (_, k) => {
+    const u = k / SHAPE_CURVE_SAMPLES, a = TAU * SHAPE_SPIRAL_TURNS * u;
+    return [u * Math.cos(a), u * Math.sin(a), 0];
+  }),
+  CUBE: Array.from({length: 8}, (_, k) => [(k & 1) * 2 - 1, ((k >> 1) & 1) * 2 - 1, ((k >> 2) & 1) * 2 - 1]),
+  PYRAMID: [[-1, -1, -1], [1, -1, -1], [1, -1, 1], [-1, -1, 1], [0, 1, 0]]
+};
+const SHAPE_EDGES = {
+  CUBE: (() => {
+    const out = [];
+    for (let a = 0; a < 8; a++) for (let bit = 0; bit < 3; bit++) { const b = a ^ (1 << bit); if (b > a) out.push(a, b); }
+    return out;
+  })(),
+  PYRAMID: [0, 1, 1, 2, 2, 3, 3, 0, 0, 4, 1, 4, 2, 4, 3, 4]
+};
+
+function shapePolygon(sides) {
+  return Array.from({length: sides}, (_, k) => { const a = HALF_PI + TAU * k / sides; return [Math.cos(a), Math.sin(a), 0]; });
+}
+
+function shapeStar(sides, inner) {
+  return Array.from({length: sides * 2}, (_, k) => { const r = k % 2 === 0 ? 1 : inner, a = HALF_PI + Math.PI * k / sides; return [r * Math.cos(a), r * Math.sin(a), 0]; });
+}
+
+function segFrom(pairs, k) { return pairs ? pairs[2 * k] : k; }
+function segTo(v, pairs, k) { return pairs ? pairs[2 * k + 1] : (k + 1) % v.length; }
+
+function segLen(v, pairs, k, s) {
+  const a = v[segFrom(pairs, k)], b = v[segTo(v, pairs, k)];
+  return Math.hypot((b[0] - a[0]) * s[0], (b[1] - a[1]) * s[1], (b[2] - a[2]) * s[2]);
+}
+
+function scaleVec(v, s) { return [v[0] * s[0], v[1] * s[1], v[2] * s[2]]; }
+
+function shapeWalk(v, pairs, closed, fraction, s) {
+  const segs = pairs ? pairs.length / 2 : closed ? v.length : v.length - 1;
+  let total = 0;
+  for (let k = 0; k < segs; k++) total += segLen(v, pairs, k, s);
+  if (total < 1e-9) return scaleVec(v[0], s);
+  let rest = clamp(fraction, 0, 1) * total;
+  for (let k = 0; k < segs; k++) {
+    const len = segLen(v, pairs, k, s);
+    if (rest <= len || k === segs - 1) {
+      const t = len < 1e-9 ? 0 : Math.min(1, rest / len);
+      const a = v[segFrom(pairs, k)], b = v[segTo(v, pairs, k)];
+      return [0, 1, 2].map(ax => (a[ax] + (b[ax] - a[ax]) * t) * s[ax]);
+    }
+    rest -= len;
+  }
+  return scaleVec(v[0], s);
+}
+
+function shapeFraction(closed, i, n) {
+  if (closed) return i / n;
+  return n <= 1 ? 0.5 : i / (n - 1);
+}
+
+function shapeOrient(x, y, z, turn, outward) {
+  const cs = Math.cos(turn), sn = Math.sin(turn);
+  const rx = x * cs + z * sn, rz = -x * sn + z * cs;
+  return [rx, y, rz, (outward && Math.hypot(rx, rz) > 1e-9 ? Math.atan2(rx, rz) : turn) / DEG];
+}
+
+function shapeFlat(px, py, p, turn, level) {
+  const tilt = p.tilt * DEG;
+  return shapeOrient(px, py * Math.sin(tilt), py * Math.cos(tilt), turn, level && Math.abs(p.tilt) <= SHAPE_OUTWARD_TILT);
+}
+
+function shapeCircle(s, y, a) {
+  const dx = Math.cos(a), dz = Math.sin(a);
+  return [-s[0] * dx, y, s[1] * dz, Math.atan2(-dx, dz) / DEG];
+}
+
+function shapePlace(layout, p, index, count, turn) {
+  const n = Math.max(1, count);
+  const i = clamp(index, 0, n - 1);
+  const pos = v => v > 0 ? v : 1;
+  const s = [p.radius * pos(p.width), p.radius * pos(p.height), p.radius];
+  const outline = (verts, closed) => {
+    const pt = shapeWalk(verts, null, closed, shapeFraction(closed, i, n), [s[0], s[1], 0]);
+    return shapeFlat(pt[0], pt[1], p, turn, true);
+  };
+  const solid = key => {
+    const pt = shapeWalk(SHAPE_DATA[key], SHAPE_EDGES[key], true, shapeFraction(true, i, n), s);
+    return shapeOrient(pt[0], pt[1], pt[2], turn, true);
+  };
+  const sides = Math.max(SHAPE_MIN_SIDES, p.sides);
+  switch (layout) {
+    case 'ROW': return [(i - (n - 1) / 2) * p.spacing, 0, 0, 0];
+    case 'RING': return shapeCircle(s, 0, TAU * i / n + turn);
+    case 'WHEEL': { const a = TAU * i / n + turn; return [s[0] * Math.cos(a), s[1] * Math.sin(a), 0, 0]; }
+    case 'HELIX': return shapeCircle(s, (n - 1 - i) * p.spacing, p.helixStep * DEG * i + turn);
+    case 'TORNADO': {
+      const level = n <= 1 ? 1 : (n - 1 - i) / (n - 1);
+      const k = Math.max(TORNADO_MIN_RADIUS, level);
+      return shapeCircle([s[0] * k, s[1] * k, s[2] * k], (n - 1 - i) * p.spacing, p.helixStep * DEG * i + turn);
+    }
+    case 'SPHERE': {
+      const uy = 1 - 2 * (i + 0.5) / n;
+      const ring = Math.sqrt(Math.max(0, 1 - uy * uy));
+      const th = GOLDEN_ANGLE * i + turn;
+      const dx = Math.cos(th) * ring, dz = Math.sin(th) * ring;
+      return [-s[0] * dx, s[1] * uy, s[2] * dz, Math.atan2(-dx, dz) / DEG];
+    }
+    case 'TRIANGLE': return outline(shapePolygon(SHAPE_MIN_SIDES), true);
+    case 'SQUARE': return outline(SHAPE_DATA.SQUARE, true);
+    case 'POLYGON': return outline(shapePolygon(sides), true);
+    case 'STAR': return outline(shapeStar(sides, p.inner > 0 ? p.inner : SHAPE_DEF_INNER), true);
+    case 'HEART': return outline(SHAPE_DATA.HEART, true);
+    case 'INFINITY': return outline(SHAPE_DATA.INFINITY, true);
+    case 'DIAMOND': return outline(SHAPE_DATA.DIAMOND, true);
+    case 'CROSS': return outline(SHAPE_DATA.CROSS, true);
+    case 'SPIRAL': return outline(SHAPE_DATA.SPIRAL, false);
+    case 'ARC': {
+      const deg = p.arc > 0 ? Math.min(p.arc, 360) : SHAPE_DEF_ARC;
+      const span = deg * DEG;
+      const a = deg >= 360 ? TAU * i / n : (n <= 1 ? 0 : -span / 2 + span * i / (n - 1));
+      return shapeFlat(s[0] * Math.sin(a), s[1] * Math.cos(a), p, turn, true);
+    }
+    case 'GRID': {
+      const cols = Math.max(1, p.columns);
+      const rows = Math.ceil(n / cols);
+      const row = Math.floor(i / cols), col = i % cols;
+      const inRow = row === rows - 1 ? n - row * cols : cols;
+      const gap = p.spacing > 0 ? p.spacing : 1;
+      return shapeFlat((col - (inRow - 1) / 2) * gap * pos(p.width), ((rows - 1) / 2 - row) * gap * pos(p.height), p, turn, false);
+    }
+    case 'CUBE': return solid('CUBE');
+    case 'PYRAMID': return solid('PYRAMID');
+    default: return [0, (n - 1 - i) * p.spacing, 0, 0];
+  }
 }
 
 const measureCtx = document.createElement('canvas').getContext('2d');
@@ -1696,7 +1894,7 @@ function sceneQuads(sc, cam, secs, tick) {
       const sig = textSig(chars, l);
       let t = sc.tex[i];
       if (!t || t.sig !== sig) { t = buildTextTex(chars, l); t.sig = sig; sc.tex[i] = t; }
-      const w = t.w * BLOCK_PER_TEXPX * k, hh = t.h * BLOCK_PER_TEXPX * k;
+      const w = t.w * BLOCK_PER_TEXPX * k * lp.sx, hh = t.h * BLOCK_PER_TEXPX * k * lp.sy;
       const q = quadOf(base, M, [-w / 2, hh, 0], [w / 2, hh, 0], [-w / 2, 0, 0]);
       q.tex = t.canvas;
       q.tw = t.w;
@@ -1712,7 +1910,7 @@ function sceneQuads(sc, cam, secs, tick) {
     const e = name ? texNow(name) : null;
     if (type === 'ITEM') {
       const s = k / 2;
-      const q = quadOf(base, M, [-s, s, 0], [s, s, 0], [-s, -s, 0]);
+      const q = quadOf(base, M, [-s * lp.sx, s * lp.sy, 0], [s * lp.sx, s * lp.sy, 0], [-s * lp.sx, -s * lp.sy, 0]);
       q.tex = e ? e.img : null;
       q.tw = e ? e.img.width : 1;
       q.th = e ? e.img.height : 1;
@@ -1725,7 +1923,8 @@ function sceneQuads(sc, cam, secs, tick) {
     }
     const s = k / 2;
     for (const f of CUBE) {
-      const q = quadOf(base, M, f.tl.map(x => x * s), f.tr.map(x => x * s), f.bl.map(x => x * s));
+      const sv = [s * lp.sx, s * lp.sy, s * lp.sz];
+      const q = quadOf(base, M, f.tl.map((x, ax) => x * sv[ax]), f.tr.map((x, ax) => x * sv[ax]), f.bl.map((x, ax) => x * sv[ax]));
       q.tex = e ? e.img : null;
       q.tw = e ? e.img.width : 1;
       q.th = e ? e.img.height : 1;
@@ -1798,6 +1997,99 @@ function drawGround(g, cam, h) {
   }
 }
 
+function overlayRings() {
+  const p = HS().props;
+  const out = [];
+  if (S.tab === 'interaction') {
+    out.push({r: num(p['approach-range']), color: RING_COLORS.approach, label: 'Approach'}, {r: num(p['look-trigger-range']), color: RING_COLORS.look, label: 'Look'});
+  } else if (S.tab === 'reactive') {
+    if (String(p['follow-player']) === 'true') out.push({r: num(p['follow-range']), color: RING_COLORS.follow, label: 'Follow range'}, {r: num(p['follow-distance']), color: RING_COLORS.keep, label: 'Keep distance'});
+    if (num(p['proximity-scale']) > 0) out.push({r: num(p['proximity-range']), color: RING_COLORS.grow, label: 'Grow range'});
+  }
+  return out.filter(x => x.r > 0);
+}
+
+function drawRing(g, cam, ring) {
+  g.strokeStyle = ring.color;
+  g.lineWidth = 1.5;
+  let prev = null;
+  for (let k = 0; k <= RING_SEGMENTS; k++) {
+    const a = TAU * k / RING_SEGMENTS;
+    const pt = [ring.r * Math.cos(a), 0, ring.r * Math.sin(a)];
+    const s = prev ? projectSegment(cam, prev, pt) : null;
+    if (s) {
+      g.beginPath();
+      g.moveTo(s[0].x, s[0].y);
+      g.lineTo(s[1].x, s[1].y);
+      g.stroke();
+    }
+    prev = pt;
+  }
+  const lab = project(cam, [ring.r * Math.cos(Math.PI / 4), 0, ring.r * Math.sin(Math.PI / 4)]);
+  if (!lab) return;
+  g.font = '600 11px ' + FONT_CANVAS;
+  g.textAlign = 'center';
+  g.textBaseline = 'bottom';
+  g.fillStyle = ring.color;
+  g.fillText(ring.label + ' ' + r2(ring.r), lab.x, lab.y - 2);
+}
+
+function holoBounds(h, lines) {
+  const n = lines.length;
+  let ymin = Infinity, ymax = -Infinity, sx = 0, sz = 0;
+  for (let i = 0; i < n; i++) {
+    const lp = lineParams(lines[i].props);
+    const p = holoPlace(h, lp, i, n, [0, 0, 0], 0);
+    ymin = Math.min(ymin, p[1]);
+    ymax = Math.max(ymax, p[1] + LINE_TEXT_H * lp.scale * lp.sy);
+    sx += p[0];
+    sz += p[2];
+  }
+  if (!n) return {cx: 0, cz: 0, ymid: 0};
+  return {cx: sx / n, cz: sz / n, ymid: (ymin + ymax) / 2};
+}
+
+function hitboxCorners(secs) {
+  const hs = HS();
+  if (S.tab !== 'interaction' || String(hs.props.clickable) !== 'true') return null;
+  const h = holoParams();
+  const b = holoBounds(h, hs.lines);
+  const c = holoCenter(h, secs);
+  const w = Math.max(0.1, num(hs.props['hitbox-width'])) / 2;
+  const ht = Math.max(0.1, num(hs.props['hitbox-height'])) / 2;
+  const mid = [c[0] + b.cx, c[1] + b.ymid + num(hs.props['hitbox-offset-y']), c[2] + b.cz];
+  return Array.from({length: 8}, (_, k) => [mid[0] + ((k & 1) ? w : -w), mid[1] + ((k & 2) ? ht : -ht), mid[2] + ((k & 4) ? w : -w)]);
+}
+
+function drawHitbox(g, cam, corners) {
+  if (!corners) return;
+  const faces = [];
+  for (const f of BOX_FACES) {
+    const pts = f.map(k => project(cam, corners[k]));
+    if (pts.some(x => !x)) continue;
+    const mid = f.reduce((a, k) => vAdd(a, corners[k]), [0, 0, 0]).map(x => x / f.length);
+    faces.push({pts, depth: vDot(vSub(mid, cam.pos), cam.f)});
+  }
+  faces.sort((a, b) => b.depth - a.depth);
+  g.fillStyle = HITBOX_FILL;
+  for (const f of faces) {
+    g.beginPath();
+    f.pts.forEach((p, i) => i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y));
+    g.closePath();
+    g.fill();
+  }
+  g.strokeStyle = HITBOX_EDGE;
+  g.lineWidth = 1.5;
+  for (const [a, b] of BOX_EDGES) {
+    const s = projectSegment(cam, corners[a], corners[b]);
+    if (!s) continue;
+    g.beginPath();
+    g.moveTo(s[0].x, s[0].y);
+    g.lineTo(s[1].x, s[1].y);
+    g.stroke();
+  }
+}
+
 function holoScene() {
   const node = el('div', {class: 'scene3'});
   const cvs = el('canvas');
@@ -1825,6 +2117,7 @@ function holoScene() {
     }
     if (!Number.isFinite(ymin)) { ymin = 0; ymax = 0.6; }
     if (h.attach != null) ymin = Math.min(ymin, -(NPC_EYE + h.attach));
+    for (const ring of overlayRings()) r = Math.max(r, Math.min(ring.r, RING_FIT_MAX));
     sc.target = [0, (ymin + ymax) / 2, 0];
     sc.dist = clamp(Math.max(r * 2.3, (ymax - ymin) * 1.8, 3.2), SCENE_MIN_DIST, SCENE_MAX_DIST);
     sc.fitted = true;
@@ -1851,7 +2144,9 @@ function holoScene() {
     const secs = (performance.now() - T0) / 1000;
     const tick = Math.floor(secs * 20);
     drawGround(g, cam, holoParams());
+    for (const ring of overlayRings()) drawRing(g, cam, ring);
     for (const q of sceneQuads(sc, cam, secs, tick)) drawQuad(g, cam, q, sc.dpr);
+    drawHitbox(g, cam, hitboxCorners(secs));
     g.setTransform(sc.dpr, 0, 0, sc.dpr, 0, 0);
     g.font = '12px ' + FONT_CANVAS;
     g.textAlign = 'left';
@@ -3825,41 +4120,37 @@ function bodyPose() {
   return root;
 }
 
-function shapePoints(kind) {
-  const n = 8, out = [];
-  for (let i = 0; i < n; i++) {
-    const u = i / (n - 1) - 0.5;
-    if (kind === 'RING') { const a = i / n * Math.PI * 2; out.push([Math.cos(a), 0, Math.sin(a)]); }
-    else if (kind === 'HELIX') { const a = i * 0.9; out.push([Math.cos(a) * 0.7, -u * 1.6, Math.sin(a) * 0.7]); }
-    else if (kind === 'TORNADO') { const a = i * 0.9, r = 0.25 + 0.55 * (0.5 - u); out.push([Math.cos(a) * r, -u * 1.6, Math.sin(a) * r]); }
-    else if (kind === 'WHEEL') { const a = i / n * Math.PI * 2; out.push([Math.cos(a), Math.sin(a), 0]); }
-    else if (kind === 'SPHERE') { const y = 1 - (i + 0.5) / n * 2, r = Math.sqrt(1 - y * y), a = i * 2.399963; out.push([Math.cos(a) * r, y, Math.sin(a) * r]); }
-    else if (kind === 'ROW') out.push([u * 1.8, 0, 0]);
-    else out.push([0, -u * 1.6, 0]);
-  }
-  return out;
-}
-
 const shapeCvs = [];
 function shapeCanvas(kind) {
   const c = el('canvas', {width: SHAPE_PX, height: SHAPE_PX, class: 'shape-cv'});
-  shapeCvs.push({c, pts: shapePoints(kind), kind});
+  shapeCvs.push({c, kind});
   return c;
 }
 
 function paintShape(s, t) {
   const g = s.c.getContext('2d'), h = SHAPE_PX / 2;
   g.clearRect(0, 0, SHAPE_PX, SHAPE_PX);
+  const p = shapeParamsOf(S.props, 1, SHAPE_TILE_SPACING);
+  const n = s.kind === 'STACK' || s.kind === 'ROW' ? 6 : SHAPE_TILE_POINTS;
+  const raw = Array.from({length: n}, (_, i) => shapePlace(s.kind, p, i, n, 0));
+  let ymin = Infinity, ymax = -Infinity, ext = 0.01;
+  for (const q of raw) {
+    ymin = Math.min(ymin, q[1]);
+    ymax = Math.max(ymax, q[1]);
+    ext = Math.max(ext, Math.hypot(q[0], q[2]));
+  }
+  ext = Math.max(ext, (ymax - ymin) / 2);
+  const ym = (ymin + ymax) / 2;
+  const k = SHAPE_TILE_FILL * h / ext;
   const cs = Math.cos(t), sn = Math.sin(t);
-  const pts = s.pts.map((p, i) => {
-    const x = p[0] * cs + p[2] * sn, z = -p[0] * sn + p[2] * cs;
-    const bob = s.kind === 'STACK' ? Math.sin(t * 2 + i) * 1.5 : 0;
-    return {x: h + x * h * 0.7, y: h - p[1] * h * 0.62 + z * h * 0.22 + bob, d: clamp((z + 1) / 2, 0, 1)};
+  const pts = raw.map(q => {
+    const x = q[0] * cs + q[2] * sn, z = -q[0] * sn + q[2] * cs;
+    return {x: h + x * k, y: h - (q[1] - ym) * k * Math.cos(SHAPE_TILE_ELEV) + z * k * Math.sin(SHAPE_TILE_ELEV), d: clamp((z / ext + 1) / 2, 0, 1)};
   });
   pts.sort((a, b) => a.d - b.d);
-  for (const p of pts) {
-    g.fillStyle = mix('#3b62b8', '#dbe8ff', p.d);
-    g.fillRect(Math.round(p.x - 5), Math.round(p.y - 2), 10, 4);
+  for (const q of pts) {
+    g.fillStyle = mix('#3b62b8', '#dbe8ff', q.d);
+    g.fillRect(Math.round(q.x - 5), Math.round(q.y - 2), 10, 4);
   }
 }
 
@@ -3979,27 +4270,52 @@ function applyPreset(d) {
 }
 function pickShape(k) {
   setProp('layout', k);
-  if (RADIUS_SHAPES.has(k) && !nv('layout-radius')) S.props['layout-radius'] = '2';
+  if (RADIUS_SHAPES.has(k) && !nv('layout-radius')) S.props['layout-radius'] = SHAPE_DEF_RADIUS;
+  if (FLAT_SHAPES.has(k) && !nv('shape-tilt')) S.props['shape-tilt'] = SHAPE_FLAT_TILT;
   renderBody();
 }
 
 function shapeCards() {
-  const cur = S.props.layout || 'STACK';
-  return el('div', {class: 'cards'}, SHAPES.map(k => el('button', {type: 'button', class: 'pcard' + (cur === k ? ' on' : ''), onclick: () => pickShape(k)}, shapeCanvas(k), el('span', {text: SHAPE_LABEL[k]}))));
+  const cur = String(S.props.layout || 'STACK').toUpperCase();
+  const root = el('div');
+  for (const [title, ids] of SHAPE_GROUPS) {
+    root.append(el('div', {class: 'sub', text: title}), el('div', {class: 'cards'}, ids.map(k => el('button', {type: 'button', class: 'pcard' + (cur === k ? ' on' : ''), title: SHAPE_LABEL[k], onclick: () => pickShape(k)}, shapeCanvas(k), el('span', {text: SHAPE_LABEL[k]})))));
+  }
+  return root;
+}
+
+function shapeControlIds(cur) {
+  const ids = [];
+  if (SIZED_SHAPES.has(cur)) {
+    if (cur !== 'GRID') ids.push('layout-radius');
+    ids.push('shape-width', 'shape-height');
+  }
+  if (FLAT_SHAPES.has(cur)) ids.push('shape-tilt');
+  if (cur === 'POLYGON' || cur === 'STAR') ids.push('shape-sides');
+  if (cur === 'STAR') ids.push('shape-inner');
+  if (cur === 'GRID') ids.push('grid-columns');
+  if (cur === 'ARC') ids.push('arc-angle');
+  if (SPACED_SHAPES.has(cur)) ids.push('line-spacing');
+  if (TURN_SHAPES.has(cur)) ids.push('helix-step');
+  if (cur !== 'STACK') ids.push('layout-speed');
+  return ids;
 }
 
 function shapeCard() {
-  const cur = S.props.layout || 'STACK';
+  const cur = String(S.props.layout || 'STACK').toUpperCase();
   const body = el('div', {class: 'body'}, shapeCards());
-  const ids = [];
-  if (cur !== 'STACK') ids.push('layout-radius', 'layout-speed');
-  if (TURN_SHAPES.has(cur)) ids.push('helix-step');
-  if (ids.length) {
-    const grid = el('div', {class: 'grid', style: 'margin-top:10px'});
-    for (const id of ids) { const c = pc(id); if (c) grid.append(c); }
-    body.append(grid);
-  }
+  const grid = el('div', {class: 'grid', style: 'margin-top:10px'});
+  for (const id of shapeControlIds(cur)) { const c = pc(id); if (c) grid.append(c); }
+  if (grid.children.length) body.append(el('div', {class: 'sub', text: SHAPE_LABEL[cur] + ' size and motion'}), grid);
   return el('section', {class: 'card'}, el('h2', {text: 'Shape'}), body);
+}
+
+function bodyShape() {
+  const root = el('div');
+  root.append(pvCard(), shapeCard());
+  const wave = groupCard('Line wave', ['wave-height', 'wave-speed'], true);
+  if (wave) root.append(wave);
+  return root;
 }
 
 function motionCard(m) {
@@ -4021,7 +4337,6 @@ function motionCard(m) {
 
 function bodyMoveHolo() {
   const root = el('div');
-  root.append(shapeCard());
   root.append(el('section', {class: 'card'}, el('h2', {text: 'Motion'}), el('div', {class: 'body'}, MOTIONS.map(motionCard))));
   root.append(pathCard(true));
   return root;
@@ -4229,29 +4544,40 @@ const EV_ICO = {
   usestop: 'M6 6h12v12H6z',
   interval: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 2',
   spawn: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2',
+  signal: 'M12 12h.01M8.5 8.5a5 5 0 000 7M15.5 8.5a5 5 0 010 7M5.6 5.6a9 9 0 000 12.8M18.4 5.6a9 9 0 010 12.8',
   note: 'M5 5h14v10H9l-4 4z',
   raw: 'M8 7l-5 5 5 5M16 7l5 5-5 5'
 };
+const K_NPC = ['npc'];
+const K_HOLO = ['hologram'];
+const K_BOTH = ['npc', 'hologram'];
 const EVENTS = [
-  {id: 'click', label: 'Click', scope: 'player', hint: 'A player clicks the NPC (right or left).'},
-  {id: 'rightclick', label: 'Right click', scope: 'player', hint: 'A player right-clicks the NPC.'},
-  {id: 'leftclick', label: 'Left click', scope: 'player', hint: 'A player left-clicks the NPC.'},
-  {id: 'look', label: 'Look at', scope: 'player', hint: 'A player starts looking at the NPC. Re-arms after they look away.'},
-  {id: 'lookaway', label: 'Look away', scope: 'player', hint: 'A player stops looking at the NPC.'},
-  {id: 'approach', label: 'Approach', scope: 'player', hint: 'A player walks inside the approach range.'},
-  {id: 'leave', label: 'Leave', scope: 'player', hint: 'A player walks back outside the approach range.'},
-  {id: 'holding', label: 'Holding item', scope: 'npc', arg: 'material', every: true, hint: 'Runs repeatedly while the NPC holds this item in its main hand.'},
-  {id: 'frame', label: 'Animation frame', scope: 'npc', arg: 'int', hint: 'Runs when frame N of the animation preset starts.'},
-  {id: 'swing', label: 'Swing', scope: 'npc', hint: 'Any arm swing, from the swing interval or a gesture.'},
-  {id: 'use', label: 'Starts using item', scope: 'npc', hint: 'The NPC starts using its held item (gesture hand use turns on).'},
-  {id: 'usestop', label: 'Stops using item', scope: 'npc', hint: 'The NPC stops using its held item.'},
-  {id: 'interval', label: 'Every N ticks', scope: 'npc', arg: 'int', hint: 'Runs every N ticks (20 ticks = 1 second).'},
-  {id: 'spawn', label: 'Becomes visible', scope: 'player', hint: 'The NPC becomes visible to a player.'}
+  {id: 'click', label: 'Click', scope: 'player', kinds: K_BOTH, hint: 'A player clicks the NPC (right or left).'},
+  {id: 'rightclick', label: 'Right click', scope: 'player', kinds: K_BOTH, hint: 'A player right-clicks the NPC.'},
+  {id: 'leftclick', label: 'Left click', scope: 'player', kinds: K_BOTH, hint: 'A player left-clicks the NPC.'},
+  {id: 'look', label: 'Look at', scope: 'player', kinds: K_BOTH, hint: 'A player starts looking at the NPC. Re-arms after they look away.'},
+  {id: 'lookaway', label: 'Look away', scope: 'player', kinds: K_BOTH, hint: 'A player stops looking at the NPC.'},
+  {id: 'approach', label: 'Approach', scope: 'player', kinds: K_BOTH, hint: 'A player walks inside the approach range.'},
+  {id: 'leave', label: 'Leave', scope: 'player', kinds: K_BOTH, hint: 'A player walks back outside the approach range.'},
+  {id: 'signal', label: 'Signal received', scope: 'any', kinds: K_BOTH, arg: 'signal', hint: 'Another rule or object sent this signal. Console and player commands only work when a player started the chain.'},
+  {id: 'holding', label: 'Holding item', scope: 'npc', kinds: K_NPC, arg: 'material', every: true, hint: 'Runs repeatedly while the NPC holds this item in its main hand.'},
+  {id: 'frame', label: 'Animation frame', scope: 'npc', kinds: K_NPC, arg: 'int', hint: 'Runs when frame N of the animation preset starts.'},
+  {id: 'swing', label: 'Swing', scope: 'npc', kinds: K_NPC, hint: 'Any arm swing, from the swing interval or a gesture.'},
+  {id: 'use', label: 'Starts using item', scope: 'npc', kinds: K_NPC, hint: 'The NPC starts using its held item (gesture hand use turns on).'},
+  {id: 'usestop', label: 'Stops using item', scope: 'npc', kinds: K_NPC, hint: 'The NPC stops using its held item.'},
+  {id: 'interval', label: 'Every N ticks', scope: 'npc', kinds: K_BOTH, arg: 'int', hint: 'Runs every N ticks (20 ticks = 1 second).'},
+  {id: 'spawn', label: 'Becomes visible', scope: 'player', kinds: K_BOTH, hint: 'The NPC becomes visible to a player.'}
 ];
 const EV = Object.fromEntries(EVENTS.map(e => [e.id, e]));
-const DEF_ARG = {holding: 'diamond_sword', frame: '1', interval: '20'};
-const ACTIONS = [['particle', 'Particle'], ['sound', 'Sound'], ['message', 'Message'], ['actionbar', 'Action bar'], ['title', 'Title and subtitle'], ['console', 'Console command'], ['player', 'Player command'], ['swing', 'Swing arm'], ['glow', 'Glow'], ['animate', 'Animation'], ['item', 'Hold item'], ['look', 'Look at player'], ['hurt', 'Hurt']];
+const DEF_ARG = {holding: 'diamond_sword', frame: '1', interval: '20', signal: 'my_signal'};
+const ACTIONS = [
+  ['particle', 'Particle', K_BOTH], ['sound', 'Sound', K_BOTH], ['message', 'Message', K_BOTH], ['actionbar', 'Action bar', K_BOTH], ['title', 'Title and subtitle', K_BOTH], ['console', 'Console command', K_BOTH], ['player', 'Player command', K_BOTH],
+  ['signal', 'Send a signal', K_BOTH], ['delay', 'Wait (delay)', K_BOTH],
+  ['swing', 'Swing arm', K_NPC], ['glow', 'Glow', K_BOTH], ['animate', 'Animation on/off', K_NPC], ['animation', 'Play animation preset', K_NPC], ['item', 'Hold item', K_NPC], ['look', 'Look at player', K_NPC], ['hurt', 'Hurt', K_NPC],
+  ['text', 'Change line text', K_HOLO], ['layout', 'Change shape', K_HOLO], ['spin', 'Spin burst', K_HOLO], ['pulse', 'Pulse', K_HOLO], ['scale', 'Scale', K_HOLO], ['move', 'Move', K_HOLO], ['hide', 'Hide', K_HOLO], ['show', 'Show', K_HOLO], ['effect', 'Change line effect', K_HOLO]
+];
 const ACT_IDS = new Set(ACTIONS.map(a => a[0]));
+const HOLO_VERBS = new Set(['text', 'layout', 'spin', 'pulse', 'scale', 'move', 'hide', 'show', 'effect']);
 const ACT_MODES = {swing: ['main', 'off'], glow: ['on', 'off', 'toggle'], animate: ['on', 'off', 'restart']};
 const ACT_MODE_LABELS = {
   swing: [['main', 'Main hand'], ['off', 'Off hand']],
@@ -4259,36 +4585,114 @@ const ACT_MODE_LABELS = {
   animate: [['on', 'On'], ['off', 'Off'], ['restart', 'Restart']]
 };
 const PLAYER_ONLY = new Set(['console', 'player']);
-const ANCHORS = ['head', 'hand', 'offhand', 'feet', 'body', 'above', 'around'];
-const ANCHOR_LABEL = {head: 'Head', hand: 'Main hand', offhand: 'Off hand', feet: 'Feet', body: 'Body', above: 'Above nameplate', around: 'Around body'};
+const ANCHORS_NPC = ['head', 'hand', 'offhand', 'feet', 'body', 'above', 'around'];
+const ANCHORS_HOLO = ['center', 'top', 'bottom'];
+const ANCHOR_ALL = new Set(ANCHORS_NPC.concat(ANCHORS_HOLO));
+const ANCHOR_LABEL = {head: 'Head', hand: 'Main hand', offhand: 'Off hand', feet: 'Feet', body: 'Body', above: 'Above nameplate', around: 'Around body', center: 'Centre', top: 'Top', bottom: 'Bottom'};
+const LINE_ANCHOR = 'line';
+const ANCHOR_LINE_RE = /^line:(\d+)$/i;
+const TARGET_MODES = [['anchor', 'This object'], ['player', 'The player'], ['npc', 'An NPC'], ['holo', 'A hologram'], ['rel', 'Relative offset (~)'], ['abs', 'World coordinates']];
+const REF_RE = /^(npc|holo):([^:\s]+)(?::(\S+))?$/i;
+const REL_RE = /^~(-?\d*\.?\d*),~(-?\d*\.?\d*),~(-?\d*\.?\d*)$/;
+const ABS_RE = /^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/;
+const VEC_RE = /^(-?\d*\.?\d+),(-?\d*\.?\d+),(-?\d*\.?\d+)$/;
+const WORD_RE = /^[A-Za-z_]+$/;
+const LINE_CLAUSES = new Set(['at', 'to', 'offset']);
 const DATA_PARTICLES = ['DUST', 'DUST_TRANSITION', 'ITEM', 'BLOCK'];
 const DATA_LABEL = {DUST: 'Dust (color)', DUST_TRANSITION: 'Dust transition (2 colors)', ITEM: 'Item crumbs', BLOCK: 'Block crumbs'};
 const PARTICLES = ['HEART', 'FLAME', 'SOUL_FIRE_FLAME', 'CRIT', 'ENCHANTED_HIT', 'HAPPY_VILLAGER', 'ANGRY_VILLAGER', 'NOTE', 'TOTEM_OF_UNDYING', 'END_ROD', 'FIREWORK', 'ELECTRIC_SPARK', 'GLOW', 'WAX_ON', 'SNOWFLAKE', 'SOUL', 'CLOUD', 'SMOKE', 'LARGE_SMOKE', 'POOF', 'EXPLOSION', 'SWEEP_ATTACK', 'DAMAGE_INDICATOR', 'ENCHANT', 'PORTAL', 'REVERSE_PORTAL', 'WITCH', 'SCULK_SOUL', 'CHERRY_LEAVES', 'SPLASH', 'DRIPPING_WATER', 'DRIPPING_LAVA', 'LAVA', 'FALLING_NECTAR', 'SPIT', 'SQUID_INK', 'GLOW_SQUID_INK', 'COMPOSTER', 'CAMPFIRE_COSY_SMOKE', 'WHITE_ASH', 'ASH', 'NAUTILUS'];
 const KNOWN_PARTICLES = new Set(DATA_PARTICLES.concat(PARTICLES));
 const OTHER = '__other';
 const SOUNDS = ['entity.player.levelup', 'entity.experience_orb.pickup', 'entity.villager.yes', 'entity.villager.no', 'entity.villager.celebrate', 'entity.villager.ambient', 'entity.arrow.hit_player', 'block.note_block.pling', 'block.note_block.bell', 'block.note_block.chime', 'block.note_block.harp', 'block.anvil.use', 'block.beacon.activate', 'block.beacon.power_select', 'block.enchantment_table.use', 'block.amethyst_block.chime', 'block.bell.use', 'block.respawn_anchor.charge', 'entity.firework_rocket.blast', 'entity.firework_rocket.twinkle', 'item.totem.use', 'entity.ender_dragon.growl', 'entity.wither.spawn', 'ui.toast.challenge_complete', 'entity.player.attack.sweep', 'entity.player.attack.crit', 'entity.cat.purr', 'entity.cat.ambient', 'entity.wolf.howl', 'entity.generic.explode', 'entity.lightning_bolt.thunder', 'block.portal.ambient', 'entity.evoker.cast_spell', 'entity.zombie_villager.cure', 'entity.allay.ambient_with_item', 'item.trident.thunder'];
-const PH_CHIPS = ['{player}', '{npc}', '{uuid}'];
+const PH_CHIPS_NPC = ['{player}', '{npc}', '{uuid}'];
+const PH_CHIPS_HOLO = ['{player}', '{uuid}'];
 const MAT_ANY = /^[a-z0-9_:.\-]+$/i;
 const HEX6 = /^#[0-9a-f]{6}$/i;
 const UINT = /^\d+$/;
 const isNum = v => v !== '' && Number.isFinite(Number(v));
+const CLICK_EVENTS = new Set(['click', 'rightclick', 'leftclick']);
+const REACT_GROW_DEFAULT = '0.5';
 const RECIPES = [
-  {label: 'Look: hearts and sound', hint: 'Hearts pop up when a player looks', icon: 'look', text: 'look cooldown 100 -> particle HEART 8 head 0.4 0.02; sound entity.villager.yes 1 1.2'},
-  {label: 'Approach: greeting', hint: 'Message when a player walks up', icon: 'approach', text: 'approach cooldown 200 -> message Welcome, {player}!; sound entity.experience_orb.pickup 0.8 1.2'},
-  {label: 'Holding sword: flame trail', hint: 'Flames from the hand while armed', icon: 'holding', text: 'holding diamond_sword every 5 -> particle FLAME 3 hand 0.1 0.01'},
-  {label: 'Click: totem burst', hint: 'Totem particles and sound on click', icon: 'click', text: 'click cooldown 40 -> particle TOTEM_OF_UNDYING 30 body 0.6 0.4; sound item.totem.use 0.6 1'},
-  {label: 'Frame 2: crit sparks', hint: 'Sparks when animation frame 2 starts', icon: 'frame', text: 'frame 2 -> particle CRIT 10 hand 0.2 0.3'},
-  {label: 'Every 5s: glow pulse', hint: 'Toggle glow every 100 ticks', icon: 'interval', text: 'interval 100 -> glow toggle'}
+  {label: 'Look: hearts and sound', hint: 'Hearts pop up when a player looks', icon: 'look', kinds: K_NPC, text: 'look cooldown 100 -> particle HEART 8 head 0.4 0.02; sound entity.villager.yes 1 1.2'},
+  {label: 'Approach: greeting', hint: 'Message when a player walks up', icon: 'approach', kinds: K_NPC, text: 'approach cooldown 200 -> message Welcome, {player}!; sound entity.experience_orb.pickup 0.8 1.2'},
+  {label: 'Holding sword: flame trail', hint: 'Flames from the hand while armed', icon: 'holding', kinds: K_NPC, text: 'holding diamond_sword every 5 -> particle FLAME 3 hand 0.1 0.01'},
+  {label: 'Click: totem burst', hint: 'Totem particles and sound on click', icon: 'click', kinds: K_NPC, text: 'click cooldown 40 -> particle TOTEM_OF_UNDYING 30 body 0.6 0.4; sound item.totem.use 0.6 1'},
+  {label: 'Frame 2: crit sparks', hint: 'Sparks when animation frame 2 starts', icon: 'frame', kinds: K_NPC, text: 'frame 2 -> particle CRIT 10 hand 0.2 0.3'},
+  {label: 'Every 5s: glow pulse', hint: 'Toggle glow every 100 ticks', icon: 'interval', kinds: K_NPC, text: 'interval 100 -> glow toggle'},
+  {label: 'Click: sparkle', hint: 'Sparks and a chime on click', icon: 'click', kinds: K_HOLO, text: 'click cooldown 20 -> particle END_ROD 20 center 0.6 0.05; sound entity.experience_orb.pickup 1 1.2'},
+  {label: 'Click: spin burst', hint: 'One fast spin on click', icon: 'click', kinds: K_HOLO, text: 'click cooldown 40 -> spin 360 20; sound entity.player.levelup 0.6 1.4'},
+  {label: 'Approach: grow, leave: shrink', hint: 'Scales up while a player is close', icon: 'approach', kinds: K_HOLO, text: 'approach -> scale 1.3 10\nleave -> scale 1 10'},
+  {label: 'Look: glow while watched', hint: 'Glows only while someone looks', icon: 'look', kinds: K_HOLO, text: 'look -> glow on\nlookaway -> glow off'},
+  {label: 'Click: staged text', hint: 'Change line 1, wait, change it again', icon: 'click', kinds: K_HOLO, text: 'click cooldown 100 -> text 1 &aOpening...; delay 40; text 1 &aOpened!'},
+  {label: 'Click: send a signal', hint: 'Other objects can react to it', icon: 'signal', kinds: K_BOTH, text: 'click cooldown 20 -> signal button_pressed; sound block.note_block.pling 1 1.4'},
+  {label: 'Hear a signal: wave', hint: 'Wave and greet when the signal arrives', icon: 'signal', kinds: K_NPC, text: 'signal button_pressed -> animation WAVE; message &7Someone pressed the button!'},
+  {label: 'Hear a signal: pulse', hint: 'Glow and pulse when the signal arrives', icon: 'signal', kinds: K_HOLO, text: 'signal button_pressed -> glow toggle; pulse 0.3 10'},
+  {label: 'Beam to another object', hint: 'A line of particles to a neighbour', icon: 'interval', kinds: K_BOTH, text: () => beamRecipe()}
 ];
 const NP_TRIES = 8;
 const NP_RETRY_MS = 500;
 
 function pretty(n) { return n.charAt(0) + n.slice(1).toLowerCase().replace(/_/g, ' '); }
+function obj() { return S.cur && S.cur.kind === 'hologram' ? 'hologram' : 'NPC'; }
+function eventList() { return EVENTS.filter(e => e.kinds.includes(S.cur.kind)); }
+function actionList() { return ACTIONS.filter(a => a[2].includes(S.cur.kind)); }
+function ownAnchors() { return S.cur.kind === 'hologram' ? ANCHORS_HOLO : ANCHORS_NPC; }
+function hintOf(e) { return e.hint.replace(/\bthe NPC\b/g, 'the ' + obj()); }
+function holoProp(id) { return S.schema.kinds.hologram.sections.flatMap(s => s.props).find(p => p.id === id); }
+function words(s) { return s.split(/\s+/).filter(Boolean); }
+
+function beamRecipe() {
+  const other = S.objects.find(o => !isSel(o));
+  if (!other) return '';
+  const own = S.cur.kind === 'hologram' ? 'center' : 'hand';
+  const ref = other.kind === 'npc' ? 'npc:' + other.id + ':head' : 'holo:' + other.id + ':center';
+  return 'interval 10 -> particle END_ROD 16 ' + own + ' 0 0 to ' + ref;
+}
+
+function firstObjId(mode) {
+  const kind = mode === 'holo' ? 'hologram' : 'npc';
+  const list = S.objects.filter(o => o.kind === kind);
+  const other = list.find(o => !isSel(o));
+  return other ? other.id : list.length ? list[0].id : '';
+}
+
+function newTarget(mode) {
+  return {mode, anchor: S.cur.kind === 'hologram' ? 'center' : 'head', id: firstObjId(mode), oanchor: '', x: '0', y: '0', z: '0'};
+}
+
+function isAnchorName(v) {
+  const l = v.toLowerCase();
+  return ANCHOR_ALL.has(l) || ANCHOR_LINE_RE.test(l);
+}
+
+function parseTarget(v) {
+  const l = v.toLowerCase();
+  if (isAnchorName(v)) return Object.assign(newTarget('anchor'), {anchor: l});
+  if (l === 'player') return newTarget('player');
+  let m = REF_RE.exec(v);
+  if (m) return Object.assign(newTarget(m[1].toLowerCase()), {id: m[2], oanchor: (m[3] || '').toLowerCase()});
+  m = REL_RE.exec(v);
+  if (m) return Object.assign(newTarget('rel'), {x: m[1], y: m[2], z: m[3]});
+  m = ABS_RE.exec(v);
+  if (m) return Object.assign(newTarget('abs'), {x: m[1], y: m[2], z: m[3]});
+  return null;
+}
+
+function targetText(t) {
+  switch (t.mode) {
+    case 'anchor': return t.anchor;
+    case 'player': return 'player';
+    case 'npc':
+    case 'holo': return t.mode + ':' + t.id + (t.oanchor ? ':' + t.oanchor : '');
+    case 'rel': return '~' + t.x + ',~' + t.y + ',~' + t.z;
+    default: return t.x + ',' + t.y + ',' + t.z;
+  }
+}
 
 function newAction(t) {
   const a = {t, src: null};
   switch (t) {
-    case 'particle': return Object.assign(a, {everyone: false, custom: false, ptype: 'HEART', c1: '#FF5555', c2: '#FFFFFF', size: '1', mat: 'diamond', count: '8', anchor: 'head', spread: '0.3', speed: '0.05'});
+    case 'particle': return Object.assign(a, {everyone: false, custom: false, ptype: 'HEART', c1: '#FF5555', c2: '#FFFFFF', size: '1', mat: 'diamond', count: '8', anchor: ownAnchors()[0], spread: '0.3', speed: '0.05', at: null, to: null, off: {x: '0', y: '0', z: '0'}});
     case 'sound': return Object.assign(a, {everyone: false, key: 'entity.player.levelup', vol: '1', pitch: '1'});
     case 'message': return Object.assign(a, {text: 'Hello {player}!'});
     case 'actionbar': return Object.assign(a, {text: 'Hello {player}!'});
@@ -4299,6 +4703,17 @@ function newAction(t) {
     case 'glow': return Object.assign(a, {mode: 'toggle'});
     case 'animate': return Object.assign(a, {mode: 'restart'});
     case 'item': return Object.assign(a, {mat: ''});
+    case 'signal': return Object.assign(a, {name: 'my_signal'});
+    case 'delay': return Object.assign(a, {ticks: '20'});
+    case 'animation': return Object.assign(a, {preset: 'WAVE'});
+    case 'text': return Object.assign(a, {line: '1', text: 'Clicked!'});
+    case 'layout': return Object.assign(a, {layout: 'RING'});
+    case 'spin': return Object.assign(a, {deg: '180', ticks: '40'});
+    case 'pulse': return Object.assign(a, {amount: PULSE_DEFAULT, ticks: '10'});
+    case 'scale': return Object.assign(a, {factor: '1.3', ticks: '10'});
+    case 'move': return Object.assign(a, {dx: '0', dy: '0.5', dz: '0', ticks: '10'});
+    case 'hide': return Object.assign(a, {ticks: ''});
+    case 'effect': return Object.assign(a, {line: '1', effect: 'RAINBOW'});
     default: return a;
   }
 }
@@ -4310,10 +4725,21 @@ function ptypeText(a) {
   return a.ptype;
 }
 
+function particleText(a) {
+  const parts = [ptypeText(a), a.count, a.anchor, a.spread, a.speed];
+  if (a.at) parts.push('at', targetText(a.at));
+  if (a.to) parts.push('to', targetText(a.to));
+  const o = a.off;
+  if (o && (num(o.x) || num(o.y) || num(o.z))) parts.push('offset', o.x + ',' + o.y + ',' + o.z);
+  return 'particle' + (a.everyone ? '!' : '') + ' ' + parts.join(' ');
+}
+
+function withTicks(head, ticks) { return ticks !== '' ? head + ' ' + ticks : head; }
+
 function actText(a) {
   if (a.src != null) return a.src;
   switch (a.t) {
-    case 'particle': return 'particle' + (a.everyone ? '!' : '') + ' ' + [ptypeText(a), a.count, a.anchor, a.spread, a.speed].join(' ');
+    case 'particle': return particleText(a);
     case 'sound': return 'sound' + (a.everyone ? '!' : '') + ' ' + [a.key, a.vol, a.pitch].join(' ');
     case 'message':
     case 'actionbar':
@@ -4324,13 +4750,32 @@ function actText(a) {
     case 'glow':
     case 'animate': return a.t + ' ' + a.mode;
     case 'item': return 'item ' + (a.mat || 'none');
+    case 'signal': return 'signal ' + a.name;
+    case 'delay': return 'delay ' + a.ticks;
+    case 'animation': return 'animation ' + a.preset;
+    case 'text': return 'text ' + a.line + ' ' + a.text;
+    case 'layout': return 'layout ' + a.layout;
+    case 'spin': return withTicks('spin ' + a.deg, a.ticks);
+    case 'pulse': return a.amount === '' && a.ticks === '' ? 'pulse' : withTicks('pulse ' + (a.amount === '' ? PULSE_DEFAULT : a.amount), a.ticks);
+    case 'scale': return withTicks('scale ' + a.factor, a.ticks);
+    case 'move': return withTicks('move ' + [a.dx, a.dy, a.dz].join(','), a.ticks);
+    case 'hide': return withTicks('hide', a.ticks);
+    case 'effect': return 'effect ' + a.line + ' ' + a.effect;
     default: return a.t;
   }
 }
 
+function parseOffset(v) {
+  const m = VEC_RE.exec(v);
+  return m ? {x: m[1], y: m[2], z: m[3]} : null;
+}
+
 function parseParticle(a, rest, bang) {
-  const p = rest.split(/\s+/).filter(Boolean);
-  if (!p.length || p.length > 5) return null;
+  const tokens = words(rest);
+  if (!tokens.length) return null;
+  const cut = tokens.findIndex((t, i) => i > 0 && LINE_CLAUSES.has(t.toLowerCase()));
+  const p = cut < 0 ? tokens : tokens.slice(0, cut);
+  if (p.length > 5) return null;
   const parts = p[0].split(':');
   const base = parts[0].toUpperCase();
   if (!/^[A-Z0-9_]+$/.test(base)) return null;
@@ -4352,7 +4797,7 @@ function parseParticle(a, rest, bang) {
     a.count = p[1];
   }
   if (p[2] != null) {
-    if (!ANCHORS.includes(p[2].toLowerCase())) return null;
+    if (!isAnchorName(p[2])) return null;
     a.anchor = p[2].toLowerCase();
   }
   if (p[3] != null) {
@@ -4363,9 +4808,76 @@ function parseParticle(a, rest, bang) {
     if (!isNum(p[4])) return null;
     a.speed = p[4];
   }
+  if (cut >= 0 && !parseClauses(a, tokens, cut)) return null;
   a.ptype = base;
   a.everyone = bang;
   return a;
+}
+
+function parseClauses(a, tokens, from) {
+  const seen = new Set();
+  for (let k = from; k < tokens.length; k += 2) {
+    const key = tokens[k].toLowerCase();
+    const v = tokens[k + 1];
+    if (!LINE_CLAUSES.has(key) || v == null || seen.has(key)) return false;
+    seen.add(key);
+    if (key === 'offset') {
+      const o = parseOffset(v);
+      if (!o) return false;
+      a.off = o;
+    } else {
+      const t = parseTarget(v);
+      if (!t) return false;
+      a[key] = t;
+    }
+  }
+  return true;
+}
+
+function parseHoloVerb(name, a, rest, raw) {
+  const p = words(rest);
+  switch (name) {
+    case 'text': {
+      const m = /^(\d+)\s+([\s\S]*)$/.exec(rest);
+      if (!m || Number(m[1]) < 1) return raw;
+      a.line = m[1];
+      a.text = m[2];
+      return a;
+    }
+    case 'layout':
+      if (!WORD_RE.test(rest)) return raw;
+      a.layout = rest.toUpperCase();
+      return a;
+    case 'spin':
+    case 'scale': {
+      if (!p.length || p.length > 2 || !isNum(p[0]) || (p[1] != null && !UINT.test(p[1]))) return raw;
+      a[name === 'spin' ? 'deg' : 'factor'] = p[0];
+      a.ticks = p[1] || '';
+      return a;
+    }
+    case 'pulse':
+      if (p.length > 2 || (p[0] != null && !isNum(p[0])) || (p[1] != null && !UINT.test(p[1]))) return raw;
+      a.amount = p[0] || '';
+      a.ticks = p[1] || '';
+      return a;
+    case 'move': {
+      const m = p.length && p.length <= 2 ? VEC_RE.exec(p[0]) : null;
+      if (!m || (p[1] != null && !UINT.test(p[1]))) return raw;
+      Object.assign(a, {dx: m[1], dy: m[2], dz: m[3], ticks: p[1] || ''});
+      return a;
+    }
+    case 'hide':
+      if (p.length > 1 || (p[0] != null && !UINT.test(p[0]))) return raw;
+      a.ticks = p[0] || '';
+      return a;
+    case 'effect':
+      if (p.length !== 2 || !UINT.test(p[0]) || Number(p[0]) < 1 || !WORD_RE.test(p[1])) return raw;
+      a.line = p[0];
+      a.effect = p[1].toUpperCase();
+      return a;
+    default:
+      return rest ? raw : a;
+  }
 }
 
 function parseAction(s) {
@@ -4381,7 +4893,7 @@ function parseAction(s) {
   switch (name) {
     case 'particle': return parseParticle(a, rest, bang) || raw;
     case 'sound': {
-      const p = rest.split(/\s+/).filter(Boolean);
+      const p = words(rest);
       if (!p.length || p.length > 3 || !p.slice(1).every(isNum)) return raw;
       a.everyone = bang;
       a.key = p[0];
@@ -4414,8 +4926,20 @@ function parseAction(s) {
       if (!rest || /\s/.test(rest)) return raw;
       a.mat = rest.toLowerCase() === 'none' ? '' : rest.toLowerCase();
       return a;
+    case 'signal':
+      if (!SIGNAL_NAME.test(rest)) return raw;
+      a.name = rest.toLowerCase();
+      return a;
+    case 'delay':
+      if (!UINT.test(rest)) return raw;
+      a.ticks = rest;
+      return a;
+    case 'animation':
+      if (!WORD_RE.test(rest)) return raw;
+      a.preset = rest.toUpperCase();
+      return a;
     default:
-      return rest ? raw : a;
+      return HOLO_VERBS.has(name) ? parseHoloVerb(name, a, rest, raw) : (rest ? raw : a);
   }
 }
 
@@ -4423,7 +4947,7 @@ function parseRule(line) {
   const raw = {raw: line};
   const i = line.indexOf('->');
   if (i < 0) return raw;
-  const left = line.slice(0, i).trim().split(/\s+/).filter(Boolean);
+  const left = words(line.slice(0, i).trim());
   const ev = EV[(left[0] || '').toLowerCase()];
   if (!ev) return raw;
   const r = {ev: ev.id, arg: '', every: '', cooldown: '', actions: [], src: line, dirty: false};
@@ -4431,7 +4955,8 @@ function parseRule(line) {
   if (ev.arg) {
     const v = left[k++];
     if (v == null) return raw;
-    if (ev.arg === 'int' ? !UINT.test(v) || Number(v) < 1 : !MAT_ANY.test(v)) return raw;
+    const bad = ev.arg === 'int' ? !UINT.test(v) || Number(v) < 1 : ev.arg === 'signal' ? !SIGNAL_NAME.test(v) : !MAT_ANY.test(v);
+    if (bad) return raw;
     r.arg = ev.arg === 'int' ? v : v.toLowerCase();
   }
   while (k < left.length) {
@@ -4464,6 +4989,90 @@ function ruleText(r) {
   if (r.cooldown !== '') left.push('cooldown', r.cooldown);
   return left.join(' ') + ' -> ' + r.actions.map(actText).join('; ');
 }
+
+function signalsOf(text) {
+  const emits = new Set(), listens = new Set();
+  for (const line of String(text || '').split(/\r?\n/)) {
+    const t = line.trim();
+    const i = t.indexOf('->');
+    if (i < 0 || t.startsWith('#')) continue;
+    const ev = SIGNAL_EVENT.exec(t.slice(0, i));
+    if (ev) listens.add(ev[1].toLowerCase());
+    for (const act of t.slice(i + 2).split(';')) {
+      const m = SIGNAL_EVENT.exec(act);
+      if (m) emits.add(m[1].toLowerCase());
+    }
+  }
+  return {emits: [...emits], listens: [...listens]};
+}
+
+function linkIndex() {
+  const map = new Map();
+  const slot = n => {
+    if (!map.has(n)) map.set(n, {emit: [], listen: []});
+    return map.get(n);
+  };
+  for (const o of S.objects) {
+    const sg = S.cur && isSel(o) ? signalsOf(S.props.triggers) : (o.signals || {emits: [], listens: []});
+    for (const n of sg.emits) slot(n).emit.push(o);
+    for (const n of sg.listens) slot(n).listen.push(o);
+  }
+  if (S.cur && !S.objects.some(isSel)) {
+    const sg = signalsOf(S.props.triggers);
+    const me = {kind: S.cur.kind, id: S.cur.id};
+    for (const n of sg.emits) slot(n).emit.push(me);
+    for (const n of sg.listens) slot(n).listen.push(me);
+  }
+  return map;
+}
+
+function ensureSignalList(index) {
+  let dl = document.getElementById('nxSignals');
+  if (!dl) {
+    dl = el('datalist', {id: 'nxSignals'});
+    document.body.append(dl);
+  }
+  dl.replaceChildren(...[...index.keys()].sort().map(n => el('option', {value: n})));
+}
+
+function linkChips(list) {
+  if (!list.length) return [el('span', {class: 'muted', text: 'Nobody'})];
+  return list.map(o => el('button', {type: 'button', class: 'chip' + (isSel(o) ? ' on' : ''), title: (o.kind === 'npc' ? 'NPC ' : 'Hologram ') + o.id + ' (click to open)', text: displayName(o.kind, o.id), onclick: () => { if (!isSel(o)) selectObj(o.kind, o.id, {center: true}); }}));
+}
+
+function linkRow(name, e) {
+  const warn = !e.emit.length ? 'Nothing sends this signal yet.' : !e.listen.length ? 'Nothing listens to this signal yet.' : '';
+  return el('div', {class: 'lrow'},
+    el('div', {class: 'lname', text: name}),
+    el('div', {class: 'lcols'},
+      el('div', {}, el('div', {class: 'sub', text: 'Sent by'}), el('div', {class: 'lchips'}, linkChips(e.emit))),
+      el('div', {}, el('div', {class: 'sub', text: 'Heard by'}), el('div', {class: 'lchips'}, linkChips(e.listen)))),
+    warn ? el('p', {class: 'note warn', text: warn}) : null);
+}
+
+function linksCard() {
+  const body = el('div', {class: 'body'});
+  const mode = el('button', {class: 'btn sm', type: 'button'});
+  const render = () => {
+    const index = linkIndex();
+    ensureSignalList(index);
+    const all = !!S.ui.linksAll;
+    mode.textContent = all ? 'Only this object' : 'Show all objects';
+    const rows = [];
+    for (const name of [...index.keys()].sort()) {
+      const e = index.get(name);
+      if (all || e.emit.some(isSel) || e.listen.some(isSel)) rows.push(linkRow(name, e));
+    }
+    const empty = all ? 'No signals anywhere yet. Add a rule with a Send a signal action.' : 'This object sends and hears no signals. Use Send a signal or the Signal received event.';
+    body.replaceChildren(...(rows.length ? rows : [el('div', {class: 'empty', text: empty})]),
+      el('p', {class: 'note', text: 'A signal is a name one rule sends and any object can listen for. The list refreshes a moment after you save.'}));
+  };
+  mode.addEventListener('click', () => { S.ui.linksAll = !S.ui.linksAll; render(); });
+  render();
+  return {node: el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Signal links'}), mode), body), render};
+}
+
+const refreshLinks = debounce(() => { refreshList().catch(() => {}); }, 1500);
 
 function nfield(label, value, attrs, set) {
   const id = 'f' + (++uid);
@@ -4498,6 +5107,12 @@ function nf(label, type, min, max, step, value, set) {
   return control({label, type, min, max, step}, value, set);
 }
 
+function tickField(label, a, key, mark, placeholder) {
+  return nfield(label, a[key], {min: 1, step: 1, placeholder}, v => {
+    if (v === '') { a[key] = ''; mark(); } else if (UINT.test(v) && Number(v) >= 1) { a[key] = v; mark(); }
+  });
+}
+
 function listOps(arr, i, done) {
   const mv = (d, glyph, label) => el('button', {class: 'btn sm', type: 'button', 'aria-label': label, text: glyph, onclick: () => {
     const j = i + d;
@@ -4507,6 +5122,32 @@ function listOps(arr, i, done) {
   }});
   const del = el('button', {class: 'btn sm danger', type: 'button', 'aria-label': 'Remove', text: 'X', onclick: () => { arr.splice(i, 1); done(); }});
   return [mv(-1, '↑', 'Move up'), mv(1, '↓', 'Move down'), del];
+}
+
+function anchorFields(label, value, set, paint, list, withDefault) {
+  const holo = list === ANCHORS_HOLO;
+  const isLine = ANCHOR_LINE_RE.test(value);
+  const opts = (withDefault ? [['', 'Default']] : []).concat(list.map(x => [x, ANCHOR_LABEL[x]]), holo ? [[LINE_ANCHOR, 'A specific line...']] : []);
+  const out = [sfield(label, opts, isLine ? LINE_ANCHOR : value, v => { set(v === LINE_ANCHOR ? 'line:1' : v); paint(); }, true)];
+  if (isLine) out.push(nfield('Line number', value.slice(LINE_ANCHOR.length + 1), {min: 1, step: 1}, v => { if (UINT.test(v) && Number(v) >= 1) set(LINE_ANCHOR + ':' + v); }));
+  return out;
+}
+
+function targetPicker(label, t, setT, noneLabel, mark, paint) {
+  const modes = (noneLabel ? [['', noneLabel]] : []).concat(TARGET_MODES);
+  const out = [sfield(label, modes, t ? t.mode : '', v => { setT(v ? newTarget(v) : null); mark(); paint(); }, true)];
+  if (!t) return out;
+  const axis = (name, key, step) => nfield(name, t[key], {step}, v => { t[key] = v === '' ? '0' : v; mark(); });
+  if (t.mode === 'anchor') out.push(...anchorFields('Anchor', t.anchor, v => { t.anchor = v; mark(); }, paint, ownAnchors(), false));
+  if (t.mode === 'npc' || t.mode === 'holo') {
+    const kind = t.mode === 'npc' ? 'npc' : 'hologram';
+    const ids = S.objects.filter(o => o.kind === kind).map(o => [o.id, displayName(o.kind, o.id) + ' (' + o.id + ')']);
+    out.push(sfield(kind === 'npc' ? 'Which NPC' : 'Which hologram', ids.length ? ids : [['', 'None created yet']], t.id, v => { t.id = v; mark(); }, true));
+    out.push(...anchorFields('Anchor on it', t.oanchor, v => { t.oanchor = v; mark(); }, paint, kind === 'npc' ? ANCHORS_NPC : ANCHORS_HOLO, true));
+  }
+  if (t.mode === 'rel') out.push(axis('Right/left (blocks)', 'x', 0.1), axis('Up/down (blocks)', 'y', 0.1), axis('Forward/back (blocks)', 'z', 0.1));
+  if (t.mode === 'abs') out.push(axis('World X', 'x', 'any'), axis('World Y', 'y', 'any'), axis('World Z', 'z', 'any'));
+  return out;
 }
 
 function particleFields(T, a, mark, paint) {
@@ -4529,13 +5170,45 @@ function particleFields(T, a, mark, paint) {
   if (a.ptype === 'DUST_TRANSITION') out.push(colorControl({label: 'To color'}, 'f' + (++uid), a.c2, v => { a.c2 = v; mark(); }));
   if (dust) out.push(nf('Size', 'number', 0.1, 4, 0.1, a.size, v => { a.size = v; mark(); }));
   if (a.ptype === 'ITEM' || a.ptype === 'BLOCK') out.push(materialControl({label: a.ptype === 'ITEM' ? 'Item' : 'Block', id: 'material', type: 'text', max: 64}, a.mat, v => { a.mat = v.trim().toLowerCase(); mark(); }));
+  out.push(nf('Count', 'integer', 1, 200, 1, a.count, v => { a.count = v; mark(); }));
+  out.push(...targetPicker('Start at', a.at, t => { a.at = t; }, 'Anchor below', mark, paint));
+  if (!a.at) out.push(...anchorFields('Anchor', a.anchor, v => { a.anchor = v; mark(); }, paint, ownAnchors(), false));
   out.push(
-    nf('Count', 'integer', 1, 200, 1, a.count, v => { a.count = v; mark(); }),
-    sfield('Anchor', ANCHORS.map(x => [x, ANCHOR_LABEL[x]]), a.anchor, v => { a.anchor = v; mark(); }),
     nf('Spread', 'number', 0, 5, 0.05, a.spread, v => { a.spread = v; mark(); }),
     nf('Speed', 'number', 0, 2, 0.01, a.speed, v => { a.speed = v; mark(); }),
-    control({label: 'Visible to everyone', type: 'bool'}, String(a.everyone), v => { a.everyone = v === 'true'; mark(); }));
+    nf('Offset X', 'number', -16, 16, 0.1, a.off.x, v => { a.off.x = v; mark(); }),
+    nf('Offset Y', 'number', -16, 16, 0.1, a.off.y, v => { a.off.y = v; mark(); }),
+    nf('Offset Z', 'number', -16, 16, 0.1, a.off.z, v => { a.off.z = v; mark(); }),
+    control({label: 'Draw a beam (Count particles from start to end)', type: 'bool'}, String(!!a.to), v => { a.to = v === 'true' ? newTarget('player') : null; mark(); paint(); }));
+  if (a.to) out.push(...targetPicker('Beam end', a.to, t => { a.to = t; }, '', mark, paint));
+  out.push(control({label: 'Visible to everyone', type: 'bool'}, String(a.everyone), v => { a.everyone = v === 'true'; mark(); }));
   return out;
+}
+
+function holoVerbFields(T, a, mark) {
+  switch (a.t) {
+    case 'text': return [
+      nf('Line number', 'integer', 1, S.cfg.maxLines, 1, a.line, v => { a.line = v; mark(); }),
+      tfield(T, 'New text', a.text, v => { a.text = v; mark(); })];
+    case 'layout': {
+      const p = holoProp('layout');
+      return [sfield('Shape', (p ? p.options.map(o => [o.id, nice(o.label)]) : []), a.layout, v => { a.layout = v; mark(); }, true)];
+    }
+    case 'spin': return [nf('Degrees per second', 'number', -720, 720, 5, a.deg, v => { a.deg = v; mark(); }), tickField('Duration (ticks)', a, 'ticks', mark, 'default')];
+    case 'pulse': return [nf('Amount', 'number', 0, 1, 0.05, a.amount === '' ? PULSE_DEFAULT : a.amount, v => { a.amount = v; mark(); }), tickField('Duration (ticks)', a, 'ticks', mark, 'default')];
+    case 'scale': return [nf('Scale factor', 'number', 0.1, 5, 0.05, a.factor, v => { a.factor = v; mark(); }), tickField('Glide time (ticks)', a, 'ticks', mark, 'instant')];
+    case 'move': return [
+      nf('Right/left (blocks)', 'number', -16, 16, 0.1, a.dx, v => { a.dx = v; mark(); }),
+      nf('Up/down (blocks)', 'number', -16, 16, 0.1, a.dy, v => { a.dy = v; mark(); }),
+      nf('Forward/back (blocks)', 'number', -16, 16, 0.1, a.dz, v => { a.dz = v; mark(); }),
+      tickField('Glide time (ticks)', a, 'ticks', mark, 'instant')];
+    case 'hide': return [tickField('Hide for (ticks, empty = until shown)', a, 'ticks', mark, 'until shown')];
+    case 'effect': {
+      const p = lineProp('effect');
+      return [nf('Line number', 'integer', 1, S.cfg.maxLines, 1, a.line, v => { a.line = v; mark(); }), sfield('Effect', (p ? p.options.map(o => [o.id, nice(o.label)]) : []), a.effect, v => { a.effect = v; mark(); }, true)];
+    }
+    default: return [el('p', {class: 'note', text: 'Shows the hologram again.'})];
+  }
 }
 
 function actionFields(T, a, mark, paint) {
@@ -4557,8 +5230,13 @@ function actionFields(T, a, mark, paint) {
     case 'glow':
     case 'animate': return [sfield(pretty(a.t), ACT_MODE_LABELS[a.t], a.mode, v => { a.mode = v; mark(); }, true)];
     case 'item': return [materialControl({label: 'Item (empty = nothing)', id: 'material', type: 'text', max: 64}, a.mat, v => { a.mat = v.trim().toLowerCase(); mark(); })];
+    case 'signal': return [tfield(T, 'Signal name', a.name, v => { a.name = v.toLowerCase().replace(/[^a-z0-9_.-]/g, '').slice(0, 48); mark(); }, {list: 'nxSignals', placeholder: 'door_open', maxlength: 48}), el('p', {class: 'note', style: 'grid-column:1/-1;margin:0', text: 'Every object with a Signal received rule for this name reacts. Letters, digits, dot, dash and underscore only.'})];
+    case 'delay': return [nf('Wait (ticks, 20 = 1 second)', 'integer', 1, 12000, 1, a.ticks, v => { a.ticks = v; mark(); }), el('p', {class: 'note', style: 'grid-column:1/-1;margin:0', text: 'Actions after this one in the same rule run after the wait.'})];
+    case 'animation': return [sfield('Animation preset', animIds(), a.preset, v => { a.preset = v; mark(); }, true)];
     case 'raw': return [tfield(T, 'Unrecognised action, kept exactly as written', a.src, v => { a.src = v; mark(); })];
-    default: return [el('p', {class: 'note', text: 'No options.'})];
+    default:
+      if (HOLO_VERBS.has(a.t)) return holoVerbFields(T, a, mark).concat(a.t === 'show' ? [] : [el('p', {class: 'note', style: 'grid-column:1/-1;margin:0', text: 'Runtime only. Resets when the hologram is rebuilt or reloaded.'})]);
+      return [el('p', {class: 'note', text: 'No options.'})];
   }
 }
 
@@ -4579,7 +5257,9 @@ function actionRow(T, r, a, j, render, commit) {
   let label;
   if (a.t === 'raw') label = el('span', {class: 'grow muted', text: 'Raw action'});
   else {
-    const typeSel = el('select', {'aria-label': 'Action type'}, ACTIONS.map(x => el('option', {value: x[0], text: x[1]})));
+    const list = actionList();
+    const opts = list.some(x => x[0] === a.t) ? list : list.concat([[a.t, pretty(a.t)]]);
+    const typeSel = el('select', {'aria-label': 'Action type'}, opts.map(x => el('option', {value: x[0], text: x[1]})));
     typeSel.value = a.t;
     typeSel.addEventListener('change', () => {
       r.actions[j] = newAction(typeSel.value);
@@ -4590,6 +5270,17 @@ function actionRow(T, r, a, j, render, commit) {
   const rows = [el('div', {class: 'arow-h'}, label, listOps(r.actions, j, done)), body];
   if (PLAYER_ONLY.has(a.t) && EV[r.ev].scope === 'npc') rows.push(el('p', {class: 'note warn', text: 'This action only runs for player events (click, look, approach, leave, becomes visible).'}));
   return el('div', {class: 'arow'}, rows);
+}
+
+function ruleNotes(r, ev) {
+  const where = ev.scope === 'player' ? ' Runs per player.' : ev.scope === 'any' ? '' : ' Runs for everyone who can see the ' + obj() + '.';
+  const notes = [el('p', {class: 'note', style: 'margin:0', text: hintOf(ev) + where})];
+  const warn = text => notes.push(el('p', {class: 'note warn', style: 'margin:0', text}));
+  if (ev.arg && !r.arg) warn('This event needs a value or the rule is skipped.');
+  if (!r.actions.length) warn('Add at least one action.');
+  if (S.cur.kind === 'hologram' && CLICK_EVENTS.has(ev.id) && !isOn('clickable')) warn('Turn on Clickable above or this rule never fires.');
+  if (ev.id === 'signal' && r.actions.some(a => a.t === 'signal' && a.name === r.arg)) warn('This rule sends the signal it listens to. The loop guard drops it.');
+  return notes;
 }
 
 function ruleCard(T, r, i, render, commit) {
@@ -4612,7 +5303,8 @@ function ruleCard(T, r, i, render, commit) {
     r.dirty = true;
     commit();
   };
-  const evSel = el('select', {'aria-label': 'Event'}, EVENTS.map(e => el('option', {value: e.id, text: e.label})));
+  const evs = eventList();
+  const evSel = el('select', {'aria-label': 'Event'}, (evs.includes(ev) ? evs : evs.concat([ev])).map(e => el('option', {value: e.id, text: e.label})));
   evSel.value = r.ev;
   evSel.addEventListener('change', () => {
     const next = EV[evSel.value];
@@ -4633,16 +5325,14 @@ function ruleCard(T, r, i, render, commit) {
   if (ev.arg === 'int') params.append(nfield(ev.id === 'frame' ? 'Frame number (1-based)' : 'Interval (ticks)', r.arg, {min: 1, step: 1}, v => {
     if (UINT.test(v) && Number(v) >= 1) { r.arg = v; mark(); }
   }));
+  if (ev.arg === 'signal') params.append(tfield(T, 'Signal name', r.arg, v => { r.arg = v.toLowerCase().replace(/[^a-z0-9_.-]/g, '').slice(0, 48); mark(); }, {list: 'nxSignals', placeholder: 'door_open', maxlength: 48}));
   const opt = key => v => {
     if (v === '') { r[key] = ''; mark(); } else if (UINT.test(v)) { r[key] = v; mark(); }
   };
   if (ev.every || r.every !== '') params.append(nfield('Every (ticks)', r.every, {min: 1, step: 1, placeholder: '20'}, opt('every')));
   params.append(nfield('Cooldown (ticks)', r.cooldown, {min: 0, step: 1, placeholder: ev.scope === 'player' ? 'default' : '0'}, opt('cooldown')));
-  const notes = [el('p', {class: 'note', style: 'margin:0', text: ev.hint + (ev.scope === 'player' ? ' Runs per player.' : ' Runs for everyone who can see the NPC.')})];
-  if (ev.arg && !r.arg) notes.push(el('p', {class: 'note warn', style: 'margin:0', text: 'This event needs a value or the rule is skipped.'}));
-  if (!r.actions.length) notes.push(el('p', {class: 'note warn', style: 'margin:0', text: 'Add at least one action.'}));
   const acts = el('div', {class: 'acts'}, r.actions.map((a, j) => actionRow(T, r, a, j, render, commit)));
-  const addSel = el('select', {'aria-label': 'New action type'}, ACTIONS.map(x => el('option', {value: x[0], text: x[1]})));
+  const addSel = el('select', {'aria-label': 'New action type'}, actionList().map(x => el('option', {value: x[0], text: x[1]})));
   const add = el('div', {class: 'tbar'}, addSel, el('button', {class: 'btn sm primary', type: 'button', text: '+ Add action', onclick: () => {
     r.actions.push(newAction(addSel.value));
     r.dirty = true;
@@ -4651,21 +5341,17 @@ function ruleCard(T, r, i, render, commit) {
   return el('div', {class: 'rule'},
     el('div', {class: 'rule-h'}, svgIcon(EV_ICO[ev.id], 24, 'ev-ico'), el('div', {class: 'grow'}, evSel), ops, dup),
     params,
-    el('div', {class: 'rule-n'}, notes),
+    el('div', {class: 'rule-n'}, ruleNotes(r, ev)),
     acts,
     el('div', {class: 'acts'}, add));
 }
 
-function bodyTriggers() {
-  const root = el('div');
-  if (!S.pm.triggers) {
-    root.append(el('div', {class: 'empty', text: 'This server has no trigger support.'}));
-    return root;
-  }
+function appendTriggerCards(root) {
   const T = {rules: parseTriggers(S.props.triggers), focus: null};
   const max = S.pm.triggers.max > 0 ? S.pm.triggers.max : ANIM_TEXT_MAX;
   const count = el('span', {class: 'muted'});
   const list = el('div');
+  const links = linksCard();
   const showCount = text => {
     count.textContent = text.length + ' / ' + max + ' chars';
     count.classList.toggle('warn', text.length > max);
@@ -4674,6 +5360,8 @@ function bodyTriggers() {
     const text = T.rules.map(ruleText).join('\n');
     showCount(text);
     if (text.length <= max) setProp('triggers', text);
+    links.render();
+    refreshLinks();
   };
   const render = () => {
     list.replaceChildren(...T.rules.map((r, i) => ruleCard(T, r, i, render, commit)));
@@ -4689,15 +5377,8 @@ function bodyTriggers() {
     i.focus();
     i.setSelectionRange(s + text.length, s + text.length);
   };
-  const ranges = el('div', {class: 'grid'});
-  for (const id of ['look-trigger-range', 'approach-range']) {
-    const c = pc(id);
-    if (c) ranges.append(c);
-  }
-  root.append(el('section', {class: 'card'}, el('h2', {text: 'Ranges'}), el('div', {class: 'body'}, ranges,
-    el('p', {class: 'note', text: 'Looking at the NPC counts when you are inside the look range and your crosshair is close enough to it' + (S.cfg.lookAngle != null ? ' (within ' + num(S.cfg.lookAngle) + ' degrees, a server setting).' : '.')}))));
-  const chips = el('div', {class: 'modechips'}, PH_CHIPS.map(c => el('button', {type: 'button', class: 'chip', text: c, onmousedown: ev => ev.preventDefault(), onclick: () => insert(c)})));
-  const evSel = el('select', {'aria-label': 'New rule event'}, EVENTS.map(e => el('option', {value: e.id, text: e.label})));
+  const chips = el('div', {class: 'modechips'}, (S.cur.kind === 'hologram' ? PH_CHIPS_HOLO : PH_CHIPS_NPC).map(c => el('button', {type: 'button', class: 'chip', text: c, onmousedown: ev => ev.preventDefault(), onclick: () => insert(c)})));
+  const evSel = el('select', {'aria-label': 'New rule event'}, eventList().map(e => el('option', {value: e.id, text: e.label})));
   const addRule = el('button', {class: 'btn sm primary', type: 'button', text: '+ New rule', onclick: () => {
     const id = evSel.value;
     T.rules.push({ev: id, arg: DEF_ARG[id] || '', every: '', cooldown: '', actions: [newAction('particle')], src: '', dirty: true});
@@ -4710,14 +5391,98 @@ function bodyTriggers() {
       el('div', {style: 'margin-top:10px'}, list),
       el('div', {class: 'tbar'}, evSel, addRule),
       el('p', {class: 'note', text: 'Rules save automatically. Lines the builder does not understand are kept exactly as written. Use ; only to separate actions.'}))));
-  root.append(el('section', {class: 'card'}, el('h2', {text: 'Starter recipes'}), el('div', {class: 'body'}, el('div', {class: 'cards'}, RECIPES.map(rc => pcard(rc.label, rc.hint, svgIcon(EV_ICO[rc.icon], 30), false, () => {
-    T.rules.push(parseRule(rc.text));
+  const recipes = RECIPES.filter(rc => rc.kinds.includes(S.cur.kind));
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Starter recipes'}), el('div', {class: 'body'}, el('div', {class: 'cards'}, recipes.map(rc => pcard(rc.label, rc.hint, svgIcon(EV_ICO[rc.icon], 30), false, () => {
+    const text = typeof rc.text === 'function' ? rc.text() : rc.text;
+    if (!text) { toast('Create another object first', 'err'); return; }
+    for (const rule of parseTriggers(text)) T.rules.push(rule);
     commit();
     render();
     toast('Rule added', 'ok');
   }))))));
+  root.append(links.node);
   showCount(String(S.props.triggers || ''));
   render();
+}
+
+function rangesCard() {
+  const ranges = el('div', {class: 'grid'});
+  for (const id of ['look-trigger-range', 'approach-range']) {
+    const c = pc(id);
+    if (c) ranges.append(c);
+  }
+  return el('section', {class: 'card'}, el('h2', {text: 'Ranges'}), el('div', {class: 'body'}, ranges,
+    el('p', {class: 'note', text: 'Looking at the ' + obj() + ' counts when you are inside the look range and your crosshair is close enough to it' + (S.cfg.lookAngle != null ? ' (within ' + num(S.cfg.lookAngle) + ' degrees, a server setting).' : '.')})));
+}
+
+function clickCard() {
+  if (!S.pm.actions) return null;
+  const grid = el('div', {class: 'grid'});
+  for (const id of ['actions', 'click-type', 'cooldown']) {
+    const c = pc(id);
+    if (c) grid.append(c);
+  }
+  return el('section', {class: 'card'}, el('h2', {text: 'Click actions'}), el('div', {class: 'body'}, grid,
+    el('p', {class: 'note', text: 'One command per line, run when a player clicks. Rules below run in addition to these.'})));
+}
+
+function switchCard(iconName, label, hint, on, toggle, ids) {
+  const head = el('button', {type: 'button', 'aria-pressed': on ? 'true' : 'false', onclick: toggle}, ic(iconName, 26, 'mi'), el('span', {class: 'mt'}, el('span', {text: label}), el('div', {class: 'muted', style: 'font-size:12px', text: hint})), el('span', {class: 'chip' + (on ? ' on' : ''), text: on ? 'ON' : 'OFF'}));
+  const card = el('div', {class: 'mcard' + (on ? ' on' : '')}, head);
+  if (on && ids.length) {
+    const grid = el('div', {class: 'grid'});
+    for (const id of ids) { const c = pc(id); if (c) grid.append(c); }
+    card.append(el('div', {class: 'mb'}, grid));
+  }
+  return card;
+}
+
+function flagToggle(id) {
+  return () => {
+    setProp(id, isOn(id) ? 'false' : 'true');
+    renderBody();
+  };
+}
+
+function bodyInteraction() {
+  const root = el('div');
+  root.append(pvCard());
+  const clickable = isOn('clickable');
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Clickable'}), el('div', {class: 'body'},
+    switchCard('hand', 'Players can click this hologram', 'Adds an invisible hitbox. The blue box in the preview shows it.', clickable, flagToggle('clickable'), ['hitbox-width', 'hitbox-height', 'hitbox-offset-y']),
+    clickable ? null : el('p', {class: 'note', text: 'Click rules and click actions need Clickable. Look and approach rules work without it.'}))));
+  const click = clickCard();
+  if (click) root.append(click);
+  root.append(rangesCard());
+  if (S.pm.triggers) appendTriggerCards(root);
+  return root;
+}
+
+function bodyReactive() {
+  const root = el('div');
+  root.append(pvCard());
+  const grow = nv('proximity-scale') > 0;
+  root.append(el('section', {class: 'card'}, el('h2', {text: 'Reactive motion'}), el('div', {class: 'body'},
+    switchCard('look', 'Face the nearest player', 'Turns smoothly toward whoever is closest.', isOn('face-player'), flagToggle('face-player'), []),
+    switchCard('route', 'Follow the nearest player', 'Glides toward the closest player and stops at the keep distance.', isOn('follow-player'), flagToggle('follow-player'), ['follow-range', 'follow-distance', 'follow-speed']),
+    switchCard('pulse', 'Grow when a player is near', 'Gets bigger the closer the nearest player is.', grow, () => {
+      setProp('proximity-scale', grow ? '0' : REACT_GROW_DEFAULT);
+      renderBody();
+    }, ['proximity-scale', 'proximity-range']),
+    el('p', {class: 'note', text: 'These are visual only. The anchor does not move, so clicks and ranges stay put. Rings in the preview show the ranges that are on.'}))));
+  return root;
+}
+
+function bodyTriggers() {
+  const root = el('div');
+  if (!S.pm.triggers) {
+    root.append(el('div', {class: 'empty', text: 'This server has no trigger support.'}));
+    return root;
+  }
+  root.append(rangesCard());
+  const click = clickCard();
+  if (click) root.append(click);
+  appendTriggerCards(root);
   return root;
 }
 function npId() { return S.cur.id + (S.cfg.nameplateSuffix || ''); }
@@ -4849,7 +5614,7 @@ function renderBody() {
   const fade = S.fadeNext;
   S.fadeNext = false;
   body.replaceChildren();
-  $('#app').classList.toggle('wide', !!S.cur && (S.wide || (S.cur.kind === 'npc' && (S.tab === 'animate' || S.tab === 'triggers' || S.tab === 'pose'))));
+  $('#app').classList.toggle('wide', !!S.cur && (S.wide || (S.cur.kind === 'npc' && (S.tab === 'animate' || S.tab === 'triggers' || S.tab === 'pose')) || (S.cur.kind === 'hologram' && S.tab === 'interaction')));
   if (!S.cur) {
     body.append(emptyInspector());
     return;
@@ -4861,6 +5626,9 @@ function renderBody() {
   else if (S.tab === 'animate') node = bodyAnimate();
   else if (S.tab === 'pose') node = bodyPose();
   else if (S.tab === 'triggers') node = bodyTriggers();
+  else if (S.tab === 'interaction') node = bodyInteraction();
+  else if (S.tab === 'reactive') node = bodyReactive();
+  else if (S.tab === 'shape') node = bodyShape();
   else if (S.tab === 'nameplate') node = bodyNameplate();
   else if (S.tab === 'movement') node = k === 'npc' ? bodyMoveNpc() : bodyMoveHolo();
   else if (S.tab === 'appearance') node = bodyAppearance();

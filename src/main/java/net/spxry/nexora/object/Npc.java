@@ -4,15 +4,16 @@ import com.destroystokyo.paper.profile.ProfileProperty;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
-import net.spxry.nexora.npc.Effects;
+import net.spxry.nexora.npc.HasRuntime;
 import net.spxry.nexora.npc.SkinParts;
+import net.spxry.nexora.npc.TriggerHost;
+import net.spxry.nexora.npc.TriggerRuntime;
 import net.spxry.nexora.npc.Triggers;
 import net.spxry.nexora.Nexora;
 import net.spxry.nexora.edit.Binding;
 import net.spxry.nexora.nms.Packets;
 import net.spxry.nexora.util.ColorUtil;
 import net.spxry.nexora.util.ItemCodec;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -41,26 +42,44 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
-public final class Npc extends NexoraObject {
+public final class Npc extends NexoraObject implements TriggerHost, HasRuntime {
     private enum ClickType { ANY, RIGHT, LEFT }
 
-    private record CooldownKey(int rule, UUID player) {}
-
-    private static final UUID NO_PLAYER = new UUID(0L, 0L);
-    private static final String LOOK_ANGLE_KEY = "npc.triggers.look-angle";
-    private static final String DEFAULT_COOLDOWN_KEY = "npc.triggers.default-cooldown";
     private static final String LOOK_HOLD_KEY = "npc.triggers.look-hold-ticks";
-    private static final double DEFAULT_LOOK_ANGLE = 10.0;
-    private static final int DEFAULT_COOLDOWN = 40;
     private static final long DEFAULT_LOOK_HOLD = 40L;
-    private static final double LOOK_AWAY_FACTOR = 1.5;
-    private static final double RANGE_HYSTERESIS = 0.5;
-    private static final double BODY_CENTRE = 0.5;
-    private static final double MIN_LENGTH = 1.0E-6;
-    private static final int PRUNE_PERIOD = 200;
+    private static final double FEET_LIFT = 0.1;
+    private static final double CENTRE_FACTOR = 0.5;
+    private static final double BODY_FACTOR = 0.6;
+    private static final double HAND_FACTOR = 0.75;
+    private static final double HAND_SIDE = 0.35;
+    private static final double HAND_FORWARD = 0.2;
+    private static final double TOP_LIFT = 0.25;
+    private static final double ABOVE_LIFT = 0.5;
+    private static final int RESET_FRAME = -2;
+    private static final String ANCHOR_FEET = "feet";
+    private static final String ANCHOR_BOTTOM = "bottom";
+    private static final String ANCHOR_TOP = "top";
+    private static final String ANCHOR_ABOVE = "above";
+    private static final String ANCHOR_HAND = "hand";
+    private static final String ANCHOR_OFFHAND = "offhand";
+    private static final String VERB_SWING = "swing";
+    private static final String VERB_GLOW = "glow";
+    private static final String VERB_ANIMATE = "animate";
+    private static final String VERB_ITEM = "item";
+    private static final String VERB_LOOK = "look";
+    private static final String VERB_HURT = "hurt";
+    private static final String VERB_ANIMATION = "animation";
+    private static final String ARG_MAIN = "main";
+    private static final String ARG_OFF = "off";
+    private static final String ARG_ON = "on";
+    private static final String ARG_TOGGLE = "toggle";
+    private static final String ARG_RESTART = "restart";
+    private static final String ARG_NONE = "none";
+    private static final String ARG_AIR = "air";
 
     private static final int TICKS_PER_SECOND = 20;
     private static final long MILLIS_PER_TICK = 50L;
@@ -88,13 +107,8 @@ public final class Npc extends NexoraObject {
     private final Map<EquipmentSlot, ItemStack> equipment = new ConcurrentHashMap<>();
     private final Map<UUID, Long> cooldowns = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> looking = new ConcurrentHashMap<>();
-    private final Map<CooldownKey, Long> ruleCooldowns = new ConcurrentHashMap<>();
-    private final Set<UUID> gazing = ConcurrentHashMap.newKeySet();
-    private final Set<UUID> near = ConcurrentHashMap.newKeySet();
-    private final Effects effects;
-    private volatile Map<Triggers.Event, List<Triggers.Rule>> rules = Map.of();
-    private volatile double lookCos;
-    private volatile double lookAwayCos;
+    private final TriggerRuntime runtime;
+    private final Predicate<Material> holdingTest = material -> heldItem() == material;
     private volatile Material itemOverride;
     private volatile boolean animationPaused;
     private double animationClock;
@@ -162,7 +176,7 @@ public final class Npc extends NexoraObject {
         this.entityType = plugin.getConfig().getString(DEFAULT_TYPE_KEY, "");
         this.base = anchor.clone();
         this.currentYaw = anchor.getYaw();
-        this.effects = new Effects(plugin, this);
+        this.runtime = new TriggerRuntime(plugin, this);
     }
 
     private static Map<String, Binding<Npc>> bindings() {
@@ -298,11 +312,7 @@ public final class Npc extends NexoraObject {
         looking.clear();
         lookers.clear();
         focus = null;
-        ruleCooldowns.clear();
-        rules = Triggers.parse(plugin, triggers);
-        double angle = plugin.getConfig().getDouble(LOOK_ANGLE_KEY, DEFAULT_LOOK_ANGLE);
-        lookCos = Math.cos(Math.toRadians(angle));
-        lookAwayCos = Math.cos(Math.toRadians(angle * LOOK_AWAY_FACTOR));
+        runtime.rules(triggers);
         itemOverride = null;
         animationPaused = false;
         animationClock = 0;
@@ -444,37 +454,41 @@ public final class Npc extends NexoraObject {
     private void gestureModel(SkinnedModel target, int frame) {
         lastFrame = frame;
         var frames = keyframes;
-        if (frames == null) return;
-        var next = frames.state(frame);
+        var next = frames == null ? Keyframes.State.NONE : frames.state(frame);
         var previous = state;
         state = next;
         if (!Objects.equals(next.item(), previous.item()) || !Objects.equals(next.offItem(), previous.offItem())) {
             itemsChanged = true;
             applyItems(target);
         }
+        if (frames == null) {
+            notifyUse(previous.use(), next.use());
+            return;
+        }
         var swing = frames.swing(frame);
         if (swing != Keyframes.Hand.NONE) {
             target.swing(swing == Keyframes.Hand.OFF);
-            fire(Triggers.Event.SWING, null, true, 0);
+            runtime.fire(Triggers.Event.SWING, null, 0);
         }
         notifyUse(previous.use(), next.use());
-        fire(Triggers.Event.FRAME, null, true, frame);
+        runtime.fire(Triggers.Event.FRAME, null, frame);
     }
 
     private void gesture(LivingEntity entity, int frame, List<Packet<?>> out) {
         lastFrame = frame;
         var frames = keyframes;
-        if (frames == null) return;
-        if (applyState(entity, frames.state(frame), true)) {
+        var next = frames == null ? Keyframes.State.NONE : frames.state(frame);
+        if (applyState(entity, next, true)) {
             itemsChanged = true;
             out.add(Packets.equipment(entityId, equipmentUpdate()));
         }
+        if (frames == null) return;
         var swing = frames.swing(frame);
         if (swing != Keyframes.Hand.NONE) {
             out.add(Packets.swing(handle, swing == Keyframes.Hand.OFF));
-            fire(Triggers.Event.SWING, null, true, 0);
+            runtime.fire(Triggers.Event.SWING, null, 0);
         }
-        fire(Triggers.Event.FRAME, null, true, frame);
+        runtime.fire(Triggers.Event.FRAME, null, frame);
     }
 
     private boolean applyState(LivingEntity entity, Keyframes.State next, boolean notify) {
@@ -580,10 +594,8 @@ public final class Npc extends NexoraObject {
 
     private void finishTick(boolean swung, int interval) {
         particles(x(), y() + PARTICLE_HEIGHT, z(), interval);
-        if (swung) fire(Triggers.Event.SWING, null, true, 0);
-        periodic(Triggers.Event.INTERVAL, interval);
-        periodic(Triggers.Event.HOLDING, interval);
-        if (crossed(PRUNE_PERIOD, interval)) pruneCooldowns();
+        if (swung) runtime.fire(Triggers.Event.SWING, null, 0);
+        runtime.tick(interval, holdingTest);
     }
 
     private void tickModel(SkinnedModel shown, int interval) {
@@ -635,20 +647,6 @@ public final class Npc extends NexoraObject {
         return pick;
     }
 
-    private void periodic(Triggers.Event event, int interval) {
-        var list = rules.get(event);
-        if (list == null) return;
-        for (var rule : list) {
-            if (!crossed(rule.every(), interval)) continue;
-            if (event == Triggers.Event.HOLDING && !holds(rule.material())) continue;
-            fire(rule, null, true);
-        }
-    }
-
-    private boolean holds(Material wanted) {
-        return heldItem() == wanted;
-    }
-
     private Material heldItem() {
         var override = itemOverride;
         if (override != null) return override;
@@ -658,88 +656,132 @@ public final class Npc extends NexoraObject {
         return saved == null ? Material.AIR : saved.getType();
     }
 
-    private void pruneCooldowns() {
-        long now = System.currentTimeMillis();
-        ruleCooldowns.values().removeIf(until -> until <= now);
-    }
-
-    private void fire(Triggers.Event event, Player player, boolean region, int value) {
-        var list = rules.get(event);
-        if (list == null) return;
-        for (var rule : list) if (rule.accepts(value)) fire(rule, player, region);
-    }
-
-    private void fire(Triggers.Rule rule, Player player, boolean region) {
-        if (!ready(rule, player)) return;
-        effects.run(rule.actions(), player, region);
-    }
-
-    private boolean ready(Triggers.Rule rule, Player player) {
-        int cooldownTicks = rule.cooldown() != Triggers.UNSET_COOLDOWN ? rule.cooldown()
-            : rule.event().playerScoped() ? plugin.getConfig().getInt(DEFAULT_COOLDOWN_KEY, DEFAULT_COOLDOWN) : 0;
-        if (cooldownTicks <= 0) return true;
-        var key = new CooldownKey(rule.index(), player == null ? NO_PLAYER : player.getUniqueId());
-        long now = System.currentTimeMillis();
-        var until = ruleCooldowns.get(key);
-        if (until != null && until > now) return false;
-        ruleCooldowns.put(key, now + cooldownTicks * MILLIS_PER_TICK);
-        return true;
-    }
-
     private void notifyUse(Keyframes.Hand before, Keyframes.Hand after) {
         boolean was = before != Keyframes.Hand.NONE;
         boolean is = after != Keyframes.Hand.NONE;
-        if (!was && is) fire(Triggers.Event.USE, null, true, 0);
-        else if (was && !is) fire(Triggers.Event.USESTOP, null, true, 0);
+        if (!was && is) runtime.fire(Triggers.Event.USE, null, 0);
+        else if (was && !is) runtime.fire(Triggers.Event.USESTOP, null, 0);
     }
 
-    public void shown(Player player) {
-        fire(Triggers.Event.SPAWN, player, false, 0);
+    @Override
+    public TriggerRuntime runtime() { return runtime; }
+
+    @Override
+    public double lookTriggerRange() { return lookTriggerRange; }
+
+    @Override
+    public double approachTriggerRange() { return approachRange; }
+
+    @Override
+    public float facingYaw() { return facing(); }
+
+    @Override
+    public Vector anchorPoint(String anchor) {
+        if (anchor == null) return null;
+        double eye = eyeHeight;
+        return switch (anchor.toLowerCase(Locale.ROOT)) {
+            case Triggers.ANCHOR_HEAD -> new Vector(x(), y() + eye, z());
+            case ANCHOR_FEET -> new Vector(x(), y() + FEET_LIFT * scale, z());
+            case ANCHOR_BOTTOM -> new Vector(x(), y(), z());
+            case Triggers.ANCHOR_BODY -> new Vector(x(), y() + eye * BODY_FACTOR, z());
+            case Triggers.ANCHOR_CENTER -> new Vector(x(), y() + eye * CENTRE_FACTOR, z());
+            case ANCHOR_TOP -> new Vector(x(), y() + eye + TOP_LIFT * scale, z());
+            case ANCHOR_ABOVE -> new Vector(x(), y() + eye + nameplateHeight + ABOVE_LIFT * scale, z());
+            case ANCHOR_HAND -> side(1);
+            case ANCHOR_OFFHAND -> side(-1);
+            default -> null;
+        };
     }
 
-    public void departed(Player player) {
-        var uuid = player.getUniqueId();
-        if (near.remove(uuid)) fire(Triggers.Event.LEAVE, player, false, 0);
-        if (gazing.remove(uuid)) fire(Triggers.Event.LOOKAWAY, player, false, 0);
+    private Vector side(int sign) {
+        double yaw = Math.toRadians(facing());
+        double forwardX = -Math.sin(yaw);
+        double forwardZ = Math.cos(yaw);
+        double rightX = -Math.cos(yaw);
+        double rightZ = -Math.sin(yaw);
+        double offset = HAND_SIDE * scale * sign;
+        double forward = HAND_FORWARD * scale;
+        return new Vector(x() + rightX * offset + forwardX * forward, y() + eyeHeight * HAND_FACTOR, z() + rightZ * offset + forwardZ * forward);
     }
 
-    public void observe(Player player, Location eye, Vector direction) {
-        var table = rules;
-        if (table.isEmpty()) return;
-        var uuid = player.getUniqueId();
-        double dx = x() - eye.getX();
-        double dz = z() - eye.getZ();
-        double dy = y() + eyeHeight * BODY_CENTRE - eye.getY();
-        double distanceSquared = dx * dx + dy * dy + dz * dz;
-        if (table.containsKey(Triggers.Event.APPROACH) || table.containsKey(Triggers.Event.LEAVE)) {
-            boolean now = within(distanceSquared, approachRange, near.contains(uuid));
-            if (now && near.add(uuid)) fire(Triggers.Event.APPROACH, player, false, 0);
-            else if (!now && near.remove(uuid)) fire(Triggers.Event.LEAVE, player, false, 0);
+    @Override
+    public boolean hostAction(String verb, List<String> args, Player player) {
+        var arg = args.isEmpty() ? "" : args.get(0).toLowerCase(Locale.ROOT);
+        return switch (verb) {
+            case VERB_SWING -> swingVerb(arg);
+            case VERB_GLOW -> glowVerb(arg);
+            case VERB_ANIMATE -> animateVerb(arg);
+            case VERB_ITEM -> itemVerb(arg);
+            case VERB_LOOK -> lookVerb(player);
+            case VERB_HURT -> {
+                hurt();
+                yield true;
+            }
+            case VERB_ANIMATION -> swapAnimation(arg);
+            default -> false;
+        };
+    }
+
+    private boolean swingVerb(String arg) {
+        if (arg.isEmpty() || arg.equals(ARG_MAIN)) swing(false);
+        else if (arg.equals(ARG_OFF)) swing(true);
+        else return false;
+        return true;
+    }
+
+    private boolean glowVerb(String arg) {
+        var mode = switch (arg) {
+            case ARG_ON -> Triggers.Toggle.ON;
+            case ARG_OFF -> Triggers.Toggle.OFF;
+            case ARG_TOGGLE, "" -> Triggers.Toggle.TOGGLE;
+            default -> null;
+        };
+        if (mode == null) return false;
+        glow(mode);
+        return true;
+    }
+
+    private boolean animateVerb(String arg) {
+        var mode = switch (arg) {
+            case ARG_ON -> Triggers.Playback.ON;
+            case ARG_OFF -> Triggers.Playback.OFF;
+            case ARG_RESTART -> Triggers.Playback.RESTART;
+            default -> null;
+        };
+        if (mode == null) return false;
+        playback(mode);
+        return true;
+    }
+
+    private boolean itemVerb(String arg) {
+        if (arg.isEmpty()) return false;
+        if (arg.equals(ARG_NONE) || arg.equals(ARG_AIR)) {
+            overrideItem(null);
+            return true;
         }
-        if (table.containsKey(Triggers.Event.LOOK) || table.containsKey(Triggers.Event.LOOKAWAY)) {
-            boolean was = gazing.contains(uuid);
-            boolean now = within(distanceSquared, lookTriggerRange, was) && aimed(eye, direction, was ? lookAwayCos : lookCos);
-            if (now && gazing.add(uuid)) fire(Triggers.Event.LOOK, player, false, 0);
-            else if (!now && gazing.remove(uuid)) fire(Triggers.Event.LOOKAWAY, player, false, 0);
-        }
+        var material = Material.matchMaterial(arg);
+        if (material == null || !material.isItem() || material.isAir()) return false;
+        overrideItem(material);
+        return true;
     }
 
-    private static boolean within(double distanceSquared, double range, boolean already) {
-        double limit = already ? range + RANGE_HYSTERESIS : range;
-        return distanceSquared <= limit * limit;
+    private boolean lookVerb(Player player) {
+        if (player == null) return false;
+        var eye = runtime.eye(player.getUniqueId());
+        if (eye == null) return false;
+        faceToward(player, eye);
+        return true;
     }
 
-    private boolean aimed(Location eye, Vector direction, double threshold) {
-        return aimedAt(eye, direction, eyeHeight, threshold) || aimedAt(eye, direction, eyeHeight * BODY_CENTRE, threshold);
-    }
-
-    private boolean aimedAt(Location eye, Vector direction, double height, double threshold) {
-        double dx = x() - eye.getX();
-        double dy = y() + height - eye.getY();
-        double dz = z() - eye.getZ();
-        double length = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (length < MIN_LENGTH) return true;
-        return (direction.getX() * dx + direction.getY() * dy + direction.getZ() * dz) / length >= threshold;
+    private boolean swapAnimation(String preset) {
+        if (preset.isBlank()) return false;
+        var parsed = Keyframes.parse(plugin.getConfig().getString(ANIMATIONS_KEY + preset.trim().toUpperCase(Locale.ROOT)));
+        if (parsed.isEmpty() && !ANIMATION_NONE.equalsIgnoreCase(preset)) return false;
+        keyframes = parsed.isEmpty() ? null : parsed;
+        animationClock = 0;
+        animationPaused = false;
+        lastFrame = RESET_FRAME;
+        return true;
     }
 
     public double eyeHeight() { return eyeHeight; }
@@ -751,15 +793,6 @@ public final class Npc extends NexoraObject {
     public boolean nameplate() { return nameplate; }
 
     public float facing() { return bodyYaw(currentYaw); }
-
-    public List<Player> viewerList() {
-        List<Player> players = new ArrayList<>();
-        for (var uuid : viewers()) {
-            var player = Bukkit.getPlayer(uuid);
-            if (player != null) players.add(player);
-        }
-        return players;
-    }
 
     public void swing(boolean offHand) {
         var shown = model;
@@ -819,16 +852,15 @@ public final class Npc extends NexoraObject {
         broadcast(List.of(Packets.equipment(entityId, equipmentUpdate())));
     }
 
-    public void faceToward(Player player) {
+    public void faceToward(Player player, double[] eye) {
         if (model != null) {
-            var eye = player.getEyeLocation();
             long hold = plugin.getConfig().getLong(LOOK_HOLD_KEY, DEFAULT_LOOK_HOLD);
-            focus = new Focus(eye.getX(), eye.getY(), eye.getZ(), System.currentTimeMillis() + hold * MILLIS_PER_TICK);
+            focus = new Focus(eye[0], eye[1], eye[2], System.currentTimeMillis() + hold * MILLIS_PER_TICK);
             return;
         }
         var h = handle;
         if (h == null) return;
-        var aim = aim(player.getEyeLocation());
+        var aim = aim(eye);
         Packets.send(player, Packets.bundle(List.of(Packets.rotation(entityId, aim[0], aim[1]), Packets.head(h, aim[0]))));
         var uuid = player.getUniqueId();
         long hold = plugin.getConfig().getLong(LOOK_HOLD_KEY, DEFAULT_LOOK_HOLD);
@@ -837,10 +869,10 @@ public final class Npc extends NexoraObject {
         }, Math.max(1L, hold));
     }
 
-    private float[] aim(Location eye) {
-        double dx = eye.getX() - x();
-        double dy = eye.getY() - (y() + eyeHeight);
-        double dz = eye.getZ() - z();
+    private float[] aim(double[] eye) {
+        double dx = eye[0] - x();
+        double dy = eye[1] - (y() + eyeHeight);
+        double dz = eye[2] - z();
         float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
         float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.hypot(dx, dz)));
         return new float[]{yaw, pitch};
@@ -906,14 +938,12 @@ public final class Npc extends NexoraObject {
     protected void onHide(UUID viewer) {
         looking.remove(viewer);
         lookers.remove(viewer);
-        gazing.remove(viewer);
-        near.remove(viewer);
+        runtime.forget(viewer);
     }
 
     public void click(Player player, boolean attack) {
         runActions(player, attack);
-        fire(Triggers.Event.CLICK, player, false, 0);
-        fire(attack ? Triggers.Event.LEFTCLICK : Triggers.Event.RIGHTCLICK, player, false, 0);
+        runtime.click(player, attack);
     }
 
     private void runActions(Player player, boolean attack) {

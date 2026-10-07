@@ -1,0 +1,112 @@
+title: "&#6293F0&lɴᴇxᴏʀᴀ &8» &7ᴍᴀɪɴ ᴍᴇɴᴜ"
+size: 45
+
+prompt:
+  create-title: "&#6293F0&lᴄʀᴇᴀᴛᴇ &8» &7{kind}"
+  create-body: "&7Enter an id. The {kind} is created at your position."
+  create-label: "&fɪᴅ"
+
+items:
+  info:
+    slot: 13
+    material: "NETHER_STAR"
+    glow: true
+    name: "&#6293F0&lɴᴇxᴏʀᴀ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fPacket-based animated holograms and NPCs."
+      - ""
+      - "&fHolograms: &#6293F0{holograms}"
+      - "&fNPCs: &#6293F0{npcs}"
+      - "&fVersion: &7{version}"
+      - ""
+      - "&8Pick a category below to get started."
+  holograms:
+    slot: 11
+    material: "OAK_SIGN"
+    name: "&#6293F0ʜᴏʟᴏɢʀᴀᴍꜱ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fBrowse and edit every hologram."
+      - ""
+      - "&fTotal: &#6293F0{holograms}"
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to browse holograms"
+  npcs:
+    slot: 15
+    material: "ARMOR_STAND"
+    name: "&#6293F0ɴᴘᴄꜱ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fBrowse and edit every NPC."
+      - ""
+      - "&fTotal: &#6293F0{npcs}"
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to browse NPCs"
+  create-hologram:
+    slot: 20
+    material: "LIME_DYE"
+    name: "&#00FF5Aᴄʀᴇᴀᴛᴇ ʜᴏʟᴏɢʀᴀᴍ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fCreate a new hologram at your position."
+      - ""
+      - "&#00FF5A&l➥ &nCLICK&#00FF5A to create a hologram"
+  create-npc:
+    slot: 24
+    material: "EMERALD"
+    name: "&#00FF5Aᴄʀᴇᴀᴛᴇ ɴᴘᴄ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fPick a type, then create an NPC at your position."
+      - ""
+      - "&#00FF5A&l➥ &nCLICK&#00FF5A to create an NPC"
+  demo:
+    slot: 22
+    material: "FIREWORK_ROCKET"
+    name: "&#B266FFᴅᴇᴍᴏ ꜱʜᴏᴡᴄᴀꜱᴇ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fSpawn a full showcase in front of you: wizard with"
+      - "&flevitating blocks, carousel, helix, patrol and more."
+      - ""
+      - "&#B266FF&l➥ &nLEFT-CLICK&#B266FF to spawn the demo"
+      - "&#FF0000&l➥ &nRIGHT-CLICK&#FF0000 to clear the demo"
+  web:
+    slot: 29
+    material: "COMPASS"
+    name: "&#6293F0ᴡᴇʙ ᴇᴅɪᴛᴏʀ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fGet a link to the browser based editor."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to get the link"
+  reload:
+    slot: 31
+    material: "ANVIL"
+    name: "&#6293F0ʀᴇʟᴏᴀᴅ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fReload every configuration file."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to reload"
+  dialogs:
+    slot: 33
+    material: "WRITABLE_BOOK"
+    name: "&#6293F0ᴅɪᴀʟᴏɢ ᴍᴇɴᴜ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fSwitch to the classic dialog based menu."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to open the dialog menu"
+  close:
+    slot: 40

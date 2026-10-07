@@ -100,6 +100,15 @@ public final class WebServer {
     private static final Set<String> ASSET_SCHEMES = Set.of("http", "https");
     private static final Pattern URL_PLACEHOLDER = Pattern.compile("\\{[^}]*}");
     private static final String URL_PLACEHOLDER_VALUE = "x";
+    private static final Pattern SIGNAL_RULE = Pattern.compile("^\\s*signal\\s+([a-z0-9_.-]{1,48})(?![a-z0-9_.-])", Pattern.CASE_INSENSITIVE);
+    private static final String K_TRIGGERS = "triggers";
+    private static final String K_SIGNALS = "signals";
+    private static final String K_EMITS = "emits";
+    private static final String K_LISTENS = "listens";
+    private static final String RULE_ARROW = "->";
+    private static final String RULE_COMMENT = "#";
+    private static final String ACTION_SEPARATOR = ";";
+    private static final String LINE_BREAKS = "\\R";
     private static final String SCHEME_SEPARATOR = "://";
     private static final int TOKEN_BYTES = 24;
     private static final long MS_PER_MINUTE = 60_000L;
@@ -803,6 +812,26 @@ public final class WebServer {
             view.put("mineskinKey", !plugin.getConfig().getString("model.mineskin.api-key", "").isBlank());
         }
         if (object instanceof Hologram hologram) view.put(K_LINES, hologram.lines().size());
+        view.put(K_SIGNALS, signals(object));
+        return view;
+    }
+
+    private Map<String, Object> signals(NexoraObject object) {
+        Set<String> emits = new LinkedHashSet<>();
+        Set<String> listens = new LinkedHashSet<>();
+        for (var line : object.values().getOrDefault(K_TRIGGERS, "").split(LINE_BREAKS)) {
+            var arrow = line.indexOf(RULE_ARROW);
+            if (arrow < 0 || line.stripLeading().startsWith(RULE_COMMENT)) continue;
+            var event = SIGNAL_RULE.matcher(line.substring(0, arrow));
+            if (event.find()) listens.add(event.group(1).toLowerCase(Locale.ROOT));
+            for (var action : line.substring(arrow + RULE_ARROW.length()).split(ACTION_SEPARATOR)) {
+                var emit = SIGNAL_RULE.matcher(action);
+                if (emit.find()) emits.add(emit.group(1).toLowerCase(Locale.ROOT));
+            }
+        }
+        Map<String, Object> view = new LinkedHashMap<>();
+        view.put(K_EMITS, List.copyOf(emits));
+        view.put(K_LISTENS, List.copyOf(listens));
         return view;
     }
 

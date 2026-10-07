@@ -1,6 +1,7 @@
 package net.spxry.nexora.object;
 
 import net.spxry.nexora.Nexora;
+import net.spxry.nexora.npc.HasRuntime;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -57,19 +58,21 @@ public final class Tracker implements Listener {
         var direction = eye.getDirection();
         var uuid = player.getUniqueId();
         for (var object : plugin.objects().all()) {
-            var npc = object instanceof Npc found ? found : null;
+            var runtime = object instanceof HasRuntime has ? has : null;
             boolean inRange = !object.isRemoved() && object.inRange(location);
             boolean viewing = object.isViewer(uuid);
             if (inRange && !viewing) {
                 object.show(player);
-                if (npc != null && object.isViewer(uuid)) npc.shown(player);
+                if (runtime != null && object.isViewer(uuid)) runtime.runtime().shown(player);
             } else if (!inRange && viewing) {
-                if (npc != null) npc.departed(player);
+                if (runtime != null) runtime.runtime().departed(player);
                 object.hide(player);
             }
-            if (inRange && npc != null) {
-                npc.look(player, eye);
-                if (object.isViewer(uuid)) npc.observe(player, eye, direction);
+            if (!inRange) continue;
+            if (object instanceof Npc npc) npc.look(player, eye);
+            if (object instanceof Hologram hologram) hologram.viewerAt(uuid, eye);
+            if (runtime != null && object.isViewer(uuid)) {
+                runtime.runtime().observe(player, eye, direction, runtime.lookTriggerRange(), runtime.approachTriggerRange());
             }
         }
     }

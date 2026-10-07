@@ -4,9 +4,11 @@ import net.spxry.nexora.command.NexoraCommand;
 import net.spxry.nexora.config.MessageManager;
 import net.spxry.nexora.dialog.DialogMenus;
 import net.spxry.nexora.edit.Schema;
+import net.spxry.nexora.gui.GuiManager;
 import net.spxry.nexora.listener.InteractListener;
 import net.spxry.nexora.nms.Packets;
 import net.spxry.nexora.npc.ActionRunner;
+import net.spxry.nexora.npc.SignalBus;
 import net.spxry.nexora.npc.SkinParts;
 import net.spxry.nexora.object.ObjectManager;
 import net.spxry.nexora.object.Tracker;
@@ -26,8 +28,10 @@ public final class Nexora extends JavaPlugin {
     private ObjectManager objects;
     private Tracker tracker;
     private ActionRunner actions;
+    private SignalBus signals;
     private SkinParts skinParts;
     private DialogMenus menus;
+    private GuiManager guis;
     private WebServer web;
 
     @Override
@@ -48,8 +52,10 @@ public final class Nexora extends JavaPlugin {
         objects = new ObjectManager(this);
         tracker = new Tracker(this);
         actions = new ActionRunner(this);
+        signals = new SignalBus(this);
         skinParts = new SkinParts(this);
         menus = new DialogMenus(this);
+        guis = new GuiManager(this);
         web = new WebServer(this);
 
         var pm = getServer().getPluginManager();
@@ -83,6 +89,7 @@ public final class Nexora extends JavaPlugin {
         schema.reload();
         objects.reload();
         objects.restartAll();
+        guis.reload();
     }
 
     private void saveIfMissing(String path) {
@@ -105,9 +112,13 @@ public final class Nexora extends JavaPlugin {
 
     public ActionRunner actions() { return actions; }
 
+    public SignalBus signals() { return signals; }
+
     public SkinParts skinParts() { return skinParts; }
 
     public DialogMenus menus() { return menus; }
+
+    public GuiManager guis() { return guis; }
 
     public WebServer web() { return web; }
 }

@@ -1,4 +1,4 @@
-file-version: 6
+file-version: 7
 kinds:
   hologram:
     sections:
@@ -7,7 +7,13 @@ kinds:
         properties: [view-range, line-spacing, attach-to, attach-height]
       shape:
         title: "&#6293F0&lꜱʜᴀᴘᴇ"
-        properties: [layout, layout-radius, layout-speed, helix-step, wave-height, wave-speed]
+        properties: [layout, layout-radius, shape-width, shape-height, shape-tilt, shape-sides, shape-inner, grid-columns, arc-angle, layout-speed, helix-step, wave-height, wave-speed]
+      interaction:
+        title: "&#6293F0&lɪɴᴛᴇʀᴀᴄᴛɪᴏɴ"
+        properties: [clickable, hitbox-width, hitbox-height, hitbox-offset-y, actions, click-type, cooldown, triggers, approach-range, look-trigger-range]
+      reactive:
+        title: "&#6293F0&lʀᴇᴀᴄᴛɪᴠᴇ ᴍᴏᴛɪᴏɴ"
+        properties: [face-player, follow-player, follow-range, follow-distance, follow-speed, proximity-scale, proximity-range]
       motion:
         title: "&#6293F0&lᴍᴏᴛɪᴏɴ"
         properties: [spin-speed, bob-height, bob-speed, orbit-radius, orbit-speed]
@@ -28,8 +34,35 @@ kinds:
       layout:
         label: "&fʟᴀʏᴏᴜᴛ"
         type: choice
-        options: {STACK: "Stack (classic)", RING: "Ring (carousel)", HELIX: "Helix (spiral)", ROW: "Row (side by side)", WHEEL: "Wheel (vertical ring)", SPHERE: "Sphere (globe)", TORNADO: "Tornado (cone spiral)"}
-      layout-radius: {label: "&fʀɪɴɢ / ʜᴇʟɪx ʀᴀᴅɪᴜꜱ", type: number, min: 0, max: 10, step: 0.1}
+        options: {STACK: "Stack (classic)", RING: "Ring (carousel)", HELIX: "Helix (spiral)", ROW: "Row (side by side)", WHEEL: "Wheel (vertical ring)", SPHERE: "Sphere (globe)", TORNADO: "Tornado (cone spiral)", TRIANGLE: "Triangle", SQUARE: "Square", POLYGON: "Polygon (N sides)", STAR: "Star", HEART: "Heart", GRID: "Grid", ARC: "Arc", SPIRAL: "Flat spiral", CUBE: "Cube", INFINITY: "Infinity loop", DIAMOND: "Diamond", PYRAMID: "Pyramid", CROSS: "Cross"}
+      layout-radius: {label: "&fꜱʜᴀᴘᴇ ꜱɪᴢᴇ (ʀᴀᴅɪᴜꜱ)", type: number, min: 0, max: 20, step: 0.1}
+      shape-width: {label: "&fꜱʜᴀᴘᴇ ᴡɪᴅᴛʜ ×", type: number, min: 0.1, max: 5, step: 0.05}
+      shape-height: {label: "&fꜱʜᴀᴘᴇ ʜᴇɪɢʜᴛ ×", type: number, min: 0.1, max: 5, step: 0.05}
+      shape-tilt: {label: "&fꜱʜᴀᴘᴇ ᴛɪʟᴛ (0 = ꜰʟᴀᴛ, 90 = ꜱᴛᴀɴᴅɪɴɢ)", type: number, min: -90, max: 90, step: 5}
+      shape-sides: {label: "&fꜱɪᴅᴇꜱ / ꜱᴛᴀʀ ᴘᴏɪɴᴛꜱ", type: integer, min: 3, max: 16, step: 1}
+      shape-inner: {label: "&fꜱᴛᴀʀ ɪɴɴᴇʀ ʀᴀᴅɪᴜꜱ ×", type: number, min: 0.1, max: 1, step: 0.05}
+      grid-columns: {label: "&fɢʀɪᴅ ᴄᴏʟᴜᴍɴꜱ", type: integer, min: 1, max: 16, step: 1}
+      arc-angle: {label: "&fᴀʀᴄ ᴀɴɢʟᴇ (°)", type: number, min: 10, max: 360, step: 5}
+      clickable: {label: "&fᴄʟɪᴄᴋᴀʙʟᴇ", type: bool}
+      hitbox-width: {label: "&fʜɪᴛʙᴏx ᴡɪᴅᴛʜ", type: number, min: 0.1, max: 10, step: 0.1}
+      hitbox-height: {label: "&fʜɪᴛʙᴏx ʜᴇɪɢʜᴛ", type: number, min: 0.1, max: 10, step: 0.1}
+      hitbox-offset-y: {label: "&fʜɪᴛʙᴏx ʜᴇɪɢʜᴛ ᴏꜰꜰꜱᴇᴛ", type: number, min: -5, max: 5, step: 0.05}
+      actions: {label: "&fᴄʟɪᴄᴋ ᴀᴄᴛɪᴏɴꜱ (one per line)", type: multiline, max: 2048}
+      click-type:
+        label: "&fᴄʟɪᴄᴋ ᴛʏᴘᴇ"
+        type: choice
+        options: {ANY: "Any", RIGHT: "Right click", LEFT: "Left click"}
+      cooldown: {label: "&fᴄᴏᴏʟᴅᴏᴡɴ (ticks)", type: integer, min: 0, max: 12000, step: 1}
+      triggers: {label: "&fᴛʀɪɢɢᴇʀꜱ (event -> action; action)", type: multiline, max: 8192}
+      approach-range: {label: "&fᴀᴘᴘʀᴏᴀᴄʜ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
+      look-trigger-range: {label: "&fʟᴏᴏᴋ ᴛʀɪɢɢᴇʀ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
+      face-player: {label: "&fᴛᴜʀɴ ᴛᴏᴡᴀʀᴅ ɴᴇᴀʀᴇꜱᴛ ᴘʟᴀʏᴇʀ", type: bool}
+      follow-player: {label: "&fꜰᴏʟʟᴏᴡ ɴᴇᴀʀᴇꜱᴛ ᴘʟᴀʏᴇʀ", type: bool}
+      follow-range: {label: "&fꜰᴏʟʟᴏᴡ ʀᴀɴɢᴇ", type: number, min: 1, max: 48, step: 0.5}
+      follow-distance: {label: "&fᴋᴇᴇᴘ ᴅɪꜱᴛᴀɴᴄᴇ", type: number, min: 0.5, max: 16, step: 0.25}
+      follow-speed: {label: "&fꜰᴏʟʟᴏᴡ ꜱᴘᴇᴇᴅ (blocks/s)", type: number, min: 0.1, max: 20, step: 0.1}
+      proximity-scale: {label: "&fɢʀᴏᴡ ᴡʜᴇɴ ɴᴇᴀʀ (+×)", type: number, min: 0, max: 3, step: 0.05}
+      proximity-range: {label: "&fɢʀᴏᴡ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
       layout-speed: {label: "&fʟᴀʏᴏᴜᴛ ʀᴏᴛᴀᴛɪᴏɴ (°/s)", type: number, min: -720, max: 720, step: 5}
       helix-step: {label: "&fʜᴇʟɪx / ᴛᴏʀɴᴀᴅᴏ ᴛᴜʀɴ ᴘᴇʀ ʟɪɴᴇ (°)", type: number, min: 0, max: 180, step: 5}
       wave-height: {label: "&fʟɪɴᴇ ᴡᴀᴠᴇ ʜᴇɪɢʜᴛ", type: number, min: 0, max: 2, step: 0.05}
@@ -82,7 +115,7 @@ kinds:
         properties: [effect, effect-speed, color-a, color-b, scroll-width]
       transform:
         title: "&#6293F0&lᴛʀᴀɴꜱꜰᴏʀᴍ"
-        properties: [scale, offset-x, offset-y, offset-z, rot-x, rot-y, rot-z, billboard, item-transform]
+        properties: [scale, scale-x, scale-y, scale-z, offset-x, offset-y, offset-z, rot-x, rot-y, rot-z, billboard, item-transform]
       style:
         title: "&#6293F0&lꜱᴛʏʟᴇ"
         properties: [background-default, background, shadow, see-through, alignment, line-width, opacity]
@@ -106,6 +139,9 @@ kinds:
       color-b: {label: "&fᴄᴏʟᴏʀ ʙ", type: color}
       scroll-width: {label: "&fꜱᴄʀᴏʟʟ ᴡɪᴅᴛʜ", type: integer, min: 4, max: 64, step: 1}
       scale: {label: "&fꜱᴄᴀʟᴇ", type: number, min: 0.1, max: 10, step: 0.05}
+      scale-x: {label: "&fᴡɪᴅᴛʜ ×", type: number, min: 0.05, max: 10, step: 0.05}
+      scale-y: {label: "&fʜᴇɪɢʜᴛ ×", type: number, min: 0.05, max: 10, step: 0.05}
+      scale-z: {label: "&fᴅᴇᴘᴛʜ ×", type: number, min: 0.05, max: 10, step: 0.05}
       offset-y: {label: "&fʏ ᴏꜰꜰꜱᴇᴛ", type: number, min: -5, max: 5, step: 0.05}
       offset-x: {label: "&fx ᴏꜰꜰꜱᴇᴛ", type: number, min: -10, max: 10, step: 0.05}
       offset-z: {label: "&fᴢ ᴏꜰꜰꜱᴇᴛ", type: number, min: -10, max: 10, step: 0.05}

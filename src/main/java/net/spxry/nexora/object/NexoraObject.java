@@ -289,7 +289,7 @@ public abstract class NexoraObject {
         this.z = z;
     }
 
-    protected final Set<UUID> viewers() { return viewers; }
+    public final Set<UUID> viewers() { return viewers; }
 
     protected final void broadcast(List<Packet<?>> packets) {
         broadcast(packets, Set.of());

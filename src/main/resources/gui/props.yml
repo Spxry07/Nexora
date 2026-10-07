@@ -1,0 +1,82 @@
+title: "{section} &8» &7{id}{suffix}"
+size: 54
+slots:
+  - "10-16"
+  - "19-25"
+  - "28-34"
+
+prompt:
+  title: "&#6293F0&lᴇᴅɪᴛ &8» &7{prop}"
+  body: "&7Enter a new value for &f{prop}&7."
+
+types:
+  BOOL:
+    material-on: "LIME_DYE"
+    material-off: "GRAY_DYE"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fCurrent: {value}"
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to toggle"
+  CHOICE:
+    material: "COMPARATOR"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fCurrent: &#6293F0{value}"
+      - "&fOptions: &7{count}"
+      - ""
+      - "&#6293F0&l➥ &nLEFT&#6293F0 next &8| &#6293F0&nRIGHT&#6293F0 previous"
+      - "&#6293F0&l➥ &nSHIFT&#6293F0 to browse all options"
+  NUMBER:
+    material: "REPEATER"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fCurrent: &#6293F0{value}"
+      - "&fRange: &7{range} &8(step {step})"
+      - ""
+      - "&#6293F0&l➥ &nLEFT&#6293F0 +{step} &8| &#6293F0&nRIGHT&#6293F0 -{step}"
+      - "&#6293F0&l➥ &nSHIFT&#6293F0 for ×{multiplier}"
+      - "&#6293F0&l➥ &nDROP&#6293F0 to type a value"
+  INTEGER:
+    material: "COMPARATOR"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fCurrent: &#6293F0{value}"
+      - "&fRange: &7{range} &8(step {step})"
+      - ""
+      - "&#6293F0&l➥ &nLEFT&#6293F0 +{step} &8| &#6293F0&nRIGHT&#6293F0 -{step}"
+      - "&#6293F0&l➥ &nSHIFT&#6293F0 for ×{multiplier}"
+      - "&#6293F0&l➥ &nDROP&#6293F0 to type a value"
+  TEXT:
+    material: "OAK_SIGN"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fCurrent: &7{value}"
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to type a new value"
+  MULTILINE:
+    material: "WRITABLE_BOOK"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fCurrent: &7{value}"
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to edit the text"
+  COLOR:
+    material: "PINK_DYE"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fCurrent: {value}"
+      - "&fFormat: &7#RRGGBB or #AARRGGBB"
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to type a color"
+
+items:
+  back:
+    slot: 45

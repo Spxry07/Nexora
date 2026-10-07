@@ -1,0 +1,78 @@
+title: "&#6293F0&lʟɪɴᴇ #{number} &8» &7{id}"
+size: 45
+
+section-slots:
+  - "10-14"
+
+section:
+  lore:
+    - "&8Description:"
+    - ""
+    - "&fEdit the settings in this category."
+    - "&fSettings: &#6293F0{count}"
+    - ""
+    - "&#6293F0&l➥ &nCLICK&#6293F0 to open"
+
+section-icons:
+  default: "PAPER"
+  content: "WRITABLE_BOOK"
+  effect: "BLAZE_POWDER"
+  transform: "COMPASS"
+  style: "PAINTING"
+  glow: "GLOWSTONE_DUST"
+
+items:
+  info:
+    slot: 4
+    material: "{icon}"
+    name: "&#6293F0&lʟɪɴᴇ #{number}"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fType: &#6293F0{type}"
+      - "&fPreview: &7{preview}"
+      - "&fPosition: &7{number} of {size}"
+      - ""
+      - "&8Edit it with the categories below."
+  effect:
+    slot: 20
+    material: "BLAZE_POWDER"
+    name: "&#6293F0ᴇꜰꜰᴇᴄᴛ ᴘɪᴄᴋᴇʀ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fPick an animated text effect."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to pick an effect"
+  line-up:
+    slot: 22
+    material: "SPECTRAL_ARROW"
+    name: "&fᴍᴏᴠᴇ ᴜᴘ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fSwap with the line above."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to move up"
+  line-down:
+    slot: 24
+    material: "TIPPED_ARROW"
+    name: "&fᴍᴏᴠᴇ ᴅᴏᴡɴ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fSwap with the line below."
+      - ""
+      - "&#6293F0&l➥ &nCLICK&#6293F0 to move down"
+  back:
+    slot: 36
+  delete:
+    slot: 44
+    material: "TNT"
+    name: "&#FF0000ᴅᴇʟᴇᴛᴇ ʟɪɴᴇ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fRemove this line."
+      - ""
+      - "&#FF0000&l➥ &nCLICK&#FF0000 to delete the line"

@@ -3,11 +3,14 @@ package net.spxry.nexora.npc;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.spxry.nexora.Nexora;
-import net.spxry.nexora.object.Npc;
 import net.spxry.nexora.config.MessageManager;
+import net.spxry.nexora.object.NexoraObject;
 import net.spxry.nexora.util.ColorUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,48 +19,72 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public final class Effects {
-    private static final String FADE_IN_KEY = "npc.triggers.title.fade-in";
-    private static final String STAY_KEY = "npc.triggers.title.stay";
-    private static final String FADE_OUT_KEY = "npc.triggers.title.fade-out";
+    private static final String FADE_IN_KEY = "title.fade-in";
+    private static final String STAY_KEY = "title.stay";
+    private static final String FADE_OUT_KEY = "title.fade-out";
     private static final long DEFAULT_FADE_IN = 500L;
     private static final long DEFAULT_STAY = 3500L;
     private static final long DEFAULT_FADE_OUT = 1000L;
     private static final String PH_PLAYER = "player";
     private static final String PH_NPC = "npc";
+    private static final String PH_HOLO = "holo";
+    private static final String PH_ID = "id";
+    private static final String PH_SIGNAL = "signal";
     private static final String PH_UUID = "uuid";
     private static final String PH_PREFIX = "prefix";
-    private static final double FEET_LIFT = 0.1;
-    private static final double BODY_FACTOR = 0.6;
-    private static final double HAND_FACTOR = 0.75;
-    private static final double HAND_SIDE = 0.35;
-    private static final double HAND_FORWARD = 0.2;
-    private static final double ABOVE_LIFT = 0.5;
+    private static final double CHEST_DROP = 0.4;
     private static final double RING_VARIANCE = 0.5;
     private static final double FULL_TURN = Math.PI * 2;
+    private static final double DEFAULT_HEIGHT = 1.0;
+    private static final int X = 0;
+    private static final int Y = 1;
+    private static final int Z = 2;
 
     private final Nexora plugin;
-    private final Npc npc;
+    private final TriggerHost host;
+    private final TriggerRuntime runtime;
 
-    public Effects(Nexora plugin, Npc npc) {
+    public Effects(Nexora plugin, TriggerHost host, TriggerRuntime runtime) {
         this.plugin = plugin;
-        this.npc = npc;
+        this.host = host;
+        this.runtime = runtime;
     }
 
-    public void run(List<Triggers.Action> actions, Player player, boolean region) {
-        var placeholders = placeholders(player);
-        for (var action : actions) {
+    public void run(List<Triggers.Action> actions, Player player, boolean region, SignalBus.Chain chain) {
+        run(actions, 0, player, region, chain);
+    }
+
+    private void run(List<Triggers.Action> actions, int from, Player player, boolean region, SignalBus.Chain chain) {
+        Map<String, String> placeholders = null;
+        for (int i = from; i < actions.size(); i++) {
+            var action = actions.get(i);
+            if (action instanceof Triggers.DelayAction delay) {
+                resume(actions, i + 1, player, delay.ticks(), chain);
+                return;
+            }
+            if (placeholders == null) placeholders = placeholders(player, chain);
             try {
-                execute(action, player, region, placeholders);
+                execute(action, player, region, chain, placeholders);
             } catch (RuntimeException e) {
-                plugin.getLogger().log(Level.WARNING, npc.id(), e);
+                plugin.getLogger().log(Level.WARNING, host.id(), e);
             }
         }
     }
 
-    private Map<String, String> placeholders(Player player) {
+    private void resume(List<Triggers.Action> actions, int next, Player player, int ticks, SignalBus.Chain chain) {
+        var fresh = chain == null ? null : chain.detach();
+        plugin.scheduler().runAtLocationDelayed(host.anchor(), () -> {
+            if (player != null && !player.isOnline()) return;
+            run(actions, next, player, true, fresh);
+        }, ticks);
+    }
+
+    private Map<String, String> placeholders(Player player, SignalBus.Chain chain) {
         Map<String, String> values = new HashMap<>();
-        values.put(PH_NPC, npc.id());
+        values.put(NexoraObject.NPC.equals(host.kind()) ? PH_NPC : PH_HOLO, host.id());
+        values.put(PH_ID, host.id());
         values.put(PH_PREFIX, plugin.messages().getPrefix());
+        if (chain != null) values.put(PH_SIGNAL, chain.name());
         if (player != null) {
             values.put(PH_PLAYER, player.getName());
             values.put(PH_UUID, player.getUniqueId().toString());
@@ -65,63 +92,75 @@ public final class Effects {
         return values;
     }
 
-    private void execute(Triggers.Action action, Player player, boolean region, Map<String, String> placeholders) {
+    private void execute(Triggers.Action action, Player player, boolean region, SignalBus.Chain chain, Map<String, String> placeholders) {
         switch (action) {
             case Triggers.ParticleAction particle -> particle(particle, player);
             case Triggers.SoundAction sound -> sound(sound, player);
-            case Triggers.TextAction text -> text(text, player, placeholders);
+            case Triggers.TextAction text -> text(text, player, region, placeholders);
             case Triggers.CommandAction command -> command(command, player, placeholders);
-            case Triggers.SwingAction swing -> onNpc(region, () -> npc.swing(swing.off()));
-            case Triggers.GlowAction glow -> onNpc(region, () -> npc.glow(glow.mode()));
-            case Triggers.AnimateAction animate -> onNpc(region, () -> npc.playback(animate.mode()));
-            case Triggers.ItemAction item -> onNpc(region, () -> npc.overrideItem(item.material()));
-            case Triggers.HurtAction hurt -> onNpc(region, npc::hurt);
-            case Triggers.LookAction look -> {
-                if (player != null) npc.faceToward(player);
+            case Triggers.SignalAction signal -> plugin.signals().emit(signal.name(), player, chain);
+            case Triggers.HostAction call -> hostAction(call, player, region);
+            case Triggers.DelayAction delay -> {
             }
         }
     }
 
-    private void onNpc(boolean region, Runnable task) {
+    private void hostAction(Triggers.HostAction action, Player player, boolean region) {
+        Runnable task = () -> {
+            try {
+                host.hostAction(action.verb(), action.args(), player);
+            } catch (RuntimeException e) {
+                plugin.getLogger().log(Level.WARNING, host.id(), e);
+            }
+        };
         if (region) task.run();
-        else plugin.scheduler().runAtLocation(npc.anchor(), task);
+        else plugin.scheduler().runAtLocation(host.anchor(), task);
+    }
+
+    private List<Player> viewerList() {
+        List<Player> players = new ArrayList<>();
+        for (var uuid : host.viewers()) {
+            var player = Bukkit.getPlayer(uuid);
+            if (player != null) players.add(player);
+        }
+        return players;
     }
 
     private List<Player> targets(Player player, boolean all) {
         if (player != null && !all) return List.of(player);
-        return npc.viewerList();
+        return viewerList();
     }
 
-    private void each(Player origin, List<Player> targets, Consumer<Player> task) {
+    private void each(Player origin, boolean region, List<Player> targets, Consumer<Player> task) {
         for (var target : targets) {
-            if (target.equals(origin)) task.accept(target);
+            if (!region && target.equals(origin)) task.accept(target);
             else plugin.scheduler().runAtEntity(target, () -> task.accept(target));
         }
     }
 
     private void sound(Triggers.SoundAction action, Player player) {
-        double x = npc.x();
-        double y = npc.y();
-        double z = npc.z();
+        double x = host.x();
+        double y = host.y();
+        double z = host.z();
         for (var target : targets(player, action.all())) target.playSound(action.sound(), x, y, z);
     }
 
-    private void text(Triggers.TextAction action, Player player, Map<String, String> placeholders) {
+    private void text(Triggers.TextAction action, Player player, boolean region, Map<String, String> placeholders) {
         var main = MessageManager.apply(action.text(), placeholders);
         var sub = MessageManager.apply(action.sub(), placeholders);
         var targets = targets(player, false);
         switch (action.kind()) {
             case MESSAGE -> {
                 var component = ColorUtil.colorize(main);
-                each(player, targets, target -> target.sendMessage(component));
+                each(player, region, targets, target -> target.sendMessage(component));
             }
             case ACTIONBAR -> {
                 var component = ColorUtil.colorize(main);
-                each(player, targets, target -> target.sendActionBar(component));
+                each(player, region, targets, target -> target.sendActionBar(component));
             }
             case TITLE -> {
                 var title = Title.title(component(main), component(sub), times());
-                each(player, targets, target -> target.showTitle(title));
+                each(player, region, targets, target -> target.showTitle(title));
             }
         }
     }
@@ -133,9 +172,9 @@ public final class Effects {
     private Title.Times times() {
         var config = plugin.getConfig();
         return Title.Times.times(
-            Duration.ofMillis(config.getLong(FADE_IN_KEY, DEFAULT_FADE_IN)),
-            Duration.ofMillis(config.getLong(STAY_KEY, DEFAULT_STAY)),
-            Duration.ofMillis(config.getLong(FADE_OUT_KEY, DEFAULT_FADE_OUT)));
+            Duration.ofMillis(config.getLong(Triggers.key(plugin, FADE_IN_KEY), DEFAULT_FADE_IN)),
+            Duration.ofMillis(config.getLong(Triggers.key(plugin, STAY_KEY), DEFAULT_STAY)),
+            Duration.ofMillis(config.getLong(Triggers.key(plugin, FADE_OUT_KEY), DEFAULT_FADE_OUT)));
     }
 
     private void command(Triggers.CommandAction action, Player player, Map<String, String> placeholders) {
@@ -146,51 +185,86 @@ public final class Effects {
     private void particle(Triggers.ParticleAction action, Player player) {
         var targets = targets(player, action.all());
         if (targets.isEmpty()) return;
-        var origin = anchor(action.anchor());
-        if (action.anchor() == Triggers.Anchor.AROUND) {
-            for (int i = 0; i < action.count(); i++) emit(targets, action, ring(origin, action.spread()), 1, 0);
+        var start = start(action, player);
+        if (action.to() != null) {
+            var end = resolve(action.to(), player);
+            if (end != null) beam(targets, action, start, end);
             return;
         }
-        emit(targets, action, origin, action.count(), action.spread());
+        if (isAround(action.at())) {
+            for (int i = 0; i < action.count(); i++) emit(targets, action, ring(start, action.spread()), 1, 0);
+            return;
+        }
+        emit(targets, action, start, action.count(), action.spread());
+    }
+
+    private static boolean isAround(Triggers.Target target) {
+        return target.kind() == Triggers.TargetKind.ANCHOR && Triggers.ANCHOR_AROUND.equals(target.anchor());
+    }
+
+    private double[] start(Triggers.ParticleAction action, Player player) {
+        var point = resolve(action.at(), player);
+        double[] origin = point == null ? new double[]{host.x(), host.y(), host.z()} : new double[]{point.getX(), point.getY(), point.getZ()};
+        var offset = action.offset();
+        return new double[]{origin[X] + offset[X], origin[Y] + offset[Y], origin[Z] + offset[Z]};
+    }
+
+    private void beam(List<Player> targets, Triggers.ParticleAction action, double[] start, Vector end) {
+        int count = action.count();
+        for (int i = 0; i < count; i++) {
+            double f = count == 1 ? 0 : i / (double) (count - 1);
+            double[] at = {start[X] + (end.getX() - start[X]) * f, start[Y] + (end.getY() - start[Y]) * f, start[Z] + (end.getZ() - start[Z]) * f};
+            emit(targets, action, at, 1, action.spread());
+        }
     }
 
     private void emit(List<Player> targets, Triggers.ParticleAction action, double[] at, int count, double offset) {
         for (var target : targets) {
-            target.spawnParticle(action.type(), at[0], at[1], at[2], count, offset, offset, offset, action.speed(), action.data());
+            target.spawnParticle(action.type(), at[X], at[Y], at[Z], count, offset, offset, offset, action.speed(), action.data());
         }
     }
 
     private double[] ring(double[] centre, double radius) {
         var random = ThreadLocalRandom.current();
         double angle = random.nextDouble() * FULL_TURN;
-        double lift = (random.nextDouble() - RING_VARIANCE) * npc.eyeHeight() * RING_VARIANCE;
-        return new double[]{centre[0] + Math.cos(angle) * radius, centre[1] + lift, centre[2] + Math.sin(angle) * radius};
+        double lift = (random.nextDouble() - RING_VARIANCE) * height() * RING_VARIANCE;
+        return new double[]{centre[X] + Math.cos(angle) * radius, centre[Y] + lift, centre[Z] + Math.sin(angle) * radius};
     }
 
-    private double[] anchor(Triggers.Anchor anchor) {
-        double x = npc.x();
-        double y = npc.y();
-        double z = npc.z();
-        double eye = npc.eyeHeight();
-        double yaw = Math.toRadians(npc.facing());
-        double forwardX = -Math.sin(yaw);
-        double forwardZ = Math.cos(yaw);
-        double rightX = -Math.cos(yaw);
-        double rightZ = -Math.sin(yaw);
-        double scale = npc.scale();
-        return switch (anchor) {
-            case HEAD -> new double[]{x, y + eye, z};
-            case FEET -> new double[]{x, y + FEET_LIFT * scale, z};
-            case BODY, AROUND -> new double[]{x, y + eye * BODY_FACTOR, z};
-            case ABOVE -> new double[]{x, y + eye + npc.nameplateHeight() + ABOVE_LIFT * scale, z};
-            case HAND -> side(x, y, z, eye, forwardX, forwardZ, rightX, rightZ, 1, scale);
-            case OFFHAND -> side(x, y, z, eye, forwardX, forwardZ, rightX, rightZ, -1, scale);
+    private double height() {
+        var head = host.anchorPoint(Triggers.ANCHOR_HEAD);
+        return head == null ? DEFAULT_HEIGHT : Math.max(0, head.getY() - host.y());
+    }
+
+    private Vector resolve(Triggers.Target target, Player player) {
+        return switch (target.kind()) {
+            case ANCHOR -> self(target.anchor());
+            case PLAYER -> playerPoint(player);
+            case NPC -> other(NexoraObject.NPC, target);
+            case HOLO -> other(NexoraObject.HOLOGRAM, target);
+            case RELATIVE -> new Vector(host.x() + target.vec()[X], host.y() + target.vec()[Y], host.z() + target.vec()[Z]);
+            case ABSOLUTE -> new Vector(target.vec()[X], target.vec()[Y], target.vec()[Z]);
         };
     }
 
-    private double[] side(double x, double y, double z, double eye, double forwardX, double forwardZ, double rightX, double rightZ, int sign, double scale) {
-        double side = HAND_SIDE * scale * sign;
-        double forward = HAND_FORWARD * scale;
-        return new double[]{x + rightX * side + forwardX * forward, y + eye * HAND_FACTOR, z + rightZ * side + forwardZ * forward};
+    private Vector self(String anchor) {
+        return anchorOf(host, Triggers.ANCHOR_AROUND.equals(anchor) ? Triggers.ANCHOR_BODY : anchor);
+    }
+
+    private Vector other(String kind, Triggers.Target target) {
+        var found = plugin.objects().get(kind, target.id());
+        if (found.isEmpty() || !(found.get() instanceof TriggerHost other)) return null;
+        return anchorOf(other, target.anchor());
+    }
+
+    private static Vector anchorOf(TriggerHost owner, String anchor) {
+        var point = owner.anchorPoint(anchor);
+        return point != null ? point : owner.anchorPoint(Triggers.ANCHOR_CENTER);
+    }
+
+    private Vector playerPoint(Player player) {
+        if (player == null) return null;
+        var eye = runtime.eye(player.getUniqueId());
+        return eye == null ? null : new Vector(eye[X], eye[Y] - CHEST_DROP, eye[Z]);
     }
 }
