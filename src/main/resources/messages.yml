@@ -32,6 +32,8 @@ cmd:
       - "&8» &f/nexora holo additem <id> &7- add your held item as a line"
       - "&8» &f/nexora npc equip <id> <slot> &7- equip your held item (empty hand clears)"
       - "&8» &f/nexora npc skin <id> <player|name> &7- set the skin"
+      - "&8» &f/nexora <npc|holo> action <id> add <action> &7- add a click action, e.g. [player] /shop"
+      - "&8» &f/nexora <npc|holo> action <id> <list|remove <n>|clear> &7- manage click actions"
       - "&8» &f/nexora demo &7- spawn demo NPCs and holograms in front of you"
       - "&8» &f/nexora demo clear &7- remove the demo objects"
       - "&8» &f/nexora mineskin <key|status> &7- set and verify the MineSkin key for Skinned Model NPCs"
@@ -198,6 +200,52 @@ cmd:
     sound: "entity.player.levelup"
     sound-volume: 1.0
     sound-pitch: 1.0
+  action-usage:
+    messages:
+      - "{prefix}&#FF0000Usage: /nexora <npc|holo> action <id> <add <action>|list|remove <n>|clear>"
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  action-added:
+    messages:
+      - "{prefix}&7Added click action &#6293F0#{number}&7 to &#6293F0{id}&7."
+      - "&8» &f{action}"
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  action-removed:
+    messages:
+      - "{prefix}&7Removed click action &#6293F0#{number}&7 from &#6293F0{id}&7."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  action-cleared:
+    messages:
+      - "{prefix}&7Cleared all click actions of &#6293F0{id}&7."
+    sound: "entity.experience_orb.pickup"
+    sound-volume: 1.0
+    sound-pitch: 1.0
+  action-invalid:
+    messages:
+      - "{prefix}&#FF0000There is no click action #{number} on {id}."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  action-too-long:
+    messages:
+      - "{prefix}&#FF0000The click actions of {id} are too long. Remove some first."
+    sound: "entity.villager.no"
+    sound-volume: 0.8
+    sound-pitch: 1.0
+  action-list-empty:
+    messages:
+      - "{prefix}&7&#6293F0{id}&7 has no click actions. Add one with &f/nexora npc action {id} add [player] /shop"
+  action-list-header:
+    messages:
+      - "{prefix}&7Click actions of &#6293F0{id}&7:"
+  action-list-entry:
+    messages:
+      - "&8{number}. &f{action}"
 
 dialog:
   kinds:
@@ -211,6 +259,7 @@ dialog:
   preview:
     item: "[item]"
     block: "[block]"
+    shape: "[shape]"
     empty: "(empty)"
     ellipsis: "…"
   input:

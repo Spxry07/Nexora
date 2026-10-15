@@ -1,4 +1,4 @@
-file-version: 7
+file-version: 10
 kinds:
   hologram:
     sections:
@@ -47,7 +47,7 @@ kinds:
       hitbox-width: {label: "&fʜɪᴛʙᴏx ᴡɪᴅᴛʜ", type: number, min: 0.1, max: 10, step: 0.1}
       hitbox-height: {label: "&fʜɪᴛʙᴏx ʜᴇɪɢʜᴛ", type: number, min: 0.1, max: 10, step: 0.1}
       hitbox-offset-y: {label: "&fʜɪᴛʙᴏx ʜᴇɪɢʜᴛ ᴏꜰꜰꜱᴇᴛ", type: number, min: -5, max: 5, step: 0.05}
-      actions: {label: "&fᴄʟɪᴄᴋ ᴀᴄᴛɪᴏɴꜱ (one per line)", type: multiline, max: 2048}
+      actions: {label: "&fᴄʟɪᴄᴋ ᴀᴄᴛɪᴏɴꜱ ([player] /shop, [console], [message] ...)", type: multiline, max: 2048}
       click-type:
         label: "&fᴄʟɪᴄᴋ ᴛʏᴘᴇ"
         type: choice
@@ -109,7 +109,7 @@ kinds:
     sections:
       content:
         title: "&#6293F0&lᴄᴏɴᴛᴇɴᴛ"
-        properties: [type, text, material, frame-interval]
+        properties: [type, text, material, frame-interval, shape, shape-style, shape-sides, shape-inner, shape-thickness]
       effect:
         title: "&#6293F0&lᴛᴇxᴛ ᴇꜰꜰᴇᴄᴛ"
         properties: [effect, effect-speed, color-a, color-b, scroll-width]
@@ -126,10 +126,21 @@ kinds:
       type:
         label: "&fʟɪɴᴇ ᴛʏᴘᴇ"
         type: choice
-        options: {TEXT: "Text", ITEM: "Item", BLOCK: "Block"}
+        options: {TEXT: "Text", ITEM: "Item", BLOCK: "Block", SHAPE: "Shape"}
       text: {label: "&fᴛᴇxᴛ (frames split by ||)", type: multiline, max: 1024}
       material: {label: "&fᴍᴀᴛᴇʀɪᴀʟ (item/block lines)", type: text, max: 64}
       frame-interval: {label: "&fꜰʀᴀᴍᴇ ɪɴᴛᴇʀᴠᴀʟ (ticks)", type: integer, min: 1, max: 200, step: 1}
+      shape:
+        label: "&fꜱʜᴀᴘᴇ (shape lines)"
+        type: choice
+        options: {TRIANGLE: "Triangle", RIGHT_TRIANGLE: "Right triangle", SQUARE: "Square", DIAMOND: "Diamond", POLYGON: "Polygon", CIRCLE: "Circle", STAR: "Star", HEART: "Heart", CROSS: "Cross", ARROW: "Arrow", CUBE: "Cube (3D)", PYRAMID: "Pyramid (3D)", PRISM: "Prism (3D)", OCTAHEDRON: "Octahedron (3D)", CYLINDER: "Cylinder (3D)", CONE: "Cone (3D)"}
+      shape-style:
+        label: "&fꜱʜᴀᴘᴇ ꜱᴛʏʟᴇ"
+        type: choice
+        options: {FILL: "Filled", OUTLINE: "Outline"}
+      shape-sides: {label: "&fꜱɪᴅᴇꜱ / ꜱᴛᴀʀ ᴘᴏɪɴᴛꜱ", type: integer, min: 3, max: 32, step: 1}
+      shape-inner: {label: "&fꜱᴛᴀʀ ɪɴɴᴇʀ ꜱɪᴢᴇ", type: number, min: 0.05, max: 0.95, step: 0.05}
+      shape-thickness: {label: "&fᴏᴜᴛʟɪɴᴇ ᴛʜɪᴄᴋɴᴇꜱꜱ", type: number, min: 0.01, max: 0.5, step: 0.01}
       effect:
         label: "&fᴇꜰꜰᴇᴄᴛ"
         type: choice
@@ -189,7 +200,7 @@ kinds:
         properties: [swing-interval, sneak-interval, hurt-interval]
       animation:
         title: "&#6293F0&lᴀɴɪᴍᴀᴛɪᴏɴ ᴘʀᴇꜱᴇᴛ"
-        properties: [animation, animation-speed]
+        properties: [animation, animation-speed, keyframes]
       pose:
         title: "&#6293F0&lᴘᴏꜱᴇ (ꜱᴋɪɴɴᴇᴅ ᴍᴏᴅᴇʟ)"
         properties: [pose-head, pose-body, pose-right-arm, pose-left-arm, pose-right-leg, pose-left-leg]
@@ -281,7 +292,7 @@ kinds:
       swing-interval: {label: "&fꜱᴡɪɴɢ ᴀʀᴍ ᴇᴠᴇʀʏ (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
       sneak-interval: {label: "&fᴛᴏɢɢʟᴇ ꜱɴᴇᴀᴋ ᴇᴠᴇʀʏ (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
       hurt-interval: {label: "&fʜᴜʀᴛ ꜰʟᴀꜱʜ ᴇᴠᴇʀʏ (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
-      actions: {label: "&fᴀᴄᴛɪᴏɴꜱ (one per line)", type: multiline, max: 2048}
+      actions: {label: "&fᴄʟɪᴄᴋ ᴀᴄᴛɪᴏɴꜱ ([player] /shop, [console], [message] ...)", type: multiline, max: 2048}
       click-type:
         label: "&fᴄʟɪᴄᴋ ᴛʏᴘᴇ"
         type: choice
@@ -297,7 +308,8 @@ kinds:
       animation:
         label: "&fᴀɴɪᴍᴀᴛɪᴏɴ"
         type: choice
-        options: {NONE: "None", WAVE: "Wave", NOD: "Nod", LOOK_AROUND: "Look around", CHEER: "Cheer", CROUCH_DANCE: "Crouch dance", ARCHER: "Archer", CROSSBOW: "Crossbow", TRIDENT: "Trident throw", CAST: "Spell cast", SPYGLASS: "Spyglass scout", HORN: "Horn call", SHIELD: "Shield guard", GUARD: "Sword guard", FEAST: "Feast", POTION: "Potion drink", SWIMMER: "Swimmer", RIPTIDE: "Riptide spin", SLEEPY: "Sleepy", WALK: "Walk (model)", SALUTE: "Salute (model)", POINT: "Point (model)", BOW: "Bow (model)", DAB: "Dab (model)", ZOMBIE: "Zombie arms (model)", DANCE: "Dance (model)"}
+        options: {NONE: "None", CUSTOM: "Custom keyframes", WAVE: "Wave", NOD: "Nod", LOOK_AROUND: "Look around", CHEER: "Cheer", CROUCH_DANCE: "Crouch dance", ARCHER: "Archer", CROSSBOW: "Crossbow", TRIDENT: "Trident throw", CAST: "Spell cast", SPYGLASS: "Spyglass scout", HORN: "Horn call", SHIELD: "Shield guard", GUARD: "Sword guard", FEAST: "Feast", POTION: "Potion drink", SWIMMER: "Swimmer", RIPTIDE: "Riptide spin", SLEEPY: "Sleepy", WALK: "Walk (model)", SALUTE: "Salute (model)", POINT: "Point (model)", BOW: "Bow (model)", DAB: "Dab (model)", ZOMBIE: "Zombie arms (model)", DANCE: "Dance (model)"}
+      keyframes: {label: "&fᴋᴇʏꜰʀᴀᴍᴇꜱ (ticks limb=x,y,z per line)", type: multiline, max: 8192}
       triggers: {label: "&fᴛʀɪɢɢᴇʀꜱ (event -> action; action)", type: multiline, max: 8192}
       look-trigger-range: {label: "&fʟᴏᴏᴋ ᴛʀɪɢɢᴇʀ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
       approach-range: {label: "&fᴀᴘᴘʀᴏᴀᴄʜ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}

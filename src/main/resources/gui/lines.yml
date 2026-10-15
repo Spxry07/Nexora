@@ -7,6 +7,7 @@ icons:
   TEXT: "OAK_SIGN"
   ITEM: "ITEM_FRAME"
   BLOCK: "GRASS_BLOCK"
+  SHAPE: "AMETHYST_SHARD"
 
 entry:
   name: "&#6293F0ʟɪɴᴇ #{number}"
@@ -57,6 +58,17 @@ items:
       - "&fAdd the block in your main hand."
       - ""
       - "&#00FF5A&l➥ &nCLICK&#00FF5A to add the held block"
+  add-shape:
+    slot: 51
+    material: "AMETHYST_SHARD"
+    name: "&#00FF5Aᴀᴅᴅ ꜱʜᴀᴘᴇ"
+    lore:
+      - "&8Description:"
+      - ""
+      - "&fAdd a solid shape like a triangle,"
+      - "&fstar, heart or cube."
+      - ""
+      - "&#00FF5A&l➥ &nCLICK&#00FF5A to add a shape"
   info:
     slot: 53
     material: "KNOWLEDGE_BOOK"

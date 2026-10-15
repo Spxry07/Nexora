@@ -31,6 +31,7 @@ values:
   no-rules: "none"
   item: "[item]"
   block: "[block]"
+  shape: "[shape]"
 
 sounds:
   enabled: true

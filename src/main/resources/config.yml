@@ -19,6 +19,35 @@ display:
   view-range-unit: 64
   fallback-material: "STONE"
 
+shapes:
+  max-pieces: 400
+  max-sides: 32
+  double-sided: true
+  circle-segments: 32
+  heart-segments: 36
+  cross-width: 0.34
+  arrow-shaft: 0.34
+  arrow-head: 0.5
+  min-thickness: 0.01
+  shade:
+    top: 1.0
+    bottom: 0.55
+    side-x: 0.82
+    side-z: 0.68
+  quad:
+    text: " "
+    width: 0.125
+    height: 0.25
+    origin-x: -0.05
+    origin-y: 0.0
+  new-line:
+    type: "SHAPE"
+    shape: "TRIANGLE"
+    billboard: "FIXED"
+    color-a: "#40CEFC"
+    effect: "NONE"
+    scale: 1
+
 effects:
   typewriter-hold-steps: 20
   rainbow-step: 0.02
@@ -36,11 +65,29 @@ placeholders:
   date-format: "dd/MM/yyyy"
 
 actions:
-  console: "[console]"
-  player: "[player]"
-  message: "[message]"
-  actionbar: "[actionbar]"
-  sound: "[sound]"
+  player: ["[player]", "[command]", "[cmd]", "[player_command]", "[player-command]"]
+  op: ["[op]", "[player_op]", "[op_command]", "[op-command]"]
+  console: ["[console]", "[console_command]", "[console-command]"]
+  message: ["[message]", "[msg]"]
+  broadcast: ["[broadcast]"]
+  actionbar: ["[actionbar]"]
+  title: ["[title]"]
+  sound: ["[sound]"]
+  server: ["[server]", "[connect]"]
+  close: ["[close]"]
+  delay: ["[delay]", "[wait]"]
+  permission: ["[permission]", "[perm]"]
+  untagged: "PLAYER"
+  player-as-chat: true
+  allow-op: true
+  placeholderapi: true
+  title-separator: ";"
+  title-fade-in: 10
+  title-stay: 60
+  title-fade-out: 10
+  proxy-channel: "BungeeCord"
+  proxy-connect: "Connect"
+  max-delay-ticks: 6000
 
 limits:
   max-lines: 32
@@ -231,6 +278,11 @@ defaults:
     glow-color: "#6293F0"
     brightness: -1
     item-transform: "FIXED"
+    shape: "TRIANGLE"
+    shape-style: "FILL"
+    shape-sides: 6
+    shape-inner: 0.45
+    shape-thickness: 0.08
   npc:
     entity-type: "MANNEQUIN"
     name: "&#6293F0&lɴᴇxᴏʀᴀ ɴᴘᴄ"
@@ -250,6 +302,7 @@ defaults:
     cooldown: 20
     animation-speed: 1
     animation: "NONE"
+    keyframes: ""
     pose-head: "0,0,0"
     pose-body: "0,0,0"
     pose-right-arm: "0,0,0"

@@ -27,6 +27,7 @@ pickers:
     default-icon: "NOTE_BLOCK"
     icons:
       NONE: "BARRIER"
+      CUSTOM: "ARMOR_STAND"
       WAVE: "WHITE_BANNER"
       NOD: "LEVER"
       LOOK_AROUND: "ENDER_EYE"

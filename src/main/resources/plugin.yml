@@ -5,6 +5,8 @@ description: Packet-based animated holograms and NPCs with in-game and web edito
 api-version: '1.21'
 author: Spxry Studios
 folia-supported: true
+softdepend:
+  - PlaceholderAPI
 commands:
   nexora:
     usage: /<command> [gui|dialog|holo|npc|web|demo|mineskin|reload|help]

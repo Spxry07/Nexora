@@ -11,6 +11,7 @@ public final class HoloLine {
     static final String TEXT = "TEXT";
     static final String ITEM = "ITEM";
     static final String BLOCK = "BLOCK";
+    static final String SHAPE = "SHAPE";
 
     public static final Map<String, Binding<HoloLine>> BINDINGS = createBindings();
 
@@ -45,6 +46,11 @@ public final class HoloLine {
     boolean glow;
     String glowColor = "#FFFFFF";
     int brightness = -1;
+    String shape = "TRIANGLE";
+    String shapeStyle = "FILL";
+    int shapeSides = 6;
+    double shapeInner = 0.45;
+    double shapeThickness = 0.08;
     private volatile String itemData;
 
     public HoloLine() {}
@@ -82,6 +88,11 @@ public final class HoloLine {
         map.put("glow", Binding.bool(l -> l.glow, (l, v) -> l.glow = v));
         map.put("glow-color", Binding.text(l -> l.glowColor, (l, v) -> l.glowColor = v));
         map.put("brightness", Binding.integer(l -> l.brightness, (l, v) -> l.brightness = v));
+        map.put("shape", Binding.text(l -> l.shape, (l, v) -> l.shape = v));
+        map.put("shape-style", Binding.text(l -> l.shapeStyle, (l, v) -> l.shapeStyle = v));
+        map.put("shape-sides", Binding.integer(l -> l.shapeSides, (l, v) -> l.shapeSides = v));
+        map.put("shape-inner", Binding.number(l -> l.shapeInner, (l, v) -> l.shapeInner = v));
+        map.put("shape-thickness", Binding.number(l -> l.shapeThickness, (l, v) -> l.shapeThickness = v));
         return Collections.unmodifiableMap(map);
     }
 

@@ -51,6 +51,7 @@ public final class DialogMenus {
     private static final String PROP_MATERIAL = "material";
     private static final String TYPE_ITEM = "ITEM";
     private static final String TYPE_BLOCK = "BLOCK";
+    private static final String TYPE_SHAPE = "SHAPE";
     private static final String KINDS_KEY = "dialog.kinds.";
     private static final String BUTTON_KEY = "dialog.button.";
     private static final String TOOLTIP_KEY = "dialog.tooltip.";
@@ -422,7 +423,7 @@ public final class DialogMenus {
 
     private String preview(HoloLine line) {
         var type = line.type();
-        if (TYPE_ITEM.equalsIgnoreCase(type) || TYPE_BLOCK.equalsIgnoreCase(type)) {
+        if (TYPE_ITEM.equalsIgnoreCase(type) || TYPE_BLOCK.equalsIgnoreCase(type) || TYPE_SHAPE.equalsIgnoreCase(type)) {
             return plugin.messages().raw(PREVIEW_KEY + type.toLowerCase(Locale.ROOT));
         }
         var text = ColorUtil.plain(line.text()).replace('\n', ' ').trim();

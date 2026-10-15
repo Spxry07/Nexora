@@ -562,6 +562,13 @@ const SCENE_ORBIT_K = 0.008;
 const SCENE_ZOOM_K = 0.0012;
 const FLICKER_CHANCE_DEF = 0.35;
 const FADE_STEP_DEF = 0.08;
+const ACTION_SNIPPETS = [['Player command', '[player] /shop'], ['Console command', '[console] give {player} diamond 1'], ['Op command', '[op] /gamemode creative'], ['Message', '[message] &aHello {player}!'], ['Broadcast', '[broadcast] &e{player} visited the shop'], ['Action bar', '[actionbar] &bWelcome!'], ['Title', '[title] &6Welcome;&7to the shop'], ['Sound', '[sound] entity.experience_orb.pickup 1 1'], ['Send to server', '[server] lobby'], ['Close menu', '[close]'], ['Wait', '[delay] 20'], ['Need permission', '[permission] shop.use &cYou cannot use this.']];
+const SHAPE_SOLIDS = new Set(['CUBE', 'PYRAMID', 'PRISM', 'OCTAHEDRON', 'CYLINDER', 'CONE']);
+const SHAPE_DEF = {circleSegments: 32, heartSegments: 36, crossWidth: 0.34, arrowShaft: 0.34, arrowHead: 0.5, maxSides: 32, minThickness: 0.01, shadeTop: 1, shadeBottom: 0.55, shadeX: 0.82, shadeZ: 0.68};
+const SHAPE_FX = {rainbowStep: 0.02, rainbowSaturation: 0.85, rainbowBrightness: 1, waveStep: 0.25};
+const SHAPE_ALPHA_MIN = 26;
+const SHAPE_THUMB = 56;
+const SHAPE_FACING = 0.5;
 const LOOK_MODES = [['NONE', 'Normal'], ['SOLID', 'One color'], ['FLICKER', 'Flicker'], ['FADE', 'Fade'], ['RAINBOW', 'Rainbow'], ['WAVE', 'Wave']];
 const MODE_B = new Set(['FLICKER', 'FADE', 'WAVE']);
 const MODE_A = new Set(['SOLID', 'FLICKER', 'FADE', 'WAVE']);
@@ -652,6 +659,8 @@ const GEN = {
   fig8: r => Array.from({length: MAX_GEN_POINTS}, (_, i) => { const a = i / MAX_GEN_POINTS * Math.PI * 2; return [Math.sin(a) * r, Math.sin(2 * a) * r / 2]; })
 };
 const ANIM_TEXT_MAX = 8192;
+const ANIM_CUSTOM = 'CUSTOM';
+const KEY_TICKS = 10;
 const HIST_MAX = 40;
 const HIST_BURST = 1500;
 const TICKS_PER_MS = 0.02;
@@ -789,6 +798,7 @@ const ANIM_FALLBACK = {
 };
 const ANIM_HINT = {
   NONE: 'Idle, no animation',
+  CUSTOM: 'Your own keyframes, built in the Pose tab',
   WAVE: 'Waves hello',
   NOD: 'Nods the head',
   LOOK_AROUND: 'Scans left and right',
@@ -869,9 +879,9 @@ const IC = {
   pose: 'M12 3a2 2 0 100 4 2 2 0 000-4zM12 8v7M5 11l7-3 7 3M9 21l3-6 3 6',
   none: 'M12 3a9 9 0 100 18 9 9 0 000-18zM6 6l12 12'
 };
-const ANIM_ICON = {NONE: 'none', WAVE: 'wave', NOD: 'bob', LOOK_AROUND: 'look', CHEER: 'star', CROUCH_DANCE: 'dance', ARCHER: 'target', CROSSBOW: 'crossbow', TRIDENT: 'trident', CAST: 'wand', SPYGLASS: 'spyglass', HORN: 'horn', SHIELD: 'guard', GUARD: 'guard', FEAST: 'feast', POTION: 'potion', SWIMMER: 'wave', RIPTIDE: 'spin', SLEEPY: 'moon', WALK: 'route', SALUTE: 'hand', POINT: 'target', BOW: 'bob', DAB: 'star', ZOMBIE: 'user', DANCE: 'dance'};
+const ANIM_ICON = {NONE: 'none', CUSTOM: 'pose', WAVE: 'wave', NOD: 'bob', LOOK_AROUND: 'look', CHEER: 'star', CROUCH_DANCE: 'dance', ARCHER: 'target', CROSSBOW: 'crossbow', TRIDENT: 'trident', CAST: 'wand', SPYGLASS: 'spyglass', HORN: 'horn', SHIELD: 'guard', GUARD: 'guard', FEAST: 'feast', POTION: 'potion', SWIMMER: 'wave', RIPTIDE: 'spin', SLEEPY: 'moon', WALK: 'route', SALUTE: 'hand', POINT: 'target', BOW: 'bob', DAB: 'star', ZOMBIE: 'user', DANCE: 'dance'};
 const TABS = {
-  npc: [['quick', 'Overview', 'home', 'Name, skin and gear'], ['animate', 'Animation', 'playc', 'Pick an animation preset'], ['pose', 'Pose', 'pose', 'Pose the head, body, arms and legs of a skinned model'], ['movement', 'Behaviour', 'route', 'Looking, walking and patrol paths'], ['triggers', 'Triggers', 'bolt', 'React to clicks, looks and more'], ['nameplate', 'Nameplate', 'tag', 'Hologram text above the head'], ['appearance', 'Look', 'palette', 'Entity type, glow, particles'], ['advanced', 'Advanced', 'sliders', 'Every raw property']],
+  npc: [['quick', 'Overview', 'home', 'Name, skin and gear'], ['animate', 'Animation', 'playc', 'Pick an animation preset'], ['pose', 'Pose', 'pose', 'Pose every limb of a skinned model and animate it with keyframes'], ['movement', 'Behaviour', 'route', 'Looking, walking and patrol paths'], ['triggers', 'Triggers', 'bolt', 'React to clicks, looks and more'], ['nameplate', 'Nameplate', 'tag', 'Hologram text above the head'], ['appearance', 'Look', 'palette', 'Entity type, glow, particles'], ['advanced', 'Advanced', 'sliders', 'Every raw property']],
   hologram: [['quick', 'Overview', 'home', 'Preview, text and style'], ['lines', 'Lines', 'text', 'Detailed per-line settings'], ['shape', 'Shape', 'layers', 'Arrange the lines as a ring, heart, star and more'], ['movement', 'Motion', 'route', 'Motion and paths'], ['interaction', 'Interaction', 'hand', 'Clickable hitbox, click actions and triggers'], ['reactive', 'Reactive', 'target', 'Turn toward, follow or grow near players'], ['appearance', 'Look', 'palette', 'Range and particles'], ['advanced', 'Advanced', 'sliders', 'Every raw property']]
 };
 const NPC_APPEARANCE = [
@@ -898,6 +908,7 @@ const TIPS = {
   'hurt-interval': 'Flash red every N ticks. 0 = never.',
   'animation': 'A ready-made animation that plays on the NPC.',
   'animation-speed': 'Playback speed of the animation. 1 is normal.',
+  'keyframes': 'Your own animation, one keyframe per line: ticks then limb=x,y,z. Plays when the animation is Custom keyframes. Easiest to build in the Pose tab.',
   'glow': 'Draws a colored outline around the NPC.',
   'glow-color': 'Color of the glow outline.',
   'scale': 'Size multiplier.',
@@ -933,7 +944,7 @@ const TIPS = {
   'particle-radius': 'Spread of the particles (blocks).',
   'particle-interval': 'Ticks between bursts.',
   'triggers': 'Rules that run actions when something happens.',
-  'actions': 'Commands run when the NPC is clicked, one per line.',
+  'actions': 'Run when clicked, one per line: [player] /shop runs a command as the player, [console] runs it as console, plus [op], [message], [broadcast], [actionbar], [title] a;b, [sound], [server], [close], [delay] ticks and [permission] node. {player}, {uuid} and PlaceholderAPI placeholders work.',
   'click-type': 'Which mouse button counts as a click.',
   'cooldown': 'Delay between clicks (ticks).',
   'text': 'Line text. Use & color codes and {online}, {max}, {time}, {date}, {player}.',
@@ -1791,6 +1802,185 @@ const CUBE = [
   {tl: [-1, -1, 1], tr: [1, -1, 1], bl: [-1, -1, -1], shade: 0.5}
 ];
 
+function shapeCfg() { return Object.assign({}, SHAPE_DEF, (S.cfg && S.cfg.shapes) || {}); }
+
+function shapeRing(n, r, start, y, flatXZ) {
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const a = start + TAU * i / n;
+    out.push(flatXZ ? [r * Math.cos(a), y, r * Math.sin(a)] : [r * Math.cos(a), r * Math.sin(a), y]);
+  }
+  return out;
+}
+
+function shapeLoop(kind, sides, inner, c) {
+  const H = 0.5, Q = Math.PI / 2;
+  const pts = (...xy) => { const o = []; for (let i = 0; i + 1 < xy.length; i += 2) o.push([xy[i], xy[i + 1], 0]); return o; };
+  switch (kind) {
+    case 'RIGHT_TRIANGLE': return pts(-H, -H, H, -H, -H, H);
+    case 'SQUARE': return pts(-H, -H, H, -H, H, H, -H, H);
+    case 'DIAMOND': return pts(H, 0, 0, H, -H, 0, 0, -H);
+    case 'POLYGON': return shapeRing(sides, H, Q, 0);
+    case 'CIRCLE': return shapeRing(Math.max(3, c.circleSegments), H, Q, 0);
+    case 'STAR': {
+      const o = [];
+      for (let i = 0; i < sides * 2; i++) {
+        const a = Q + Math.PI * i / sides, r = i % 2 ? H * inner : H;
+        o.push([r * Math.cos(a), r * Math.sin(a), 0]);
+      }
+      return o;
+    }
+    case 'HEART': {
+      const o = [], n = Math.max(3, c.heartSegments);
+      for (let i = 0; i < n; i++) {
+        const t = TAU * i / n, sn = Math.sin(t);
+        o.push([16 * sn * sn * sn, 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t), 0]);
+      }
+      return o.reverse();
+    }
+    case 'CROSS': { const w = c.crossWidth / 2; return pts(-w, -H, w, -H, w, -w, H, -w, H, w, w, w, w, H, -w, H, -w, w, -H, w, -H, -w, -w, -w); }
+    case 'ARROW': { const sh = c.arrowShaft / 2, nk = H - c.arrowHead; return pts(-sh, -H, sh, -H, sh, nk, H, nk, 0, H, -H, nk, -sh, nk); }
+    default: return shapeRing(3, H, Q, 0);
+  }
+}
+
+function shapeSolid(kind, sides) {
+  const H = 0.5, faces = [];
+  if (kind === 'CUBE') {
+    const c = i => [(i & 1) ? H : -H, (i & 2) ? H : -H, (i & 4) ? H : -H];
+    for (const q of [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]]) faces.push(q.map(c));
+  } else if (kind === 'PYRAMID') {
+    const base = [[-H, -H, -H], [H, -H, -H], [H, -H, H], [-H, -H, H]], apex = [0, H, 0];
+    faces.push(base);
+    base.forEach((b, i) => faces.push([b, base[(i + 1) % 4], apex]));
+  } else if (kind === 'PRISM') {
+    const tri = shapeRing(3, H, Math.PI / 2, 0);
+    const front = tri.map(p => [p[0], p[1], H]), back = tri.map(p => [p[0], p[1], -H]);
+    faces.push(front, back);
+    for (let i = 0; i < 3; i++) faces.push([front[i], front[(i + 1) % 3], back[(i + 1) % 3], back[i]]);
+  } else if (kind === 'OCTAHEDRON') {
+    const ring = [[H, 0, 0], [0, 0, H], [-H, 0, 0], [0, 0, -H]], top = [0, H, 0], bot = [0, -H, 0];
+    ring.forEach((a, i) => { const b = ring[(i + 1) % 4]; faces.push([a, b, top], [b, a, bot]); });
+  } else {
+    const bottom = shapeRing(sides, H, 0, -H, true);
+    faces.push(bottom);
+    if (kind === 'CYLINDER') {
+      const top = shapeRing(sides, H, 0, H, true);
+      faces.push(top);
+      for (let i = 0; i < sides; i++) faces.push([bottom[i], bottom[(i + 1) % sides], top[(i + 1) % sides], top[i]]);
+    } else {
+      for (let i = 0; i < sides; i++) faces.push([bottom[i], bottom[(i + 1) % sides], [0, H, 0]]);
+    }
+  }
+  return faces;
+}
+
+function shapeFit(faces) {
+  const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+  for (const f of faces) for (const p of f) for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], p[k]); hi[k] = Math.max(hi[k], p[k]); }
+  const span = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
+  const f = span > 1e-6 ? 1 / span : 1;
+  const c = [0, 1, 2].map(k => (lo[k] + hi[k]) / 2);
+  return faces.map(face => face.map(p => [0, 1, 2].map(k => (p[k] - c[k]) * f)));
+}
+
+function faceNormal(pts) {
+  const n = vCross(vSub(pts[1], pts[0]), vSub(pts[2], pts[0]));
+  const len = Math.hypot(n[0], n[1], n[2]);
+  return len > 1e-9 ? n.map(x => x / len) : n;
+}
+
+const shapeCache = new Map();
+function shapeMesh(l) {
+  const c = shapeCfg();
+  const kind = String(l.shape || 'TRIANGLE').toUpperCase();
+  const sides = clamp(Math.round(num(l['shape-sides']) || 6), 3, Math.max(3, c.maxSides));
+  const inner = clamp(num(l['shape-inner']) || 0.45, 0.05, 0.95);
+  const outline = String(l['shape-style'] || 'FILL').toUpperCase() === 'OUTLINE';
+  const thick = Math.max(c.minThickness, num(l['shape-thickness']) || 0.08);
+  const key = [kind, sides, inner, outline, thick, JSON.stringify(c)].join('|');
+  const hit = shapeCache.get(key);
+  if (hit) return hit;
+  let mesh;
+  if (SHAPE_SOLIDS.has(kind)) {
+    const faces = shapeFit(shapeSolid(kind, sides)).map(f => {
+      const ctr = f.reduce((a, p) => vAdd(a, p), [0, 0, 0]).map(x => x / f.length);
+      const pts = vDot(faceNormal(f), ctr) >= 0 ? f : f.slice().reverse();
+      const n = faceNormal(pts);
+      const shade = n[1] > SHAPE_FACING ? c.shadeTop : n[1] < -SHAPE_FACING ? c.shadeBottom : Math.abs(n[0]) >= Math.abs(n[2]) ? c.shadeX : c.shadeZ;
+      return {pts, shade};
+    });
+    mesh = {solid: true, faces};
+  } else {
+    let loop = shapeFit([shapeLoop(kind, sides, inner, c)])[0];
+    let area = 0;
+    loop.forEach((a, i) => { const b = loop[(i + 1) % loop.length]; area += a[0] * b[1] - b[0] * a[1]; });
+    if (area < 0) loop = loop.slice().reverse();
+    const faces = [];
+    if (outline) {
+      const h = thick / 2;
+      loop.forEach((a, i) => {
+        const b = loop[(i + 1) % loop.length], d = vSub(b, a), len = Math.hypot(d[0], d[1]);
+        if (len < 1e-6) return;
+        const u = [d[0] / len * h, d[1] / len * h, 0], side = [-u[1], u[0], 0];
+        const a0 = vSub(vSub(a, u), side), b0 = vSub(vAdd(b, u), side);
+        faces.push({pts: [a0, b0, vAdd(b0, side.map(x => x * 2)), vAdd(a0, side.map(x => x * 2))], shade: 1});
+      });
+    } else faces.push({pts: loop, shade: 1});
+    mesh = {solid: false, faces};
+  }
+  if (shapeCache.size > 64) shapeCache.clear();
+  shapeCache.set(key, mesh);
+  return mesh;
+}
+
+function shapeColor(l, tick, ident) {
+  const fx = Object.assign({}, SHAPE_FX, (S.cfg && S.cfg.effects) || {});
+  const a = parseColor(l['color-a'], '#FFFFFF');
+  const step = Math.floor(tick / Math.max(1, Number(l['effect-speed']) || 1));
+  let rgb = a.rgb, alpha = a.a;
+  switch (String(l.effect || 'NONE').toUpperCase()) {
+    case 'FLICKER': rgb = parseColor(unitHash(step, ident || 0) < fxNum(fx, 'flickerChance', FLICKER_CHANCE_DEF) ? l['color-b'] : l['color-a'], '#FFFFFF').rgb; break;
+    case 'FADE': rgb = mix(l['color-a'], l['color-b'], 0.5 + 0.5 * Math.sin(step * fxNum(fx, 'fadeStep', FADE_STEP_DEF) * TAU)); break;
+    case 'RAINBOW': rgb = hsv(((step * fx.rainbowStep) % 1 + 1) % 1, fx.rainbowSaturation, fx.rainbowBrightness); break;
+    case 'WAVE': rgb = mix(l['color-a'], l['color-b'], (Math.sin(step * fx.waveStep) + 1) / 2); break;
+    case 'BLINK': if (step % 2) alpha = 0; break;
+  }
+  return {rgb, a: alpha};
+}
+
+function shapeThumb(l) {
+  const cv = el('canvas', {width: SHAPE_THUMB, height: SHAPE_THUMB, class: 'shape-cv'});
+  const g = cv.getContext('2d'), m = shapeMesh(l), h = SHAPE_THUMB / 2, k = SHAPE_THUMB * 0.42;
+  const col = parseColor(l['color-a'], '#40CEFC');
+  const ry = m.solid ? 0.6 : 0, rx = m.solid ? 0.45 : 0;
+  const view = p => {
+    const x1 = p[0] * Math.cos(ry) + p[2] * Math.sin(ry), z1 = -p[0] * Math.sin(ry) + p[2] * Math.cos(ry);
+    return [x1, p[1] * Math.cos(rx) - z1 * Math.sin(rx), p[1] * Math.sin(rx) + z1 * Math.cos(rx)];
+  };
+  const faces = m.faces.map(f => ({pts: f.pts.map(view), shade: f.shade}))
+    .filter(f => !m.solid || faceNormal(f.pts)[2] > 0)
+    .sort((a, b) => a.pts.reduce((s, p) => s + p[2], 0) / a.pts.length - b.pts.reduce((s, p) => s + p[2], 0) / b.pts.length);
+  for (const f of faces) {
+    g.fillStyle = rgba({rgb: mix(col.rgb, '#000000', 1 - f.shade), a: 255});
+    g.beginPath();
+    f.pts.forEach((p, i) => (i ? g.lineTo : g.moveTo).call(g, h + p[0] * k, h - p[1] * k));
+    g.closePath();
+    g.fill();
+  }
+  return cv;
+}
+
+function drawPoly(g, cam, q) {
+  const pts = q.poly.map(p => project(cam, p));
+  if (pts.some(p => !p)) return;
+  g.fillStyle = q.fill;
+  g.beginPath();
+  pts.forEach((p, i) => (i ? g.lineTo : g.moveTo).call(g, p.x, p.y));
+  g.closePath();
+  g.fill();
+}
+
 function quadOf(base, M, tl, tr, bl) {
   const w = v => vAdd(base, mVec(M, v));
   return {tl: w(tl), tr: w(tr), bl: w(bl)};
@@ -1889,6 +2079,19 @@ function sceneQuads(sc, cam, secs, tick) {
     const M = mMul(orientFor(lp.bb, p[3], cam, sc.el), R);
     const k = lp.scale * pulse;
     const type = String(l.type || 'TEXT').toUpperCase();
+    if (type === 'SHAPE') {
+      const col = shapeColor(l, tick, i);
+      if (col.a < SHAPE_ALPHA_MIN) continue;
+      const mesh = shapeMesh(l);
+      const sv = [k * lp.sx, k * lp.sy, k * lp.sz];
+      for (const f of mesh.faces) {
+        const pts = f.pts.map(v => vAdd(base, mVec(M, [v[0] * sv[0], v[1] * sv[1], v[2] * sv[2]])));
+        if (mesh.solid && vDot(vCross(vSub(pts[1], pts[0]), vSub(pts[2], pts[0])), vSub(cam.pos, pts[0])) <= 0) continue;
+        const center = pts.reduce((a, v) => vAdd(a, v), [0, 0, 0]).map(x => x / pts.length);
+        out.push({poly: pts, center, fill: rgba({rgb: mix(col.rgb, '#000000', 1 - f.shade), a: col.a})});
+      }
+      continue;
+    }
     if (type === 'TEXT') {
       const chars = textChars(l.text, l, tick, i);
       const sig = textSig(chars, l);
@@ -1936,7 +2139,7 @@ function sceneQuads(sc, cam, secs, tick) {
       out.push(q);
     }
   }
-  for (const q of out) q.depth = vDot(vSub(lerp3(q, 0.5, 0.5), cam.pos), cam.f);
+  for (const q of out) q.depth = vDot(vSub(q.center || lerp3(q, 0.5, 0.5), cam.pos), cam.f);
   out.sort((a, b) => b.depth - a.depth);
   return out;
 }
@@ -2145,7 +2348,7 @@ function holoScene() {
     const tick = Math.floor(secs * 20);
     drawGround(g, cam, holoParams());
     for (const ring of overlayRings()) drawRing(g, cam, ring);
-    for (const q of sceneQuads(sc, cam, secs, tick)) drawQuad(g, cam, q, sc.dpr);
+    for (const q of sceneQuads(sc, cam, secs, tick)) { if (q.poly) drawPoly(g, cam, q); else drawQuad(g, cam, q, sc.dpr); }
     drawHitbox(g, cam, hitboxCorners(secs));
     g.setTransform(sc.dpr, 0, 0, sc.dpr, 0, 0);
     g.font = '12px ' + FONT_CANVAS;
@@ -2715,6 +2918,7 @@ function disclosure(key, title, ...kids) {
 }
 
 function lineSummary(l) {
+  if (l.props.type === 'SHAPE') return 'Shape: ' + pretty(String(l.props.shape || 'TRIANGLE').toUpperCase());
   if (l.props.type !== 'TEXT') return l.props.type + ' ' + (l.props.material || '');
   const first = String(l.props.text || '').split(S.cfg.frameSeparator)[0];
   return parseText(first).map(c => c.ch).join('').replace(/\s+/g, ' ').trim() || '(empty)';
@@ -2727,12 +2931,15 @@ function lineCard(l, index, rerender) {
   const build = () => {
     if (built) return;
     built = true;
+    if (l.props.type === 'SHAPE') body.append(shapePicker(l, () => { summary.textContent = lineSummary(l); }));
     for (const sec of S.schema.kinds.line.sections) {
       body.append(sectionCard(sec, l.props, (id, v) => {
         l.props[id] = v;
+        if (id === 'type' && v === 'SHAPE') Object.assign(l.props, shapeLineDefaults());
         htouch();
         summary.textContent = lineSummary(l);
         buildPreview();
+        if (id === 'type' || (id === 'shape' && l.props.type === 'SHAPE')) rerender();
       }, true));
     }
     if (l.hasItem) body.append(el('p', {class: 'note', text: 'This line has an item set in game. It is kept when you save.'}));
@@ -2761,11 +2968,38 @@ function lineCard(l, index, rerender) {
   return el('div', {class: 'line'}, el('div', {class: 'line-head'}, toggle, move(-1, 'Move up', '↑'), move(1, 'Move down', '↓'), del), body);
 }
 
-function addLine(open) {
+function addLine(open, extra) {
   if (HS().lines.length >= S.cfg.maxLines) return false;
-  HS().lines.push({ref: -1, props: Object.assign({}, S.cfg.lineDefaults), hasItem: false, open: !!open});
+  HS().lines.push({ref: -1, props: Object.assign({}, S.cfg.lineDefaults, extra || {}), hasItem: false, open: !!open});
   htouch();
   return true;
+}
+
+function shapeLineDefaults() {
+  const d = Object.assign({type: 'SHAPE', shape: 'TRIANGLE', billboard: 'FIXED', 'color-a': '#40CEFC', effect: 'NONE'}, (S.cfg && S.cfg.shapeLine) || {});
+  const out = {};
+  for (const k of Object.keys(d)) out[k] = String(d[k]);
+  return out;
+}
+
+function shapePicker(l, changed) {
+  const sp = lineProp('shape');
+  const opts = sp && sp.options ? sp.options : [];
+  const cards = el('div', {class: 'cards'});
+  const cur = String(l.props.shape || 'TRIANGLE').toUpperCase();
+  for (const o of opts) {
+    const probe = Object.assign({}, l.props, {shape: o.id});
+    const btn = el('button', {type: 'button', class: 'pcard' + (o.id === cur ? ' on' : ''), title: 'Use the ' + nice(o.label) + ' shape', onclick: () => {
+      l.props.shape = o.id;
+      for (const b of cards.children) b.classList.toggle('on', b === btn);
+      htouch();
+      changed();
+      buildPreview();
+    }}, shapeThumb(probe), el('span', {text: nice(o.label)}));
+    cards.append(btn);
+  }
+  return el('div', {}, el('div', {class: 'sub', text: 'Shape'}), cards,
+    el('p', {class: 'note', text: 'A real solid shape. Color A sets its color (use #AARRGGBB for see-through). Effects like Rainbow, Fade and Blink animate the color, and spin, bob, pulse and the other hologram animations move it. Use Fixed billboard for 3D shapes.'}));
 }
 
 function linesPanel() {
@@ -2781,8 +3015,14 @@ function linesPanel() {
     render();
     buildPreview();
   }});
+  const shapeTypes = lineProp('type');
+  const addShape = shapeTypes && shapeTypes.options.some(o => o.id === 'SHAPE') ? el('button', {class: 'btn sm', type: 'button', text: '+ Add shape', title: 'Add a solid shape like a triangle, star, heart or cube', onclick: () => {
+    if (!addLine(true, shapeLineDefaults())) return;
+    render();
+    buildPreview();
+  }}) : null;
   render();
-  return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Lines'}), el('span', {class: 'row2'}, count, add)), el('div', {class: 'body'}, list));
+  return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Lines'}), el('span', {class: 'row2'}, count, addShape, add)), el('div', {class: 'body'}, list));
 }
 
 function quickLines() {
@@ -2806,9 +3046,20 @@ function quickLine(l, i, rerender) {
   const typeProp = S.schema.kinds.line.sections.flatMap(s => s.props).find(p => p.id === 'type');
   const sel = el('select', {'aria-label': 'Line type'}, (typeProp ? typeProp.options : []).map(o => el('option', {value: o.id, text: nice(o.label)})));
   sel.value = l.props.type;
-  sel.addEventListener('change', () => { l.props.type = sel.value; htouch(); rerender(); buildPreview(); });
+  sel.addEventListener('change', () => {
+    l.props.type = sel.value;
+    if (sel.value === 'SHAPE') Object.assign(l.props, shapeLineDefaults());
+    htouch();
+    rerender();
+    buildPreview();
+  });
   let main;
-  if (l.props.type === 'TEXT') {
+  if (l.props.type === 'SHAPE') {
+    const sp = lineProp('shape');
+    main = el('select', {'aria-label': 'Shape'}, (sp ? sp.options : []).map(o => el('option', {value: o.id, text: nice(o.label)})));
+    main.value = String(l.props.shape || 'TRIANGLE').toUpperCase();
+    main.addEventListener('change', () => { l.props.shape = main.value; htouch(); buildPreview(); });
+  } else if (l.props.type === 'TEXT') {
     main = el('textarea', {rows: 2, 'aria-label': 'Line text'});
     main.value = l.props.text || '';
     main.addEventListener('input', () => { l.props.text = main.value; htouch(); buildPreview(); });
@@ -3082,6 +3333,30 @@ function parseAnim(text) {
   return frames;
 }
 
+function parseKeys(text) {
+  const out = [];
+  let limbs = zeroPose();
+  for (const raw of String(text || '').split(/\r?\n/)) {
+    const toks = raw.trim().split(/\s+/);
+    if (!/^\d+$/.test(toks[0])) continue;
+    const L = clonePose(limbs), extra = [];
+    for (const t of toks.slice(1)) {
+      const m = /^(head|body|rarm|larm|rleg|lleg)=([^,]+),([^,]+),([^,]+)$/i.exec(t);
+      const v = m ? [m[2], m[3], m[4]].map(Number) : null;
+      if (v && v.every(Number.isFinite)) L[m[1].toLowerCase()] = v.map(x => clamp(x, POSE_MIN, POSE_MAX));
+      else extra.push(t);
+    }
+    out.push({ticks: clamp(parseInt(toks[0], 10), ANIM_TICK_MIN, ANIM_TICK_MAX), limbs: L, extra: extra.join(' ')});
+    limbs = L;
+    if (out.length >= ANIM_MAX_FRAMES) break;
+  }
+  return out;
+}
+
+function fmtKeys(frames) {
+  return frames.map(f => [String(f.ticks)].concat(LIMB_ORDER.map(k => k + '=' + fmtAxes(f.limbs[k])), f.extra ? [f.extra] : []).join(' ')).join('\n');
+}
+
 function animTotal(frames) { return frames.reduce((a, f) => a + f.ticks, 0); }
 
 function frameAt(frames, t) {
@@ -3106,8 +3381,8 @@ function limbsAt(frames, t) {
   return o;
 }
 
-function modelState(frames, t, speed) {
-  const base = staticPose();
+function modelState(frames, t, speed, absolute) {
+  const base = absolute && frames.length ? zeroPose() : staticPose();
   let g = Object.assign({}, GEST_DEFAULT, {swingT: 1});
   if (frames.length) {
     const s = limbsAt(frames, t);
@@ -3169,6 +3444,7 @@ function animSpeed() { return clamp(num(S.props['animation-speed']) || 1, 0.1, 5
 
 const animCache = new Map();
 function animText(id) {
+  if (id === ANIM_CUSTOM) return S.props.keyframes || '';
   const m = S.cfg && S.cfg.animations;
   return (m && m[id]) || ANIM_FALLBACK[id] || '';
 }
@@ -3205,7 +3481,7 @@ function clockTick(now) {
 function animState() {
   const id = curAnim();
   const frames = id === 'NONE' ? [] : animFrames(id);
-  if (curModel()) return modelState(frames, clockTick(performance.now()), animSpeed());
+  if (curModel()) return modelState(frames, clockTick(performance.now()), animSpeed(), id === ANIM_CUSTOM);
   if (!frames.length) {
     clockTick(performance.now());
     const g = withHeld(Object.assign({}, GEST_DEFAULT, {swingT: 1}));
@@ -3652,7 +3928,7 @@ function galleryBuild(player) {
     const t = (performance.now() - T0) * TICKS_PER_MS * speed;
     let state;
     if (isModel) {
-      state = modelState(c.frames, t, speed);
+      state = modelState(c.frames, t, speed, c.id === ANIM_CUSTOM);
     } else {
       const pose = defaultPose();
       let gest;
@@ -3945,13 +4221,31 @@ function bodyPose() {
     return root;
   }
   const P = {limbs: staticPose(), sel: 'rarm', hover: null};
+  const K = {frames: parseKeys(S.props.keyframes), sel: -1, playing: false, ui: null};
   const rows = {};
   const presetBtns = [];
 
   const presetOn = d => LIMBS.every(k => P.limbs[k].every((x, i) => Math.round(x) === (d.limbs[k] || [0, 0, 0])[i]));
   const markPresets = () => { for (const p of presetBtns) p.btn.classList.toggle('on', presetOn(p.d)); };
-  const commit = k => { setProp(POSE_PROP[k], fmtAxes(P.limbs[k])); markPresets(); };
-  const commitAll = () => { for (const k of LIMBS) if (S.props[POSE_PROP[k]] !== fmtAxes(P.limbs[k])) commit(k); markPresets(); };
+  const keyMax = () => S.pm.keyframes && S.pm.keyframes.max > 0 ? S.pm.keyframes.max : ANIM_TEXT_MAX;
+  const saveKeys = () => {
+    if (!S.pm.keyframes) { toast('This server cannot save keyframes yet. Update Nexora.', 'err'); return false; }
+    if (K.sel >= 0) K.frames[K.sel].limbs = P.limbs;
+    const text = fmtKeys(K.frames);
+    if (text.length > keyMax()) { toast('Too many keyframes to save. Remove a few first.', 'err'); return false; }
+    setProp('keyframes', text);
+    if (!K.frames.length && curAnim() === ANIM_CUSTOM) setProp('animation', 'NONE');
+    return true;
+  };
+  const commit = k => {
+    if (K.sel >= 0) saveKeys(); else setProp(POSE_PROP[k], fmtAxes(P.limbs[k]));
+    markPresets();
+  };
+  const commitAll = () => {
+    if (K.sel >= 0) saveKeys();
+    else for (const k of LIMBS) if (S.props[POSE_PROP[k]] !== fmtAxes(P.limbs[k])) setProp(POSE_PROP[k], fmtAxes(P.limbs[k]));
+    markPresets();
+  };
 
   const paint = (k, skip) => {
     const r = rows[k], v = P.limbs[k];
@@ -4082,17 +4376,20 @@ function bodyPose() {
   const viewer = npcViewer({
     tall: true,
     autoRotate: false,
-    tag: 'Static pose',
+    tag: 'Rest pose',
     caption: 'Click a limb, drag to rotate. Shift for roll.',
     getPlate: plateModel,
-    getState: () => ({model: P.limbs, gest: withHeld(Object.assign({}, GEST_DEFAULT, {swingT: 1}))}),
+    getState: () => {
+      if (K.playing && K.frames.length) return modelState(animFrames(ANIM_CUSTOM), clockTick(performance.now()), animSpeed(), true);
+      return {model: P.limbs, gest: withHeld(Object.assign({}, GEST_DEFAULT, {swingT: 1}))};
+    },
     onFrame: (s, g) => drawSel(g)
   });
   S.skin = viewer;
   viewer.reload();
   ensurePlate();
   poseInput(viewer, {
-    select,
+    select: k => { if (K.playing) setPlaying(false); select(k); },
     hover: h => { P.hover = h; },
     drag: dragLimb,
     end: k => { P.limbs[k] = P.limbs[k].map(v => Math.round(v)); commit(k); paint(k); }
@@ -4104,7 +4401,8 @@ function bodyPose() {
   const mirrorBtn = el('button', {class: 'btn sm', type: 'button', text: 'Mirror', title: 'Swap the left and right side, mirroring the pose', onclick: mirror});
   const resetBtn = el('button', {class: 'btn sm danger', type: 'button', text: 'Reset all', title: 'Set every limb back to 0, 0, 0', onclick: resetAll});
   root.append(el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Limbs'}), el('span', {class: 'row2'}, mirrorBtn, resetBtn)),
-    el('div', {class: 'body'}, list, el('p', {class: 'note', text: 'Angles in degrees. X swings forward, Z swings an arm or leg outward, Y twists. This is the resting pose and it saves automatically. Animations play on top of it.'}))));
+    el('div', {class: 'body'}, list, el('p', {class: 'note', text: 'Angles in degrees. X swings forward, Z swings an arm or leg outward, Y twists. Edits go to the rest pose, or to the selected keyframe below. Everything saves automatically.'}))));
+  root.append(keyCard());
 
   const cards = el('div', {class: 'cards'});
   for (const d of POSE_PRESETS) {
@@ -4117,7 +4415,117 @@ function bodyPose() {
   paintAll();
   select(P.sel);
   markPresets();
+  paintKeys();
   return root;
+
+  function setPlaying(on) {
+    K.playing = on && K.frames.length > 0;
+    if (K.playing) { clock.pos = 0; clock.last = performance.now(); clock.paused = false; }
+    paintKeys();
+  }
+
+  function pickKey(i) {
+    K.sel = i;
+    P.limbs = i >= 0 ? K.frames[i].limbs : staticPose();
+    K.playing = false;
+    paintAll();
+    markPresets();
+    paintKeys();
+  }
+
+  function addKey() {
+    if (K.frames.length >= ANIM_MAX_FRAMES) { toast('A keyframe animation can have at most ' + ANIM_MAX_FRAMES + ' frames.', 'err'); return; }
+    const from = K.sel >= 0 ? K.frames[K.sel] : null;
+    const at = K.sel >= 0 ? K.sel + 1 : K.frames.length;
+    const prev = K.sel;
+    if (prev >= 0) K.frames[prev].limbs = P.limbs;
+    K.frames.splice(at, 0, {ticks: from ? from.ticks : KEY_TICKS, limbs: clonePose(P.limbs), extra: ''});
+    K.sel = at;
+    P.limbs = K.frames[at].limbs;
+    if (!saveKeys()) { K.frames.splice(at, 1); pickKey(prev); return; }
+    if (curAnim() !== ANIM_CUSTOM) setProp('animation', ANIM_CUSTOM);
+    pickKey(at);
+  }
+
+  function dropKey() {
+    if (K.sel < 0) return;
+    K.frames.splice(K.sel, 1);
+    const next = Math.min(K.sel, K.frames.length - 1);
+    K.sel = -1;
+    saveKeys();
+    pickKey(next);
+  }
+
+  function moveKey(d) {
+    const j = K.sel + d;
+    if (K.sel < 0 || j < 0 || j >= K.frames.length) return;
+    const f = K.frames[K.sel];
+    K.frames[K.sel] = K.frames[j];
+    K.frames[j] = f;
+    K.sel = j;
+    saveKeys();
+    paintKeys();
+  }
+
+  function keyCard() {
+    const strip = el('div', {class: 'chips'});
+    const playBtn = el('button', {class: 'btn sm primary', type: 'button', onclick: () => setPlaying(!K.playing)});
+    const total = el('span', {class: 'muted', style: 'font-weight:400;font-size:12px'});
+    const ticks = el('input', {type: 'number', min: ANIM_TICK_MIN, max: ANIM_TICK_MAX, step: 1, 'aria-label': 'Keyframe length in ticks', title: 'How long this keyframe takes to blend into the next one. 20 ticks is one second.'});
+    ticks.addEventListener('change', () => {
+      if (K.sel < 0) return;
+      K.frames[K.sel].ticks = clamp(Math.round(num(ticks.value)) || KEY_TICKS, ANIM_TICK_MIN, ANIM_TICK_MAX);
+      saveKeys();
+      paintKeys();
+    });
+    const extra = el('input', {type: 'text', maxlength: 160, placeholder: 'swing=main item=bow pose=SNEAKING', 'aria-label': 'Keyframe extras', title: 'Optional extras: swing=main|off, use=main|off|none, item=<material>, offitem=<material>, pose=STANDING|SNEAKING|...'});
+    extra.addEventListener('change', () => {
+      if (K.sel < 0) return;
+      K.frames[K.sel].extra = extra.value.replace(/\s+/g, ' ').trim();
+      saveKeys();
+    });
+    const left = el('button', {class: 'btn sm', type: 'button', text: 'Move left', title: 'Play this keyframe earlier', onclick: () => moveKey(-1)});
+    const right = el('button', {class: 'btn sm', type: 'button', text: 'Move right', title: 'Play this keyframe later', onclick: () => moveKey(1)});
+    const del = el('button', {class: 'btn sm danger', type: 'button', text: 'Delete', title: 'Remove this keyframe', onclick: dropKey});
+    const edit = el('div', {class: 'lb', style: 'padding:0;margin-top:var(--s3)'},
+      el('div', {class: 'axrow'}, el('label', {text: 'Length (ticks)'}), ticks, el('span')),
+      el('div', {class: 'axrow'}, el('label', {text: 'Extras'}), extra, el('span')),
+      el('div', {class: 'actions'}, left, right, del));
+    const useBtn = el('button', {class: 'btn sm', type: 'button', text: 'Play on the NPC', title: 'Switch this NPC to the Custom keyframes animation', onclick: () => { setProp('animation', ANIM_CUSTOM); paintKeys(); }});
+    const useText = el('span');
+    const using = el('div', {class: 'hintbox info', style: 'margin:var(--s3) 0 0'}, useText, useBtn);
+    K.ui = {strip, playBtn, total, ticks, extra, edit, left, right, using, useText, useBtn};
+    return el('section', {class: 'card'}, el('h2', {}, el('span', {text: 'Keyframes'}), el('span', {class: 'row2'}, total, playBtn)),
+      el('div', {class: 'body'}, strip, edit, using,
+        el('p', {class: 'note', text: 'Add a keyframe to save the current pose as a step. Pick a keyframe to pose it with the sliders or by dragging. Each keyframe blends into the next and the last loops back to the first. While Custom keyframes plays, the rest pose is not used.'})));
+  }
+
+  function paintKeys() {
+    const u = K.ui;
+    if (!u) return;
+    const chips = [el('button', {type: 'button', class: 'chip' + (K.sel < 0 ? ' on' : ''), text: 'Rest pose', title: 'Edit the pose used when no animation plays', onclick: () => pickKey(-1)})];
+    K.frames.forEach((f, i) => chips.push(el('button', {type: 'button', class: 'chip' + (K.sel === i ? ' on' : ''), text: (i + 1) + ' · ' + f.ticks + 't', title: 'Keyframe ' + (i + 1) + ', ' + f.ticks + ' ticks', onclick: () => pickKey(i)})));
+    chips.push(el('button', {type: 'button', class: 'chip', text: '+ Add keyframe', title: 'Save the current pose as a new keyframe', onclick: addKey}));
+    u.strip.replaceChildren(...chips);
+    const secs = animTotal(K.frames) / 20;
+    u.total.textContent = K.frames.length ? K.frames.length + ' frames · ' + secs.toFixed(1) + ' s' : '';
+    u.playBtn.textContent = K.playing ? 'Stop' : 'Play';
+    u.playBtn.disabled = !K.frames.length;
+    u.playBtn.title = K.frames.length ? (K.playing ? 'Stop the preview' : 'Preview the keyframes in 3D') : 'Add a keyframe first';
+    u.edit.hidden = K.sel < 0;
+    if (K.sel >= 0) {
+      const f = K.frames[K.sel];
+      if (document.activeElement !== u.ticks) u.ticks.value = String(f.ticks);
+      if (document.activeElement !== u.extra) u.extra.value = f.extra;
+      u.left.disabled = K.sel === 0;
+      u.right.disabled = K.sel === K.frames.length - 1;
+    }
+    const on = curAnim() === ANIM_CUSTOM;
+    u.using.hidden = !K.frames.length;
+    u.useText.textContent = on ? 'This NPC plays these keyframes in game.' : 'This NPC plays ' + animLabel(curAnim()) + ', not these keyframes.';
+    u.useBtn.hidden = on;
+    viewer.tag.textContent = K.playing ? 'Playing keyframes' : K.sel >= 0 ? 'Keyframe ' + (K.sel + 1) + ' of ' + K.frames.length : 'Rest pose';
+  }
 }
 
 const shapeCvs = [];
@@ -5422,8 +5830,15 @@ function clickCard() {
     const c = pc(id);
     if (c) grid.append(c);
   }
-  return el('section', {class: 'card'}, el('h2', {text: 'Click actions'}), el('div', {class: 'body'}, grid,
-    el('p', {class: 'note', text: 'One command per line, run when a player clicks. Rules below run in addition to these.'})));
+  const ta = grid.querySelector('textarea');
+  const chips = ta ? el('div', {class: 'actions', style: 'margin-top:var(--s2)'}, ACTION_SNIPPETS.map(([label, line]) => el('button', {type: 'button', class: 'chip', text: '+ ' + label, title: 'Add: ' + line, onclick: () => {
+    ta.value = (ta.value.trim() ? ta.value.replace(/\s*$/, '\n') : '') + line;
+    ta.dispatchEvent(new Event('input', {bubbles: true}));
+    ta.dispatchEvent(new Event('change', {bubbles: true}));
+    ta.focus();
+  }}))) : null;
+  return el('section', {class: 'card'}, el('h2', {text: 'Click actions'}), el('div', {class: 'body'}, grid, chips,
+    el('p', {class: 'note', text: 'One action per line, run top to bottom when a player clicks. [player] /shop (or [command] /shop) runs /shop as the player who clicked, exactly as if they typed it. [console] runs as the console. A line with no tag runs as a player command. {player}, {uuid} and PlaceholderAPI placeholders are filled in. Rules below run in addition to these.'})));
 }
 
 function switchCard(iconName, label, hint, on, toggle, ids) {

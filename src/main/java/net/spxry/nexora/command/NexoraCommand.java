@@ -13,7 +13,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -49,6 +51,10 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private static final String ENTITY_TYPE = "entity-type";
     private static final String ADD = "add";
     private static final String CLEAR = "clear";
+    private static final String ACTION = "action";
+    private static final String REMOVE = "remove";
+    private static final String ACTIONS_PROP = "actions";
+    private static final String ACTIONS_SECTION = "actions";
     private static final String TEXTURES = "textures";
     private static final String SKIN_NAME = "skin-name";
     private static final String SKIN_VALUE = "skin-value";
@@ -60,9 +66,10 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
     private static final String NEWLINE = "\n";
     private static final String KINDS_KEY = "dialog.kinds.";
     private static final List<String> ROOT = List.of(HELP, RELOAD, WEB, GUI, DIALOG, DEMO, MINESKIN, HOLO, NPC);
-    private static final List<String> HOLO_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, ADD_LINE, ADD_ITEM);
-    private static final List<String> NPC_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, EQUIP, SKIN);
-    private static final Set<String> ID_SUBS = Set.of(EDIT, DELETE, MOVE_HERE, TP, PATH, ADD_LINE, ADD_ITEM, EQUIP, SKIN);
+    private static final List<String> HOLO_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, ADD_LINE, ADD_ITEM, ACTION);
+    private static final List<String> NPC_SUBS = List.of(CREATE, EDIT, DELETE, MOVE_HERE, TP, LIST, PATH, EQUIP, SKIN, ACTION);
+    private static final Set<String> ID_SUBS = Set.of(EDIT, DELETE, MOVE_HERE, TP, PATH, ADD_LINE, ADD_ITEM, EQUIP, SKIN, ACTION);
+    private static final List<String> ACTION_SUBS = List.of(ADD, LIST, REMOVE, CLEAR);
     private static final List<String> PATH_ACTIONS = List.of(ADD, CLEAR);
     private static final String WEB_PORT = "port";
     private static final String WEB_INFO = "info";
@@ -123,6 +130,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
             case 2 -> WEB.equalsIgnoreCase(args[0]) ? webSubs(player) : DEMO.equalsIgnoreCase(args[0]) ? List.of(CLEAR) : kind == null ? List.of() : HOLO.equalsIgnoreCase(args[0]) ? HOLO_SUBS : NPC_SUBS;
             case 3 -> WEB.equalsIgnoreCase(args[0]) ? webValues(player, sub) : kind != null && ID_SUBS.contains(sub) ? ids(kind) : List.of();
             case 4 -> kind == null ? List.of() : fourth(kind, sub);
+            case 5 -> kind != null && ACTION.equals(sub) && ADD.equalsIgnoreCase(args[3]) ? actionTags() : List.of();
             default -> List.of();
         };
         var prefix = args[args.length - 1].toLowerCase(Locale.ROOT);
@@ -135,6 +143,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
             case PATH -> PATH_ACTIONS;
             case EQUIP -> plugin.menus().slots().stream().map(EquipmentSlot::name).toList();
             case SKIN -> Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+            case ACTION -> ACTION_SUBS;
             default -> List.of();
         };
     }
@@ -331,6 +340,7 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
             case ADD_ITEM -> addItem(player, obj);
             case EQUIP -> equip(player, obj, args);
             case SKIN -> skin(player, obj, args);
+            case ACTION -> action(player, obj, args);
             default -> help(player);
         }
     }
@@ -452,6 +462,87 @@ public final class NexoraCommand implements CommandExecutor, TabCompleter {
             values.put(SKIN_SIGNATURE, "");
         }
         mutate(player, npc, n -> n.apply(values), "cmd.skin-set", Map.of("id", npc.id(), "skin", source));
+    }
+
+    private List<String> actionTags() {
+        var section = plugin.getConfig().getConfigurationSection(ACTIONS_SECTION);
+        if (section == null) return List.of();
+        List<String> out = new ArrayList<>();
+        for (var key : section.getKeys(false)) {
+            var tags = section.getStringList(key);
+            if (!tags.isEmpty()) out.add(tags.getFirst());
+        }
+        return out;
+    }
+
+    private void action(Player player, NexoraObject obj, String[] args) {
+        var op = args.length > 3 ? args[3].toLowerCase(Locale.ROOT) : LIST;
+        var lines = actionLines(obj);
+        Map<String, String> ph = new HashMap<>();
+        ph.put("id", obj.id());
+        switch (op) {
+            case ADD -> {
+                var line = args.length > 4 ? String.join(" ", Arrays.copyOfRange(args, 4, args.length)).strip() : "";
+                if (line.isEmpty()) {
+                    plugin.messages().send(player, "cmd.action-usage", ph);
+                    return;
+                }
+                lines.add(line);
+                ph.put("action", line);
+                ph.put("number", String.valueOf(lines.size()));
+                saveActions(player, obj, lines, "cmd.action-added", ph);
+            }
+            case REMOVE -> {
+                int index = number(args.length > 4 ? args[4] : "") - 1;
+                ph.put("number", args.length > 4 ? args[4] : "");
+                if (index < 0 || index >= lines.size()) {
+                    plugin.messages().send(player, "cmd.action-invalid", ph);
+                    return;
+                }
+                ph.put("action", lines.remove(index));
+                saveActions(player, obj, lines, "cmd.action-removed", ph);
+            }
+            case CLEAR -> saveActions(player, obj, new ArrayList<>(), "cmd.action-cleared", ph);
+            case LIST -> listActions(player, lines, ph);
+            default -> plugin.messages().send(player, "cmd.action-usage", ph);
+        }
+    }
+
+    private List<String> actionLines(NexoraObject obj) {
+        var text = obj.values().getOrDefault(ACTIONS_PROP, "");
+        return new ArrayList<>(text.lines().map(String::strip).filter(line -> !line.isEmpty()).toList());
+    }
+
+    private void saveActions(Player player, NexoraObject obj, List<String> lines, String key, Map<String, String> ph) {
+        var text = String.join(NEWLINE, lines);
+        var prop = plugin.schema().props(obj.kind()).get(ACTIONS_PROP);
+        if (prop != null && prop.max() > 0 && text.length() > prop.max()) {
+            plugin.messages().send(player, "cmd.action-too-long", ph);
+            return;
+        }
+        mutate(player, obj, o -> o.apply(Map.of(ACTIONS_PROP, text)), key, ph);
+    }
+
+    private void listActions(Player player, List<String> lines, Map<String, String> ph) {
+        if (lines.isEmpty()) {
+            plugin.messages().send(player, "cmd.action-list-empty", ph);
+            return;
+        }
+        plugin.messages().send(player, "cmd.action-list-header", ph);
+        for (int i = 0; i < lines.size(); i++) {
+            Map<String, String> entry = new HashMap<>(ph);
+            entry.put("number", String.valueOf(i + 1));
+            entry.put("action", lines.get(i));
+            plugin.messages().send(player, "cmd.action-list-entry", entry);
+        }
+    }
+
+    private static int number(String raw) {
+        try {
+            return Integer.parseInt(raw.strip());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     private <T extends NexoraObject> void mutate(Player player, T obj, Consumer<T> change, String key, Map<String, String> ph) {

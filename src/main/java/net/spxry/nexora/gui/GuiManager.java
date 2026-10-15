@@ -43,6 +43,8 @@ public final class GuiManager {
     private static final String TYPE_TEXT = "TEXT";
     private static final String TYPE_ITEM = "ITEM";
     private static final String TYPE_BLOCK = "BLOCK";
+    private static final String TYPE_SHAPE = "SHAPE";
+    private static final String SHAPE_PROP = "shape";
     private static final String SAVED = "saved";
     private static final String INVALID = "invalid";
     private static final String NOT_FOUND = "not-found";
@@ -384,6 +386,10 @@ public final class GuiManager {
             case TYPE_BLOCK -> {
                 material = line.values(plugin.schema()).getOrDefault(MATERIAL_PROP, "");
                 preview = value("block") + " " + material;
+            }
+            case TYPE_SHAPE -> {
+                material = "";
+                preview = value("shape") + " " + optionLabel(NexoraObject.LINE, SHAPE_PROP, line.values(plugin.schema()).getOrDefault(SHAPE_PROP, ""));
             }
             default -> {
                 material = "";

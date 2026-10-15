@@ -17,6 +17,7 @@ final class LinesGui extends NexoraGui {
     private static final String PROP_MATERIAL = "material";
     private static final String TYPE_ITEM = "ITEM";
     private static final String TYPE_BLOCK = "BLOCK";
+    private static final String NEW_SHAPE = "shapes.new-line";
 
     private final Hologram holo;
     private List<LineView> views;
@@ -61,6 +62,7 @@ final class LinesGui extends NexoraGui {
         put("add-text", ph, click -> addText());
         put("add-item", ph, click -> addHeld(false));
         put("add-block", ph, click -> addHeld(true));
+        put("add-shape", ph, click -> addShape());
         if (page > 0) put("prev", ph, click -> turn(-1));
         if (page < pages - 1) put("next", ph, click -> turn(1));
     }
@@ -102,6 +104,13 @@ final class LinesGui extends NexoraGui {
 
     private void addText() {
         add(Map.of(), null);
+    }
+
+    private void addShape() {
+        Map<String, String> props = new HashMap<>();
+        var section = plugin.getConfig().getConfigurationSection(NEW_SHAPE);
+        if (section != null) for (var key : section.getKeys(false)) props.put(key, section.getString(key, ""));
+        add(props, null);
     }
 
     private void addHeld(boolean block) {

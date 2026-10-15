@@ -94,6 +94,7 @@ public final class Npc extends NexoraObject implements TriggerHost, HasRuntime {
     private static final String DEFAULT_TYPE_KEY = "npc.default-type";
     private static final String ANIMATIONS_KEY = "npc.animations.";
     private static final String ANIMATION_NONE = "NONE";
+    private static final String ANIMATION_CUSTOM = "CUSTOM";
     private static final String MODEL_TYPE = "MODEL";
     private static final String MODEL_EYE_KEY = "model.eye-height";
     private static final double DEFAULT_MODEL_EYE = 1.62;
@@ -140,6 +141,8 @@ public final class Npc extends NexoraObject implements TriggerHost, HasRuntime {
     private int cooldown;
     private double animationSpeed = DEFAULT_SPEED;
     private String animation = ANIMATION_NONE;
+    private String keyframeText = "";
+    private volatile boolean customFrames;
     private String poseHead = "";
     private String poseBody = "";
     private String poseRightArm = "";
@@ -203,6 +206,7 @@ public final class Npc extends NexoraObject implements TriggerHost, HasRuntime {
         map.put("cooldown", Binding.integer(n -> n.cooldown, (n, v) -> n.cooldown = v));
         map.put("animation-speed", Binding.number(n -> n.animationSpeed, (n, v) -> n.animationSpeed = v));
         map.put("animation", Binding.text(n -> n.animation, (n, v) -> n.animation = v));
+        map.put("keyframes", Binding.text(n -> n.keyframeText, (n, v) -> n.keyframeText = v));
         map.put("pose-head", Binding.text(n -> n.poseHead, (n, v) -> n.poseHead = v));
         map.put("pose-body", Binding.text(n -> n.poseBody, (n, v) -> n.poseBody = v));
         map.put("pose-right-arm", Binding.text(n -> n.poseRightArm, (n, v) -> n.poseRightArm = v));
@@ -318,6 +322,7 @@ public final class Npc extends NexoraObject implements TriggerHost, HasRuntime {
         animationClock = 0;
         var parsed = preset();
         keyframes = parsed.isEmpty() ? null : parsed;
+        customFrames = custom(animation) && !parsed.isEmpty();
         state = Keyframes.State.NONE;
         itemsChanged = false;
     }
@@ -345,7 +350,7 @@ public final class Npc extends NexoraObject implements TriggerHost, HasRuntime {
     }
 
     private float[] poseAngles() {
-        for (int i = 0; i < Keyframes.SIZE; i++) angles[i] = staticPose[i] + sampled[i];
+        for (int i = 0; i < Keyframes.SIZE; i++) angles[i] = (customFrames ? NO_PITCH : staticPose[i]) + sampled[i];
         return angles;
     }
 
@@ -430,7 +435,16 @@ public final class Npc extends NexoraObject implements TriggerHost, HasRuntime {
 
     private Keyframes preset() {
         if (animation.isBlank()) return Keyframes.EMPTY;
-        return Keyframes.parse(plugin.getConfig().getString(ANIMATIONS_KEY + animation.trim().toUpperCase(Locale.ROOT)));
+        return frames(animation);
+    }
+
+    private Keyframes frames(String id) {
+        if (custom(id)) return Keyframes.parse(keyframeText);
+        return Keyframes.parse(plugin.getConfig().getString(ANIMATIONS_KEY + id.trim().toUpperCase(Locale.ROOT)));
+    }
+
+    private static boolean custom(String id) {
+        return ANIMATION_CUSTOM.equalsIgnoreCase(id.trim());
     }
 
     private int animate() {
@@ -775,9 +789,10 @@ public final class Npc extends NexoraObject implements TriggerHost, HasRuntime {
 
     private boolean swapAnimation(String preset) {
         if (preset.isBlank()) return false;
-        var parsed = Keyframes.parse(plugin.getConfig().getString(ANIMATIONS_KEY + preset.trim().toUpperCase(Locale.ROOT)));
-        if (parsed.isEmpty() && !ANIMATION_NONE.equalsIgnoreCase(preset)) return false;
+        var parsed = frames(preset);
+        if (parsed.isEmpty() && !ANIMATION_NONE.equalsIgnoreCase(preset.trim())) return false;
         keyframes = parsed.isEmpty() ? null : parsed;
+        customFrames = custom(preset) && !parsed.isEmpty();
         animationClock = 0;
         animationPaused = false;
         lastFrame = RESET_FRAME;

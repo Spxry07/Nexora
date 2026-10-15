@@ -1,4 +1,4 @@
-file-version: 8
+file-version: 9
 id-prefix: "demo-"
 skin-property: "textures"
 objects:
@@ -394,3 +394,33 @@ objects:
     lines:
       - {type: "TEXT", text: "&#6293F0&lɪ'ᴍ ꜰᴏʟʟᴏᴡɪɴɢ ʏᴏᴜ", effect: "WAVE", effect-speed: 1, color-a: "#6293F0", color-b: "#FFFFFF"}
       - {type: "TEXT", text: "&7walk around and I tag along", scale: 0.7}
+  shape-star:
+    kind: hologram
+    offset: {forward: 16.5, right: -3, up: 1.6, yaw: 180}
+    props:
+      spin-speed: 60
+      line-spacing: 0.9
+    lines:
+      - {type: "SHAPE", shape: "STAR", shape-sides: 5, shape-inner: 0.45, billboard: "FIXED", scale: 1.2, color-a: "#FFD700", effect: "RAINBOW", effect-speed: 1}
+      - {type: "TEXT", text: "&7a real star, spinning", billboard: "CENTER", scale: 0.6}
+  shape-heart:
+    kind: hologram
+    offset: {forward: 19, right: -1.5, up: 1.6, yaw: 180}
+    props:
+      pulse-amount: 0.12
+      pulse-speed: 1.2
+      line-spacing: 0.9
+    lines:
+      - {type: "SHAPE", shape: "HEART", billboard: "CENTER", scale: 0.9, color-a: "#FF3B5C", effect: "FADE", color-b: "#FF9AAE", effect-speed: 1}
+      - {type: "TEXT", text: "&7a beating heart", billboard: "CENTER", scale: 0.6}
+  shape-cube:
+    kind: hologram
+    offset: {forward: 19, right: 1.5, up: 1.6, yaw: 180}
+    props:
+      spin-speed: 45
+      sway-angle: 15
+      sway-speed: 0.4
+      line-spacing: 0.9
+    lines:
+      - {type: "SHAPE", shape: "CUBE", billboard: "FIXED", scale: 0.7, color-a: "#40CEFC", rot-x: 20}
+      - {type: "TEXT", text: "&7a solid cube", billboard: "CENTER", scale: 0.6}

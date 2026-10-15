@@ -763,7 +763,29 @@ public final class WebServer {
         Map<String, Object> animationView = new LinkedHashMap<>();
         if (animations != null) for (var key : animations.getKeys(false)) animationView.put(key, animations.getString(key, ""));
         view.put("animations", animationView);
+        view.put("shapes", shapeView());
+        var shapeLine = config.getConfigurationSection("shapes.new-line");
+        Map<String, Object> shapeLineView = new LinkedHashMap<>();
+        if (shapeLine != null) for (var key : shapeLine.getKeys(false)) shapeLineView.put(key, shapeLine.getString(key, ""));
+        view.put("shapeLine", shapeLineView);
         return view;
+    }
+
+    private Map<String, Object> shapeView() {
+        var config = plugin.getConfig();
+        Map<String, Object> shapes = new LinkedHashMap<>();
+        shapes.put("circleSegments", config.getInt("shapes.circle-segments"));
+        shapes.put("heartSegments", config.getInt("shapes.heart-segments"));
+        shapes.put("crossWidth", config.getDouble("shapes.cross-width"));
+        shapes.put("arrowShaft", config.getDouble("shapes.arrow-shaft"));
+        shapes.put("arrowHead", config.getDouble("shapes.arrow-head"));
+        shapes.put("maxSides", config.getInt("shapes.max-sides"));
+        shapes.put("minThickness", config.getDouble("shapes.min-thickness"));
+        shapes.put("shadeTop", config.getDouble("shapes.shade.top"));
+        shapes.put("shadeBottom", config.getDouble("shapes.shade.bottom"));
+        shapes.put("shadeX", config.getDouble("shapes.shade.side-x"));
+        shapes.put("shadeZ", config.getDouble("shapes.shade.side-z"));
+        return shapes;
     }
 
     private Map<String, String> assetView() {

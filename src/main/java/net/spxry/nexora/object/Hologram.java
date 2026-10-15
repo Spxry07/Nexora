@@ -105,25 +105,35 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
     private static final int ARGS_PAIR = 2;
     private static final String EFFECT_PROP = "effect";
     private static final String LAYOUT_PROP = "layout";
+    private static final String SHAPE_TEXT_KEY = "shapes.quad.text";
+    private static final int CLEAR = 0;
 
     private static final class LineState {
         final HoloLine line;
         final Display display;
         final net.minecraft.world.entity.Entity handle;
+        final Display[] displays;
+        final net.minecraft.world.entity.Entity[] handles;
+        final ShapeMesh.Piece[] pieces;
         final int index;
         final boolean block;
         boolean dynamic;
         boolean refresh;
+        int color;
         double x;
         double y;
         double z;
         float yaw;
         String rendered;
 
-        LineState(HoloLine line, Display display, int index, boolean dynamic, String rendered) {
+        LineState(HoloLine line, Display[] displays, ShapeMesh.Piece[] pieces, int index, boolean dynamic, String rendered) {
             this.line = line;
-            this.display = display;
-            this.handle = Packets.handle(display);
+            this.displays = displays;
+            this.handles = new net.minecraft.world.entity.Entity[displays.length];
+            for (int i = 0; i < displays.length; i++) handles[i] = Packets.handle(displays[i]);
+            this.display = displays[0];
+            this.handle = handles[0];
+            this.pieces = pieces;
             this.index = index;
             this.block = HoloLine.BLOCK.equalsIgnoreCase(line.type);
             this.dynamic = dynamic;
@@ -521,8 +531,10 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
     private void applyGlow(boolean on) {
         glowOverride = on;
         for (var state : states) {
-            state.display.setGlowing(on);
-            if (on) state.display.setGlowColorOverride(Color.fromRGB(TextEffects.argb(state.line.glowColor) & RGB_MASK));
+            for (var display : state.displays) {
+                display.setGlowing(on);
+                if (on) display.setGlowColorOverride(Color.fromRGB(TextEffects.argb(state.line.glowColor) & RGB_MASK));
+            }
         }
     }
 
@@ -532,7 +544,7 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
         var state = list.get(index);
         if (!(state.display instanceof TextDisplay)) return;
         change.accept(state.line);
-        state.dynamic = TextEffects.dynamic(plugin.getConfig(), state.line);
+        state.dynamic = state.pieces != null ? TextEffects.animatedColor(state.line) : TextEffects.dynamic(plugin.getConfig(), state.line);
         state.refresh = true;
     }
 
@@ -658,8 +670,16 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
             var place = place(params, layout, line, i, count, baseX, baseY, baseZ, seconds, turn);
             var location = new Location(world, place[0], place[1], place[2], (float) place[3], 0f);
             var rendered = HoloLine.TEXT.equalsIgnoreCase(line.type) ? TextEffects.render(config, line, ticks) : "";
-            var display = template(world, location, line, rendered, interval, range, fallback);
-            var state = new LineState(line, display, i, TextEffects.dynamic(config, line), rendered);
+            LineState state;
+            if (HoloLine.SHAPE.equalsIgnoreCase(line.type)) {
+                var pieces = ShapeMesh.build(config, line).toArray(new ShapeMesh.Piece[0]);
+                int color = TextEffects.shapeColor(config, line, ticks);
+                state = new LineState(line, shapeDisplays(world, location, line, pieces, color, interval, range), pieces, i, TextEffects.animatedColor(line), rendered);
+                state.color = color;
+            } else {
+                var display = template(world, location, line, rendered, interval, range, fallback);
+                state = new LineState(line, new Display[]{display}, null, i, TextEffects.dynamic(config, line), rendered);
+            }
             state.x = place[0];
             state.y = place[1];
             state.z = place[2];
@@ -673,15 +693,17 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
         List<Packet<?>> despawn = new ArrayList<>();
         if (ids.length > 0) despawn.add(Packets.destroy(ids));
         var spawn = spawnPackets();
-        for (var state : built) Packets.clearDirty(state.handle);
+        for (var state : built) for (var handle : state.handles) Packets.clearDirty(handle);
         if (hitboxHandle != null) Packets.clearDirty(hitboxHandle);
         return new Built(spawn, despawn, ids);
     }
 
     private int[] collectIds(List<LineState> built) {
-        int count = built.size();
+        int count = 0;
+        for (var state : built) count += state.handles.length;
         int[] ids = new int[count + (hitboxHandle == null ? 0 : 1)];
-        for (int i = 0; i < count; i++) ids[i] = built.get(i).display.getEntityId();
+        int next = 0;
+        for (var state : built) for (var handle : state.handles) ids[next++] = handle.getId();
         if (hitboxHandle != null) ids[count] = hitboxHandle.getId();
         return ids;
     }
@@ -946,7 +968,7 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
             state.y = y;
             state.z = z;
             state.yaw = yaw;
-            packets.add(Packets.teleport(state.handle.getId(), x, y, z, yaw, 0f));
+            for (var handle : state.handles) packets.add(Packets.teleport(handle.getId(), x, y, z, yaw, 0f));
         }
     }
 
@@ -964,6 +986,10 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
     }
 
     private void update(LineState state, FileConfiguration config, boolean transforming, float spin, float sway, float scale, List<Packet<?>> packets) {
+        if (state.pieces != null) {
+            updateShape(state, config, transforming, spin, sway, scale, packets);
+            return;
+        }
         var handle = state.handle;
         if (transforming) state.display.setTransformation(transformation(state.block, state.line, (float) state.line.scale * scale, spin, sway));
         if ((state.dynamic || state.refresh) && state.display instanceof TextDisplay text) {
@@ -978,12 +1004,31 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
         if (data != null) packets.add(data);
     }
 
+    private void updateShape(LineState state, FileConfiguration config, boolean transforming, float spin, float sway, float scale, List<Packet<?>> packets) {
+        boolean recolor = state.dynamic || state.refresh;
+        state.refresh = false;
+        int color = recolor ? TextEffects.shapeColor(config, state.line, ticks) : state.color;
+        boolean colorChanged = color != state.color;
+        state.color = color;
+        if (!transforming && !colorChanged) return;
+        var rotation = rotation(state.line, spin, sway);
+        for (int i = 0; i < state.pieces.length; i++) {
+            var piece = state.pieces[i];
+            var display = state.displays[i];
+            if (transforming) display.setTransformation(pieceTransformation(piece, rotation, scale));
+            if (colorChanged && display instanceof TextDisplay text) text.setBackgroundColor(Color.fromARGB(ShapeMesh.shade(color, piece.shade())));
+            var data = Packets.dirtyData(state.handles[i], transforming);
+            if (data != null) packets.add(data);
+        }
+    }
+
     private List<Packet<?>> spawnPackets() {
         List<Packet<?>> list = new ArrayList<>();
         for (var state : states) {
-            var handle = state.handle;
-            list.add(Packets.spawn(handle, state.x, state.y, state.z, state.yaw, 0f));
-            list.add(Packets.fullData(handle));
+            for (var handle : state.handles) {
+                list.add(Packets.spawn(handle, state.x, state.y, state.z, state.yaw, 0f));
+                list.add(Packets.fullData(handle));
+            }
         }
         if (hitboxHandle != null) {
             list.add(Packets.spawn(hitboxHandle, hitX, hitY, hitZ, 0f, 0f));
@@ -996,9 +1041,11 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
     protected List<Packet<?>> catchUp() {
         List<Packet<?>> list = new ArrayList<>();
         for (var state : states) {
-            list.add(Packets.teleport(state.handle.getId(), state.x, state.y, state.z, state.yaw, 0f));
-            var data = Packets.fullData(state.handle);
-            if (data != null) list.add(data);
+            for (var handle : state.handles) {
+                list.add(Packets.teleport(handle.getId(), state.x, state.y, state.z, state.yaw, 0f));
+                var data = Packets.fullData(handle);
+                if (data != null) list.add(data);
+            }
         }
         if (hitboxHandle != null) list.add(Packets.teleport(hitboxHandle.getId(), hitX, hitY, hitZ, 0f, 0f));
         return list;
@@ -1011,8 +1058,13 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
             case HoloLine.BLOCK -> blockDisplay(world, location, line, fallback);
             default -> textDisplay(world, location, line, rendered);
         };
-        display.setBillboard(parse(Display.Billboard.class, line.billboard, Display.Billboard.CENTER));
         display.setTransformation(transformation(HoloLine.BLOCK.equals(type), line, (float) line.scale, 0f, 0f));
+        decorate(display, line, interval, range);
+        return display;
+    }
+
+    private void decorate(Display display, HoloLine line, int interval, float range) {
+        display.setBillboard(parse(Display.Billboard.class, line.billboard, Display.Billboard.CENTER));
         display.setInterpolationDuration(interval);
         display.setTeleportDuration(Math.min(interval, MAX_TELEPORT_DURATION));
         display.setViewRange(range);
@@ -1021,7 +1073,38 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
             display.setGlowing(true);
             display.setGlowColorOverride(Color.fromRGB(TextEffects.argb(line.glowColor) & RGB_MASK));
         }
-        return display;
+    }
+
+    private Display[] shapeDisplays(World world, Location location, HoloLine line, ShapeMesh.Piece[] pieces, int color, int interval, float range) {
+        var text = ColorUtil.colorize(plugin.getConfig().getString(SHAPE_TEXT_KEY, ARG_JOINER));
+        var rotation = rotation(line, 0f, 0f);
+        var displays = new Display[Math.max(1, pieces.length)];
+        for (int i = 0; i < displays.length; i++) {
+            var display = world.createEntity(location, TextDisplay.class);
+            display.text(text);
+            display.setShadowed(false);
+            display.setSeeThrough(line.seeThrough);
+            var piece = i < pieces.length ? pieces[i] : null;
+            display.setBackgroundColor(Color.fromARGB(piece == null ? CLEAR : ShapeMesh.shade(color, piece.shade())));
+            if (piece != null) display.setTransformation(pieceTransformation(piece, rotation, 1f));
+            decorate(display, line, interval, range);
+            displays[i] = display;
+        }
+        return displays;
+    }
+
+    private static Transformation pieceTransformation(ShapeMesh.Piece piece, Quaternionf rotation, float factor) {
+        var translation = new Vector3f(piece.translation()).mul(factor).rotate(rotation);
+        var left = new Quaternionf(rotation).mul(piece.left());
+        var size = new Vector3f(piece.scale()).mul(factor);
+        return new Transformation(translation, left, size, new Quaternionf(piece.right()));
+    }
+
+    private static Quaternionf rotation(HoloLine line, float spin, float sway) {
+        return new Quaternionf().rotationY(spin).rotateZ(sway)
+            .rotateY((float) Math.toRadians(line.rotY))
+            .rotateX((float) Math.toRadians(line.rotX))
+            .rotateZ((float) Math.toRadians(line.rotZ));
     }
 
     private TextDisplay textDisplay(World world, Location location, HoloLine line, String rendered) {
@@ -1067,10 +1150,7 @@ public final class Hologram extends NexoraObject implements TriggerHost, HasRunt
     }
 
     private static Transformation transformation(boolean block, HoloLine line, float scale, float spin, float sway) {
-        var rotation = new Quaternionf().rotationY(spin).rotateZ(sway)
-            .rotateY((float) Math.toRadians(line.rotY))
-            .rotateX((float) Math.toRadians(line.rotX))
-            .rotateZ((float) Math.toRadians(line.rotZ));
+        var rotation = rotation(line, spin, sway);
         var size = new Vector3f(scale * (float) line.scaleX, scale * (float) line.scaleY, scale * (float) line.scaleZ);
         var translation = block ? new Vector3f(BLOCK_CENTER, BLOCK_CENTER, BLOCK_CENTER).mul(size).rotate(rotation) : new Vector3f();
         return new Transformation(translation, rotation, size, new Quaternionf());

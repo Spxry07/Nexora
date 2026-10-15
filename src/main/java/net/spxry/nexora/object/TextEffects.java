@@ -34,6 +34,7 @@ public final class TextEffects {
     private static final int HEX_RADIX = 16;
     private static final int RGB_MASK = 0xFFFFFF;
     private static final int OPAQUE = 0xFF000000;
+    private static final int ALPHA_MASK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
     private static final int ARGB_LENGTH = 8;
     private static final int CHANNEL_MAX = 255;
@@ -67,6 +68,28 @@ public final class TextEffects {
         return effect != Effect.NONE && effect != Effect.SOLID
             ||!separator.isEmpty() && line.text.contains(separator)
             || line.text.contains(PLACEHOLDER_OPEN);
+    }
+
+    static boolean animatedColor(HoloLine line) {
+        return switch (effectOf(line.effect)) {
+            case FLICKER, FADE, RAINBOW, WAVE, BLINK -> true;
+            default -> false;
+        };
+    }
+
+    static int shapeColor(FileConfiguration config, HoloLine line, long ticks) {
+        long step = ticks / Math.max(1, line.effectSpeed);
+        int base = argb(line.colorA);
+        int alpha = base & ALPHA_MASK;
+        return switch (effectOf(line.effect)) {
+            case FLICKER -> alpha | flickerColor(config, line, step);
+            case FADE -> alpha | fadeColor(config, line, step);
+            case RAINBOW -> alpha | hsv(step * config.getDouble("effects.rainbow-step"),
+                config.getDouble("effects.rainbow-saturation"), config.getDouble("effects.rainbow-brightness"));
+            case WAVE -> alpha | mix(base & RGB_MASK, argb(line.colorB) & RGB_MASK, (Math.sin(step * config.getDouble("effects.wave-step")) + 1) / 2);
+            case BLINK -> step % BLINK_PHASES == 0 ? base : 0;
+            default -> base;
+        };
     }
 
     static int argb(String hex) {
