@@ -51,7 +51,7 @@ items:
   lines:
     slot: 29
     material: "BOOK"
-    name: "&#6293F0ʟɪɴᴇꜱ"
+    name: "&#6293F0&lLines"
     lore:
       - "&8Description:"
       - ""
@@ -62,7 +62,7 @@ items:
   shape:
     slot: 30
     material: "ENDER_EYE"
-    name: "&#6293F0ꜱʜᴀᴘᴇ ᴘɪᴄᴋᴇʀ"
+    name: "&#6293F0&lShape Picker"
     lore:
       - "&8Description:"
       - ""
@@ -73,7 +73,7 @@ items:
   triggers:
     slot: 31
     material: "TRIPWIRE_HOOK"
-    name: "&#6293F0ᴛʀɪɢɢᴇʀꜱ"
+    name: "&#6293F0&lTriggers"
     lore:
       - "&8Description:"
       - ""
@@ -83,7 +83,7 @@ items:
   equipment:
     slot: 29
     material: "IRON_CHESTPLATE"
-    name: "&#6293F0ᴇQᴜɪᴘᴍᴇɴᴛ"
+    name: "&#6293F0&lEquipment"
     lore:
       - "&8Description:"
       - ""
@@ -93,7 +93,7 @@ items:
   animation:
     slot: 30
     material: "NOTE_BLOCK"
-    name: "&#6293F0ᴀɴɪᴍᴀᴛɪᴏɴ ᴘɪᴄᴋᴇʀ"
+    name: "&#6293F0&lAnimation Picker"
     lore:
       - "&8Description:"
       - ""
@@ -103,7 +103,7 @@ items:
   nameplate:
     slot: 32
     material: "OAK_SIGN"
-    name: "&#6293F0ɴᴀᴍᴇᴘʟᴀᴛᴇ"
+    name: "&#6293F0&lNameplate"
     lore:
       - "&8Description:"
       - ""
@@ -115,7 +115,7 @@ items:
   move-here:
     slot: 47
     material: "ENDER_PEARL"
-    name: "&fᴍᴏᴠᴇ ʜᴇʀᴇ"
+    name: "&f&lMove Here"
     lore:
       - "&8Description:"
       - ""
@@ -125,7 +125,7 @@ items:
   teleport:
     slot: 48
     material: "COMPASS"
-    name: "&fᴛᴇʟᴇᴘᴏʀᴛ"
+    name: "&f&lTeleport"
     lore:
       - "&8Description:"
       - ""
@@ -135,7 +135,7 @@ items:
   path-add:
     slot: 49
     material: "RAIL"
-    name: "&fᴀᴅᴅ ᴘᴀᴛʜ ᴘᴏɪɴᴛ"
+    name: "&f&lAdd Path Point"
     lore:
       - "&8Description:"
       - ""
@@ -146,7 +146,7 @@ items:
   path-clear:
     slot: 50
     material: "POWERED_RAIL"
-    name: "&fᴄʟᴇᴀʀ ᴘᴀᴛʜ"
+    name: "&f&lClear Path"
     lore:
       - "&8Description:"
       - ""
@@ -156,7 +156,7 @@ items:
   delete:
     slot: 53
     material: "TNT"
-    name: "&#FF0000ᴅᴇʟᴇᴛᴇ"
+    name: "&#FF0000&lDelete"
     lore:
       - "&8Description:"
       - ""

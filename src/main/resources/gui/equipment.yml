@@ -1,4 +1,4 @@
-title: "&#6293F0&lᴇQᴜɪᴘᴍᴇɴᴛ &8» &7{id}"
+title: "&#6293F0&lEquipment &8» &7{id}"
 size: 27
 
 slots:
@@ -10,12 +10,12 @@ slots:
   OFF_HAND: 16
 
 slot-names:
-  HEAD: "ʜᴇᴀᴅ"
-  CHEST: "ᴄʜᴇꜱᴛ"
-  LEGS: "ʟᴇɢꜱ"
-  FEET: "ꜰᴇᴇᴛ"
-  HAND: "ᴍᴀɪɴ ʜᴀɴᴅ"
-  OFF_HAND: "ᴏꜰꜰ ʜᴀɴᴅ"
+  HEAD: "Head"
+  CHEST: "Chest"
+  LEGS: "Legs"
+  FEET: "Feet"
+  HAND: "Main Hand"
+  OFF_HAND: "Off Hand"
 
 placeholder:
   name: "&#6293F0{slot}"
@@ -39,7 +39,7 @@ items:
   info:
     slot: 22
     material: "KNOWLEDGE_BOOK"
-    name: "&#6293F0ᴇQᴜɪᴘᴍᴇɴᴛ"
+    name: "&#6293F0&lEquipment"
     lore:
       - "&8Description:"
       - ""

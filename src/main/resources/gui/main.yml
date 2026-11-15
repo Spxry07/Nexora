@@ -1,17 +1,17 @@
-title: "&#6293F0&lɴᴇxᴏʀᴀ &8» &7ᴍᴀɪɴ ᴍᴇɴᴜ"
+title: "&#6293F0&lNexora &8» &7&lMain Menu"
 size: 45
 
 prompt:
-  create-title: "&#6293F0&lᴄʀᴇᴀᴛᴇ &8» &7{kind}"
+  create-title: "&#6293F0&lCreate &8» &7{kind}"
   create-body: "&7Enter an id. The {kind} is created at your position."
-  create-label: "&fɪᴅ"
+  create-label: "&f&lID"
 
 items:
   info:
     slot: 13
     material: "NETHER_STAR"
     glow: true
-    name: "&#6293F0&lɴᴇxᴏʀᴀ"
+    name: "&#6293F0&lNexora"
     lore:
       - "&8Description:"
       - ""
@@ -25,7 +25,7 @@ items:
   holograms:
     slot: 11
     material: "OAK_SIGN"
-    name: "&#6293F0ʜᴏʟᴏɢʀᴀᴍꜱ"
+    name: "&#6293F0&lHolograms"
     lore:
       - "&8Description:"
       - ""
@@ -37,7 +37,7 @@ items:
   npcs:
     slot: 15
     material: "ARMOR_STAND"
-    name: "&#6293F0ɴᴘᴄꜱ"
+    name: "&#6293F0&lNpcs"
     lore:
       - "&8Description:"
       - ""
@@ -49,7 +49,7 @@ items:
   create-hologram:
     slot: 20
     material: "LIME_DYE"
-    name: "&#00FF5Aᴄʀᴇᴀᴛᴇ ʜᴏʟᴏɢʀᴀᴍ"
+    name: "&#00FF5A&lCreate Hologram"
     lore:
       - "&8Description:"
       - ""
@@ -59,7 +59,7 @@ items:
   create-npc:
     slot: 24
     material: "EMERALD"
-    name: "&#00FF5Aᴄʀᴇᴀᴛᴇ ɴᴘᴄ"
+    name: "&#00FF5A&lCreate NPC"
     lore:
       - "&8Description:"
       - ""
@@ -69,7 +69,7 @@ items:
   demo:
     slot: 22
     material: "FIREWORK_ROCKET"
-    name: "&#B266FFᴅᴇᴍᴏ ꜱʜᴏᴡᴄᴀꜱᴇ"
+    name: "&#B266FF&lDemo Showcase"
     lore:
       - "&8Description:"
       - ""
@@ -81,7 +81,7 @@ items:
   web:
     slot: 29
     material: "COMPASS"
-    name: "&#6293F0ᴡᴇʙ ᴇᴅɪᴛᴏʀ"
+    name: "&#6293F0&lWeb Editor"
     lore:
       - "&8Description:"
       - ""
@@ -91,7 +91,7 @@ items:
   reload:
     slot: 31
     material: "ANVIL"
-    name: "&#6293F0ʀᴇʟᴏᴀᴅ"
+    name: "&#6293F0&lReload"
     lore:
       - "&8Description:"
       - ""
@@ -101,7 +101,7 @@ items:
   dialogs:
     slot: 33
     material: "WRITABLE_BOOK"
-    name: "&#6293F0ᴅɪᴀʟᴏɢ ᴍᴇɴᴜ"
+    name: "&#6293F0&lDialog Menu"
     lore:
       - "&8Description:"
       - ""

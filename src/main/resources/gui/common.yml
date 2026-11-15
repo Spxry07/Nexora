@@ -9,8 +9,8 @@ numbers:
 preview-length: 28
 
 prompt:
-  confirm: "&#00FF5Aᴄᴏɴꜰɪʀᴍ"
-  cancel: "&7ᴄᴀɴᴄᴇʟ"
+  confirm: "&#00FF5A&lConfirm"
+  cancel: "&7&lCancel"
   default-max-length: 256
   color-max-length: 9
   id-max-length: 32
@@ -23,8 +23,8 @@ heads:
   max-name-length: 16
 
 values:
-  enabled: "&#00FF5Aᴏɴ"
-  disabled: "&#FF0000ᴏꜰꜰ"
+  enabled: "&#00FF5A&lOn"
+  disabled: "&#FF0000&lOff"
   empty: "&8(empty)"
   ellipsis: "…"
   any-range: "any"
@@ -129,7 +129,7 @@ items:
   back:
     slot: 45
     material: "ARROW"
-    name: "&7ʙᴀᴄᴋ"
+    name: "&7&lBack"
     lore:
       - "&8Description:"
       - ""
@@ -139,7 +139,7 @@ items:
   prev:
     slot: 46
     material: "ARROW"
-    name: "&#6293F0ᴘʀᴇᴠɪᴏᴜꜱ ᴘᴀɢᴇ"
+    name: "&#6293F0&lPrevious Page"
     lore:
       - "&8Description:"
       - ""
@@ -149,7 +149,7 @@ items:
   next:
     slot: 52
     material: "ARROW"
-    name: "&#6293F0ɴᴇxᴛ ᴘᴀɢᴇ"
+    name: "&#6293F0&lNext Page"
     lore:
       - "&8Description:"
       - ""
@@ -159,7 +159,7 @@ items:
   close:
     slot: 53
     material: "BARRIER"
-    name: "&#FF0000ᴄʟᴏꜱᴇ"
+    name: "&#FF0000&lClose"
     lore:
       - "&8Description:"
       - ""

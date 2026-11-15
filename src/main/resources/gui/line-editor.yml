@@ -1,4 +1,4 @@
-title: "&#6293F0&lʟɪɴᴇ #{number} &8» &7{id}"
+title: "&#6293F0&lLine #{number} &8» &7{id}"
 size: 45
 
 section-slots:
@@ -25,7 +25,7 @@ items:
   info:
     slot: 4
     material: "{icon}"
-    name: "&#6293F0&lʟɪɴᴇ #{number}"
+    name: "&#6293F0&lLine #{number}"
     lore:
       - "&8Description:"
       - ""
@@ -37,7 +37,7 @@ items:
   effect:
     slot: 20
     material: "BLAZE_POWDER"
-    name: "&#6293F0ᴇꜰꜰᴇᴄᴛ ᴘɪᴄᴋᴇʀ"
+    name: "&#6293F0&lEffect Picker"
     lore:
       - "&8Description:"
       - ""
@@ -47,7 +47,7 @@ items:
   line-up:
     slot: 22
     material: "SPECTRAL_ARROW"
-    name: "&fᴍᴏᴠᴇ ᴜᴘ"
+    name: "&f&lMove Up"
     lore:
       - "&8Description:"
       - ""
@@ -57,7 +57,7 @@ items:
   line-down:
     slot: 24
     material: "TIPPED_ARROW"
-    name: "&fᴍᴏᴠᴇ ᴅᴏᴡɴ"
+    name: "&f&lMove Down"
     lore:
       - "&8Description:"
       - ""
@@ -69,7 +69,7 @@ items:
   delete:
     slot: 44
     material: "TNT"
-    name: "&#FF0000ᴅᴇʟᴇᴛᴇ ʟɪɴᴇ"
+    name: "&#FF0000&lDelete Line"
     lore:
       - "&8Description:"
       - ""

@@ -76,7 +76,7 @@ final class PickerGui extends NexoraGui {
 
     private ItemStack entry(Schema.Option option) {
         var selected = option.id().equalsIgnoreCase(current);
-        Map<String, String> ph = Map.of("id", option.id(), "label", SmallCaps.of(option.label()), "plain", option.label());
+        Map<String, String> ph = Map.of("id", option.id(), "label", option.label(), "plain", option.label());
         var lore = cfg.list(FILE, selected ? "entry.selected-lore" : "entry.lore");
         return cfg.make(icon(option.id()), cfg.string(FILE, "entry.name", ""), lore, selected, ph);
     }

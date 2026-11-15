@@ -6,7 +6,7 @@ slots:
   - "37-43"
 
 entry:
-  name: "&#6293F0{label}"
+  name: "&#6293F0&l{label}"
   lore:
     - "&8Description:"
     - ""
@@ -23,7 +23,7 @@ entry:
 
 pickers:
   animation:
-    title: "&#6293F0&lᴀɴɪᴍᴀᴛɪᴏɴ &8» &7{id}{suffix}"
+    title: "&#6293F0&lAnimation &8» &7{id}{suffix}"
     default-icon: "NOTE_BLOCK"
     icons:
       NONE: "BARRIER"
@@ -54,7 +54,7 @@ pickers:
       ZOMBIE: "ROTTEN_FLESH"
       DANCE: "JUKEBOX"
   shape:
-    title: "&#6293F0&lꜱʜᴀᴘᴇ &8» &7{id}{suffix}"
+    title: "&#6293F0&lShape &8» &7{id}{suffix}"
     default-icon: "ENDER_EYE"
     icons:
       STACK: "BOOKSHELF"
@@ -78,7 +78,7 @@ pickers:
       PYRAMID: "SANDSTONE"
       CROSS: "GOLDEN_SWORD"
   effect:
-    title: "&#6293F0&lᴛᴇxᴛ ᴇꜰꜰᴇᴄᴛ &8» &7{id}{suffix}"
+    title: "&#6293F0&lText Effect &8» &7{id}{suffix}"
     default-icon: "BLAZE_POWDER"
     icons:
       NONE: "BARRIER"
@@ -91,7 +91,7 @@ pickers:
       SCROLL: "PAPER"
       BLINK: "LANTERN"
   entity-type:
-    title: "&#6293F0&lᴇɴᴛɪᴛʏ ᴛʏᴘᴇ"
+    title: "&#6293F0&lEntity Type"
     default-icon: "VILLAGER_SPAWN_EGG"
     mode: "egg"
   choice:

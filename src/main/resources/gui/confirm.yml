@@ -1,11 +1,11 @@
-title: "&#FF0000&lᴅᴇʟᴇᴛᴇ &8» &7{id}"
+title: "&#FF0000&lDelete &8» &7{id}"
 size: 27
 
 items:
   cancel:
     slot: 10
     material: "RED_STAINED_GLASS_PANE"
-    name: "&#FF0000ᴄᴀɴᴄᴇʟ"
+    name: "&#FF0000&lCancel"
     lore:
       - "&8Description:"
       - ""
@@ -28,7 +28,7 @@ items:
     slot: 16
     material: "LIME_STAINED_GLASS_PANE"
     glow: true
-    name: "&#00FF5Aᴄᴏɴꜰɪʀᴍ"
+    name: "&#00FF5A&lConfirm"
     lore:
       - "&8Description:"
       - ""

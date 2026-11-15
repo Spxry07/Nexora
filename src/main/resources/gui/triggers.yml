@@ -1,4 +1,4 @@
-title: "&#6293F0&lᴛʀɪɢɢᴇʀꜱ &8» &7{id}"
+title: "&#6293F0&lTriggers &8» &7{id}"
 size: 54
 slots:
   - "10-16"
@@ -8,9 +8,9 @@ preview-rules: 5
 preview-length: 40
 
 prompt:
-  title: "&#6293F0&lʀᴀᴡ ᴛʀɪɢɢᴇʀꜱ &8» &7{id}"
+  title: "&#6293F0&lRaw Triggers &8» &7{id}"
   body: "&7One rule per line: &fevent -> action; action"
-  label: "&fʀᴜʟᴇꜱ"
+  label: "&f&lRules"
 
 starter:
   lore:
@@ -27,85 +27,85 @@ rules:
   click-burst:
     kinds: ["npc", "hologram"]
     material: "FIREWORK_STAR"
-    name: "&#6293F0ᴄʟɪᴄᴋ ʙᴜʀꜱᴛ"
+    name: "&#6293F0&lClick Burst"
     description: "Burst of totem particles when clicked."
     rule: "click -> particle! TOTEM_OF_UNDYING 20 body 0.6"
   click-title:
     kinds: ["npc", "hologram"]
     material: "NAME_TAG"
-    name: "&#6293F0ᴄʟɪᴄᴋ ᴛɪᴛʟᴇ"
+    name: "&#6293F0&lClick Title"
     description: "Show a title to the clicking player."
     rule: "click -> title &#6293F0Hello|&7{player}"
   click-signal:
     kinds: ["npc", "hologram"]
     material: "REDSTONE_TORCH"
-    name: "&#6293F0ᴄʟɪᴄᴋ ꜱɪɢɴᴀʟ"
+    name: "&#6293F0&lClick Signal"
     description: "Emit a signal other objects can react to."
     rule: "click -> signal clicked"
   signal-react:
     kinds: ["npc", "hologram"]
     material: "REPEATER"
-    name: "&#6293F0ʀᴇᴀᴄᴛ ᴛᴏ ꜱɪɢɴᴀʟ"
+    name: "&#6293F0&lReact To Signal"
     description: "Sparkle and chime after a delay when the clicked signal arrives."
     rule: "signal clicked -> particle! HAPPY_VILLAGER 12 above 0.5; delay 20; sound! entity.player.levelup"
   approach-greet:
     kinds: ["npc", "hologram"]
     material: "OAK_DOOR"
-    name: "&#6293F0ᴀᴘᴘʀᴏᴀᴄʜ ɢʀᴇᴇᴛ"
+    name: "&#6293F0&lApproach Greet"
     description: "Greet players who walk close."
     rule: "approach -> message &fWelcome &#6293F0{player}&f!; sound entity.experience_orb.pickup"
   leave-bye:
     kinds: ["npc", "hologram"]
     material: "IRON_DOOR"
-    name: "&#6293F0ʟᴇᴀᴠᴇ ᴍᴇꜱꜱᴀɢᴇ"
+    name: "&#6293F0&lLeave Message"
     description: "Say goodbye when players walk away."
     rule: "leave -> actionbar &7Come back soon!"
   interval-sparkle:
     kinds: ["npc", "hologram"]
     material: "GLOWSTONE_DUST"
-    name: "&#6293F0ᴘᴇʀɪᴏᴅɪᴄ ꜱᴘᴀʀᴋʟᴇ"
+    name: "&#6293F0&lPeriodic Sparkle"
     description: "Emit end rod particles every two seconds."
     rule: "interval 40 -> particle END_ROD 6 above 0.4"
   look-heart:
     kinds: ["npc"]
     material: "ENDER_EYE"
-    name: "&#6293F0ʟᴏᴏᴋ ʜᴇᴀʀᴛꜱ"
+    name: "&#6293F0&lLook Hearts"
     description: "Hearts and a villager sound when looked at."
     rule: "look -> particle HEART 3 head; sound entity.villager.ambient"
   click-wave:
     kinds: ["npc"]
     material: "FEATHER"
-    name: "&#6293F0ᴄʟɪᴄᴋ ᴡᴀᴠᴇ"
+    name: "&#6293F0&lClick Wave"
     description: "Swing the arm when clicked."
     rule: "click -> swing main; look"
   click-spin:
     kinds: ["hologram"]
     material: "COMPASS"
-    name: "&#6293F0ᴄʟɪᴄᴋ ꜱᴘɪɴ"
+    name: "&#6293F0&lClick Spin"
     description: "Spin the hologram when clicked."
     rule: "click -> spin 720 40; sound entity.experience_orb.pickup"
   click-pulse:
     kinds: ["hologram"]
     material: "SLIME_BALL"
-    name: "&#6293F0ᴄʟɪᴄᴋ ᴘᴜʟꜱᴇ"
+    name: "&#6293F0&lClick Pulse"
     description: "Pulse the hologram when clicked."
     rule: "click -> pulse 0.3 20"
   approach-glow:
     kinds: ["hologram"]
     material: "GLOWSTONE"
-    name: "&#6293F0ᴀᴘᴘʀᴏᴀᴄʜ ɢʟᴏᴡ"
+    name: "&#6293F0&lApproach Glow"
     description: "Glow while a player is near."
     rule: "approach -> glow on\nleave -> glow off"
   look-grow:
     kinds: ["hologram"]
     material: "AMETHYST_SHARD"
-    name: "&#6293F0ʟᴏᴏᴋ ɢʀᴏᴡ"
+    name: "&#6293F0&lLook Grow"
     description: "Grow briefly when looked at."
     rule: "look -> scale 1.3 10"
   click-beam:
     kinds: ["hologram"]
     material: "END_ROD"
-    name: "&#6293F0ᴄʟɪᴄᴋ ʙᴇᴀᴍ"
+    name: "&#6293F0&lClick Beam"
     description: "Draw a particle beam to the clicking player."
     rule: "click -> particle END_ROD 12 center to player"
 
@@ -115,7 +115,7 @@ items:
   current:
     slot: 4
     material: "KNOWLEDGE_BOOK"
-    name: "&#6293F0ᴄᴜʀʀᴇɴᴛ ʀᴜʟᴇꜱ"
+    name: "&#6293F0&lCurrent Rules"
     lore:
       - "&8Description:"
       - ""
@@ -126,7 +126,7 @@ items:
   raw:
     slot: 48
     material: "WRITABLE_BOOK"
-    name: "&#6293F0ᴇᴅɪᴛ ʀᴀᴡ ʀᴜʟᴇꜱ"
+    name: "&#6293F0&lEdit Raw Rules"
     lore:
       - "&8Description:"
       - ""
@@ -136,7 +136,7 @@ items:
   clear:
     slot: 49
     material: "LAVA_BUCKET"
-    name: "&#FF0000ᴄʟᴇᴀʀ ᴀʟʟ"
+    name: "&#FF0000&lClear All"
     lore:
       - "&8Description:"
       - ""
@@ -146,7 +146,7 @@ items:
   web:
     slot: 50
     material: "COMPASS"
-    name: "&#6293F0ᴏᴘᴇɴ ᴡᴇʙ ᴇᴅɪᴛᴏʀ"
+    name: "&#6293F0&lOpen Web Editor"
     lore:
       - "&8Description:"
       - ""

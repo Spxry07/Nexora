@@ -248,7 +248,7 @@ defaults:
     proximity-range: 6
   line:
     type: "TEXT"
-    text: "&#6293F0&lɴᴇxᴏʀᴀ\n&7Edit me with &f/nexora"
+    text: "&#6293F0&lNexora\n&7Edit me with &f/nexora"
     material: "DIAMOND"
     frame-interval: 40
     effect: "NONE"
@@ -285,7 +285,7 @@ defaults:
     shape-thickness: 0.08
   npc:
     entity-type: "MANNEQUIN"
-    name: "&#6293F0&lɴᴇxᴏʀᴀ ɴᴘᴄ"
+    name: "&#6293F0&lNexora NPC"
     name-visible: true
     description: "&7Right-click me"
     skin-name: ""

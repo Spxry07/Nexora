@@ -6,7 +6,7 @@ slots:
   - "28-34"
 
 prompt:
-  title: "&#6293F0&lᴇᴅɪᴛ &8» &7{prop}"
+  title: "&#6293F0&lEdit &8» &7{prop}"
   body: "&7Enter a new value for &f{prop}&7."
 
 types:

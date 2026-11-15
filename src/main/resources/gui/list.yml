@@ -21,9 +21,9 @@ values:
   no-filter: "none"
 
 prompt:
-  title: "&#6293F0&lꜱᴇᴀʀᴄʜ &8» &7{kinds}"
+  title: "&#6293F0&lSearch &8» &7{kinds}"
   body: "&7Enter part of an id. Leave empty to show everything."
-  label: "&fꜱᴇᴀʀᴄʜ"
+  label: "&f&lSearch"
   max-length: 32
 
 entry:
@@ -60,7 +60,7 @@ items:
   search:
     slot: 46
     material: "OAK_SIGN"
-    name: "&#6293F0ꜱᴇᴀʀᴄʜ"
+    name: "&#6293F0&lSearch"
     lore:
       - "&8Description:"
       - ""
@@ -71,7 +71,7 @@ items:
   clear-search:
     slot: 47
     material: "REDSTONE_TORCH"
-    name: "&#FF0000ᴄʟᴇᴀʀ ꜱᴇᴀʀᴄʜ"
+    name: "&#FF0000&lClear Search"
     lore:
       - "&8Description:"
       - ""
@@ -97,7 +97,7 @@ items:
   create:
     slot: 52
     material: "LIME_DYE"
-    name: "&#00FF5Aᴄʀᴇᴀᴛᴇ {kind}"
+    name: "&#00FF5A&lCreate {kind}"
     lore:
       - "&8Description:"
       - ""

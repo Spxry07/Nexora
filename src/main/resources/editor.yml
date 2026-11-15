@@ -3,82 +3,82 @@ kinds:
   hologram:
     sections:
       general:
-        title: "&#6293F0&lɢᴇɴᴇʀᴀʟ"
+        title: "&#6293F0&lGeneral"
         properties: [view-range, line-spacing, attach-to, attach-height]
       shape:
-        title: "&#6293F0&lꜱʜᴀᴘᴇ"
+        title: "&#6293F0&lShape"
         properties: [layout, layout-radius, shape-width, shape-height, shape-tilt, shape-sides, shape-inner, grid-columns, arc-angle, layout-speed, helix-step, wave-height, wave-speed]
       interaction:
-        title: "&#6293F0&lɪɴᴛᴇʀᴀᴄᴛɪᴏɴ"
+        title: "&#6293F0&lInteraction"
         properties: [clickable, hitbox-width, hitbox-height, hitbox-offset-y, actions, click-type, cooldown, triggers, approach-range, look-trigger-range]
       reactive:
-        title: "&#6293F0&lʀᴇᴀᴄᴛɪᴠᴇ ᴍᴏᴛɪᴏɴ"
+        title: "&#6293F0&lReactive Motion"
         properties: [face-player, follow-player, follow-range, follow-distance, follow-speed, proximity-scale, proximity-range]
       motion:
-        title: "&#6293F0&lᴍᴏᴛɪᴏɴ"
+        title: "&#6293F0&lMotion"
         properties: [spin-speed, bob-height, bob-speed, orbit-radius, orbit-speed]
       effects:
-        title: "&#6293F0&lᴛʀᴀɴꜱꜰᴏʀᴍ ᴇꜰꜰᴇᴄᴛꜱ"
+        title: "&#6293F0&lTransform Effects"
         properties: [pulse-amount, pulse-speed, sway-angle, sway-speed]
       path:
-        title: "&#6293F0&lᴘᴀᴛʜ"
+        title: "&#6293F0&lPath"
         properties: [path-speed]
       particles:
-        title: "&#6293F0&lᴘᴀʀᴛɪᴄʟᴇꜱ"
+        title: "&#6293F0&lParticles"
         properties: [particle, particle-count, particle-radius, particle-interval]
     properties:
-      view-range: {label: "&fᴠɪᴇᴡ ʀᴀɴɢᴇ", type: number, min: 4, max: 160, step: 1}
-      line-spacing: {label: "&fʟɪɴᴇ ꜱᴘᴀᴄɪɴɢ", type: number, min: 0.05, max: 2, step: 0.05}
-      attach-to: {label: "&fꜰᴏʟʟᴏᴡ ɴᴘᴄ (id)", type: text, max: 32}
-      attach-height: {label: "&fʜᴇɪɢʜᴛ ᴀʙᴏᴠᴇ ɴᴘᴄ", type: number, min: -2, max: 6, step: 0.05}
+      view-range: {label: "&f&lView Range", type: number, min: 4, max: 160, step: 1}
+      line-spacing: {label: "&f&lLine Spacing", type: number, min: 0.05, max: 2, step: 0.05}
+      attach-to: {label: "&f&lFollow NPC (id)", type: text, max: 32}
+      attach-height: {label: "&f&lHeight Above NPC", type: number, min: -2, max: 6, step: 0.05}
       layout:
-        label: "&fʟᴀʏᴏᴜᴛ"
+        label: "&f&lLayout"
         type: choice
         options: {STACK: "Stack (classic)", RING: "Ring (carousel)", HELIX: "Helix (spiral)", ROW: "Row (side by side)", WHEEL: "Wheel (vertical ring)", SPHERE: "Sphere (globe)", TORNADO: "Tornado (cone spiral)", TRIANGLE: "Triangle", SQUARE: "Square", POLYGON: "Polygon (N sides)", STAR: "Star", HEART: "Heart", GRID: "Grid", ARC: "Arc", SPIRAL: "Flat spiral", CUBE: "Cube", INFINITY: "Infinity loop", DIAMOND: "Diamond", PYRAMID: "Pyramid", CROSS: "Cross"}
-      layout-radius: {label: "&fꜱʜᴀᴘᴇ ꜱɪᴢᴇ (ʀᴀᴅɪᴜꜱ)", type: number, min: 0, max: 20, step: 0.1}
-      shape-width: {label: "&fꜱʜᴀᴘᴇ ᴡɪᴅᴛʜ ×", type: number, min: 0.1, max: 5, step: 0.05}
-      shape-height: {label: "&fꜱʜᴀᴘᴇ ʜᴇɪɢʜᴛ ×", type: number, min: 0.1, max: 5, step: 0.05}
-      shape-tilt: {label: "&fꜱʜᴀᴘᴇ ᴛɪʟᴛ (0 = ꜰʟᴀᴛ, 90 = ꜱᴛᴀɴᴅɪɴɢ)", type: number, min: -90, max: 90, step: 5}
-      shape-sides: {label: "&fꜱɪᴅᴇꜱ / ꜱᴛᴀʀ ᴘᴏɪɴᴛꜱ", type: integer, min: 3, max: 16, step: 1}
-      shape-inner: {label: "&fꜱᴛᴀʀ ɪɴɴᴇʀ ʀᴀᴅɪᴜꜱ ×", type: number, min: 0.1, max: 1, step: 0.05}
-      grid-columns: {label: "&fɢʀɪᴅ ᴄᴏʟᴜᴍɴꜱ", type: integer, min: 1, max: 16, step: 1}
-      arc-angle: {label: "&fᴀʀᴄ ᴀɴɢʟᴇ (°)", type: number, min: 10, max: 360, step: 5}
-      clickable: {label: "&fᴄʟɪᴄᴋᴀʙʟᴇ", type: bool}
-      hitbox-width: {label: "&fʜɪᴛʙᴏx ᴡɪᴅᴛʜ", type: number, min: 0.1, max: 10, step: 0.1}
-      hitbox-height: {label: "&fʜɪᴛʙᴏx ʜᴇɪɢʜᴛ", type: number, min: 0.1, max: 10, step: 0.1}
-      hitbox-offset-y: {label: "&fʜɪᴛʙᴏx ʜᴇɪɢʜᴛ ᴏꜰꜰꜱᴇᴛ", type: number, min: -5, max: 5, step: 0.05}
-      actions: {label: "&fᴄʟɪᴄᴋ ᴀᴄᴛɪᴏɴꜱ ([player] /shop, [console], [message] ...)", type: multiline, max: 2048}
+      layout-radius: {label: "&f&lShape Size (Radius)", type: number, min: 0, max: 20, step: 0.1}
+      shape-width: {label: "&f&lShape Width ×", type: number, min: 0.1, max: 5, step: 0.05}
+      shape-height: {label: "&f&lShape Height ×", type: number, min: 0.1, max: 5, step: 0.05}
+      shape-tilt: {label: "&f&lShape Tilt (0 = Flat, 90 = Standing)", type: number, min: -90, max: 90, step: 5}
+      shape-sides: {label: "&f&lSides / Star Points", type: integer, min: 3, max: 16, step: 1}
+      shape-inner: {label: "&f&lStar Inner Radius ×", type: number, min: 0.1, max: 1, step: 0.05}
+      grid-columns: {label: "&f&lGrid Columns", type: integer, min: 1, max: 16, step: 1}
+      arc-angle: {label: "&f&lArc Angle (°)", type: number, min: 10, max: 360, step: 5}
+      clickable: {label: "&f&lClickable", type: bool}
+      hitbox-width: {label: "&f&lHitbox Width", type: number, min: 0.1, max: 10, step: 0.1}
+      hitbox-height: {label: "&f&lHitbox Height", type: number, min: 0.1, max: 10, step: 0.1}
+      hitbox-offset-y: {label: "&f&lHitbox Height Offset", type: number, min: -5, max: 5, step: 0.05}
+      actions: {label: "&f&lClick Actions ([player] /shop, [console], [message] ...)", type: multiline, max: 2048}
       click-type:
-        label: "&fᴄʟɪᴄᴋ ᴛʏᴘᴇ"
+        label: "&f&lClick Type"
         type: choice
         options: {ANY: "Any", RIGHT: "Right click", LEFT: "Left click"}
-      cooldown: {label: "&fᴄᴏᴏʟᴅᴏᴡɴ (ticks)", type: integer, min: 0, max: 12000, step: 1}
-      triggers: {label: "&fᴛʀɪɢɢᴇʀꜱ (event -> action; action)", type: multiline, max: 8192}
-      approach-range: {label: "&fᴀᴘᴘʀᴏᴀᴄʜ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
-      look-trigger-range: {label: "&fʟᴏᴏᴋ ᴛʀɪɢɢᴇʀ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
-      face-player: {label: "&fᴛᴜʀɴ ᴛᴏᴡᴀʀᴅ ɴᴇᴀʀᴇꜱᴛ ᴘʟᴀʏᴇʀ", type: bool}
-      follow-player: {label: "&fꜰᴏʟʟᴏᴡ ɴᴇᴀʀᴇꜱᴛ ᴘʟᴀʏᴇʀ", type: bool}
-      follow-range: {label: "&fꜰᴏʟʟᴏᴡ ʀᴀɴɢᴇ", type: number, min: 1, max: 48, step: 0.5}
-      follow-distance: {label: "&fᴋᴇᴇᴘ ᴅɪꜱᴛᴀɴᴄᴇ", type: number, min: 0.5, max: 16, step: 0.25}
-      follow-speed: {label: "&fꜰᴏʟʟᴏᴡ ꜱᴘᴇᴇᴅ (blocks/s)", type: number, min: 0.1, max: 20, step: 0.1}
-      proximity-scale: {label: "&fɢʀᴏᴡ ᴡʜᴇɴ ɴᴇᴀʀ (+×)", type: number, min: 0, max: 3, step: 0.05}
-      proximity-range: {label: "&fɢʀᴏᴡ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
-      layout-speed: {label: "&fʟᴀʏᴏᴜᴛ ʀᴏᴛᴀᴛɪᴏɴ (°/s)", type: number, min: -720, max: 720, step: 5}
-      helix-step: {label: "&fʜᴇʟɪx / ᴛᴏʀɴᴀᴅᴏ ᴛᴜʀɴ ᴘᴇʀ ʟɪɴᴇ (°)", type: number, min: 0, max: 180, step: 5}
-      wave-height: {label: "&fʟɪɴᴇ ᴡᴀᴠᴇ ʜᴇɪɢʜᴛ", type: number, min: 0, max: 2, step: 0.05}
-      wave-speed: {label: "&fʟɪɴᴇ ᴡᴀᴠᴇ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
-      spin-speed: {label: "&fꜱᴘɪɴ ꜱᴘᴇᴇᴅ (°/s)", type: number, min: -720, max: 720, step: 5}
-      bob-height: {label: "&fʙᴏʙ ʜᴇɪɢʜᴛ", type: number, min: 0, max: 3, step: 0.05}
-      bob-speed: {label: "&fʙᴏʙ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
-      orbit-radius: {label: "&fᴏʀʙɪᴛ ʀᴀᴅɪᴜꜱ", type: number, min: 0, max: 10, step: 0.1}
-      orbit-speed: {label: "&fᴏʀʙɪᴛ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: -5, max: 5, step: 0.05}
-      pulse-amount: {label: "&fᴘᴜʟꜱᴇ ᴀᴍᴏᴜɴᴛ", type: number, min: 0, max: 1, step: 0.05}
-      pulse-speed: {label: "&fᴘᴜʟꜱᴇ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
-      sway-angle: {label: "&fꜱᴡᴀʏ ᴀɴɢʟᴇ (°)", type: number, min: 0, max: 90, step: 1}
-      sway-speed: {label: "&fꜱᴡᴀʏ ꜱᴘᴇᴇᴅ (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
-      path-speed: {label: "&fᴘᴀᴛʜ ꜱᴘᴇᴇᴅ (blocks/s)", type: number, min: 0, max: 20, step: 0.1}
+      cooldown: {label: "&f&lCooldown (ticks)", type: integer, min: 0, max: 12000, step: 1}
+      triggers: {label: "&f&lTriggers (event -> action; action)", type: multiline, max: 8192}
+      approach-range: {label: "&f&lApproach Range", type: number, min: 1, max: 32, step: 0.5}
+      look-trigger-range: {label: "&f&lLook Trigger Range", type: number, min: 1, max: 32, step: 0.5}
+      face-player: {label: "&f&lTurn Toward Nearest Player", type: bool}
+      follow-player: {label: "&f&lFollow Nearest Player", type: bool}
+      follow-range: {label: "&f&lFollow Range", type: number, min: 1, max: 48, step: 0.5}
+      follow-distance: {label: "&f&lKeep Distance", type: number, min: 0.5, max: 16, step: 0.25}
+      follow-speed: {label: "&f&lFollow Speed (blocks/s)", type: number, min: 0.1, max: 20, step: 0.1}
+      proximity-scale: {label: "&f&lGrow When Near (+×)", type: number, min: 0, max: 3, step: 0.05}
+      proximity-range: {label: "&f&lGrow Range", type: number, min: 1, max: 32, step: 0.5}
+      layout-speed: {label: "&f&lLayout Rotation (°/s)", type: number, min: -720, max: 720, step: 5}
+      helix-step: {label: "&f&lHelix / Tornado Turn Per Line (°)", type: number, min: 0, max: 180, step: 5}
+      wave-height: {label: "&f&lLine Wave Height", type: number, min: 0, max: 2, step: 0.05}
+      wave-speed: {label: "&f&lLine Wave Speed (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
+      spin-speed: {label: "&f&lSpin Speed (°/s)", type: number, min: -720, max: 720, step: 5}
+      bob-height: {label: "&f&lBob Height", type: number, min: 0, max: 3, step: 0.05}
+      bob-speed: {label: "&f&lBob Speed (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
+      orbit-radius: {label: "&f&lOrbit Radius", type: number, min: 0, max: 10, step: 0.1}
+      orbit-speed: {label: "&f&lOrbit Speed (cycles/s)", type: number, min: -5, max: 5, step: 0.05}
+      pulse-amount: {label: "&f&lPulse Amount", type: number, min: 0, max: 1, step: 0.05}
+      pulse-speed: {label: "&f&lPulse Speed (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
+      sway-angle: {label: "&f&lSway Angle (°)", type: number, min: 0, max: 90, step: 1}
+      sway-speed: {label: "&f&lSway Speed (cycles/s)", type: number, min: 0, max: 5, step: 0.05}
+      path-speed: {label: "&f&lPath Speed (blocks/s)", type: number, min: 0, max: 20, step: 0.1}
       particle: &particles
-        label: "&fᴘᴀʀᴛɪᴄʟᴇ"
+        label: "&f&lParticle"
         type: choice
         options:
           NONE: "None"
@@ -101,124 +101,124 @@ kinds:
           WAX_ON: "Wax"
           NAUTILUS: "Nautilus"
           WITCH: "Witch"
-      particle-count: &particle-count {label: "&fᴘᴀʀᴛɪᴄʟᴇ ᴄᴏᴜɴᴛ", type: integer, min: 0, max: 50, step: 1}
-      particle-radius: &particle-radius {label: "&fᴘᴀʀᴛɪᴄʟᴇ ʀᴀᴅɪᴜꜱ", type: number, min: 0, max: 5, step: 0.1}
-      particle-interval: &particle-interval {label: "&fᴘᴀʀᴛɪᴄʟᴇ ɪɴᴛᴇʀᴠᴀʟ (ticks)", type: integer, min: 0, max: 200, step: 1}
+      particle-count: &particle-count {label: "&f&lParticle Count", type: integer, min: 0, max: 50, step: 1}
+      particle-radius: &particle-radius {label: "&f&lParticle Radius", type: number, min: 0, max: 5, step: 0.1}
+      particle-interval: &particle-interval {label: "&f&lParticle Interval (ticks)", type: integer, min: 0, max: 200, step: 1}
 
   line:
     sections:
       content:
-        title: "&#6293F0&lᴄᴏɴᴛᴇɴᴛ"
+        title: "&#6293F0&lContent"
         properties: [type, text, material, frame-interval, shape, shape-style, shape-sides, shape-inner, shape-thickness]
       effect:
-        title: "&#6293F0&lᴛᴇxᴛ ᴇꜰꜰᴇᴄᴛ"
+        title: "&#6293F0&lText Effect"
         properties: [effect, effect-speed, color-a, color-b, scroll-width]
       transform:
-        title: "&#6293F0&lᴛʀᴀɴꜱꜰᴏʀᴍ"
+        title: "&#6293F0&lTransform"
         properties: [scale, scale-x, scale-y, scale-z, offset-x, offset-y, offset-z, rot-x, rot-y, rot-z, billboard, item-transform]
       style:
-        title: "&#6293F0&lꜱᴛʏʟᴇ"
+        title: "&#6293F0&lStyle"
         properties: [background-default, background, shadow, see-through, alignment, line-width, opacity]
       glow:
-        title: "&#6293F0&lɢʟᴏᴡ & ʟɪɢʜᴛ"
+        title: "&#6293F0&lGlow & Light"
         properties: [glow, glow-color, brightness]
     properties:
       type:
-        label: "&fʟɪɴᴇ ᴛʏᴘᴇ"
+        label: "&f&lLine Type"
         type: choice
         options: {TEXT: "Text", ITEM: "Item", BLOCK: "Block", SHAPE: "Shape"}
-      text: {label: "&fᴛᴇxᴛ (frames split by ||)", type: multiline, max: 1024}
-      material: {label: "&fᴍᴀᴛᴇʀɪᴀʟ (item/block lines)", type: text, max: 64}
-      frame-interval: {label: "&fꜰʀᴀᴍᴇ ɪɴᴛᴇʀᴠᴀʟ (ticks)", type: integer, min: 1, max: 200, step: 1}
+      text: {label: "&f&lText (frames split by ||)", type: multiline, max: 1024}
+      material: {label: "&f&lMaterial (item/block lines)", type: text, max: 64}
+      frame-interval: {label: "&f&lFrame Interval (ticks)", type: integer, min: 1, max: 200, step: 1}
       shape:
-        label: "&fꜱʜᴀᴘᴇ (shape lines)"
+        label: "&f&lShape (shape lines)"
         type: choice
         options: {TRIANGLE: "Triangle", RIGHT_TRIANGLE: "Right triangle", SQUARE: "Square", DIAMOND: "Diamond", POLYGON: "Polygon", CIRCLE: "Circle", STAR: "Star", HEART: "Heart", CROSS: "Cross", ARROW: "Arrow", CUBE: "Cube (3D)", PYRAMID: "Pyramid (3D)", PRISM: "Prism (3D)", OCTAHEDRON: "Octahedron (3D)", CYLINDER: "Cylinder (3D)", CONE: "Cone (3D)"}
       shape-style:
-        label: "&fꜱʜᴀᴘᴇ ꜱᴛʏʟᴇ"
+        label: "&f&lShape Style"
         type: choice
         options: {FILL: "Filled", OUTLINE: "Outline"}
-      shape-sides: {label: "&fꜱɪᴅᴇꜱ / ꜱᴛᴀʀ ᴘᴏɪɴᴛꜱ", type: integer, min: 3, max: 32, step: 1}
-      shape-inner: {label: "&fꜱᴛᴀʀ ɪɴɴᴇʀ ꜱɪᴢᴇ", type: number, min: 0.05, max: 0.95, step: 0.05}
-      shape-thickness: {label: "&fᴏᴜᴛʟɪɴᴇ ᴛʜɪᴄᴋɴᴇꜱꜱ", type: number, min: 0.01, max: 0.5, step: 0.01}
+      shape-sides: {label: "&f&lSides / Star Points", type: integer, min: 3, max: 32, step: 1}
+      shape-inner: {label: "&f&lStar Inner Size", type: number, min: 0.05, max: 0.95, step: 0.05}
+      shape-thickness: {label: "&f&lOutline Thickness", type: number, min: 0.01, max: 0.5, step: 0.01}
       effect:
-        label: "&fᴇꜰꜰᴇᴄᴛ"
+        label: "&f&lEffect"
         type: choice
         options: {NONE: "None", SOLID: "Solid color (A)", FLICKER: "Flicker (A/B)", FADE: "Fade (A↔B)", TYPEWRITER: "Typewriter", RAINBOW: "Rainbow", WAVE: "Gradient Wave", SCROLL: "Scroll", BLINK: "Blink"}
-      effect-speed: {label: "&fᴇꜰꜰᴇᴄᴛ ꜱᴘᴇᴇᴅ (ticks/step)", type: integer, min: 1, max: 100, step: 1}
-      color-a: {label: "&fᴄᴏʟᴏʀ ᴀ", type: color}
-      color-b: {label: "&fᴄᴏʟᴏʀ ʙ", type: color}
-      scroll-width: {label: "&fꜱᴄʀᴏʟʟ ᴡɪᴅᴛʜ", type: integer, min: 4, max: 64, step: 1}
-      scale: {label: "&fꜱᴄᴀʟᴇ", type: number, min: 0.1, max: 10, step: 0.05}
-      scale-x: {label: "&fᴡɪᴅᴛʜ ×", type: number, min: 0.05, max: 10, step: 0.05}
-      scale-y: {label: "&fʜᴇɪɢʜᴛ ×", type: number, min: 0.05, max: 10, step: 0.05}
-      scale-z: {label: "&fᴅᴇᴘᴛʜ ×", type: number, min: 0.05, max: 10, step: 0.05}
-      offset-y: {label: "&fʏ ᴏꜰꜰꜱᴇᴛ", type: number, min: -5, max: 5, step: 0.05}
-      offset-x: {label: "&fx ᴏꜰꜰꜱᴇᴛ", type: number, min: -10, max: 10, step: 0.05}
-      offset-z: {label: "&fᴢ ᴏꜰꜰꜱᴇᴛ", type: number, min: -10, max: 10, step: 0.05}
-      rot-x: {label: "&fᴛɪʟᴛ x (°, -90 = ꜰʟᴀᴛ ᴏɴ ɢʀᴏᴜɴᴅ)", type: number, min: -180, max: 180, step: 5}
-      rot-y: {label: "&fᴛᴜʀɴ ʏ (°)", type: number, min: -180, max: 180, step: 5}
-      rot-z: {label: "&fʀᴏʟʟ ᴢ (°)", type: number, min: -180, max: 180, step: 5}
+      effect-speed: {label: "&f&lEffect Speed (ticks/step)", type: integer, min: 1, max: 100, step: 1}
+      color-a: {label: "&f&lColor A", type: color}
+      color-b: {label: "&f&lColor B", type: color}
+      scroll-width: {label: "&f&lScroll Width", type: integer, min: 4, max: 64, step: 1}
+      scale: {label: "&f&lScale", type: number, min: 0.1, max: 10, step: 0.05}
+      scale-x: {label: "&f&lWidth ×", type: number, min: 0.05, max: 10, step: 0.05}
+      scale-y: {label: "&f&lHeight ×", type: number, min: 0.05, max: 10, step: 0.05}
+      scale-z: {label: "&f&lDepth ×", type: number, min: 0.05, max: 10, step: 0.05}
+      offset-y: {label: "&f&lY Offset", type: number, min: -5, max: 5, step: 0.05}
+      offset-x: {label: "&f&lx Offset", type: number, min: -10, max: 10, step: 0.05}
+      offset-z: {label: "&f&lZ Offset", type: number, min: -10, max: 10, step: 0.05}
+      rot-x: {label: "&f&lTilt x (°, -90 = Flat On Ground)", type: number, min: -180, max: 180, step: 5}
+      rot-y: {label: "&f&lTurn Y (°)", type: number, min: -180, max: 180, step: 5}
+      rot-z: {label: "&f&lRoll Z (°)", type: number, min: -180, max: 180, step: 5}
       billboard:
-        label: "&fʙɪʟʟʙᴏᴀʀᴅ"
+        label: "&f&lBillboard"
         type: choice
         options: {CENTER: "Face player", VERTICAL: "Vertical", HORIZONTAL: "Horizontal", FIXED: "Fixed"}
       item-transform:
-        label: "&fɪᴛᴇᴍ ᴛʀᴀɴꜱꜰᴏʀᴍ"
+        label: "&f&lItem Transform"
         type: choice
         options: {FIXED: "Fixed", GROUND: "Ground", GUI: "GUI", HEAD: "Head", NONE: "None", THIRDPERSON_RIGHTHAND: "Third person", FIRSTPERSON_RIGHTHAND: "First person"}
-      background-default: {label: "&fᴅᴇꜰᴀᴜʟᴛ ʙᴀᴄᴋɢʀᴏᴜɴᴅ", type: bool}
-      background: {label: "&fʙᴀᴄᴋɢʀᴏᴜɴᴅ (#AARRGGBB)", type: color}
-      shadow: {label: "&fᴛᴇxᴛ ꜱʜᴀᴅᴏᴡ", type: bool}
-      see-through: {label: "&fꜱᴇᴇ ᴛʜʀᴏᴜɢʜ ʙʟᴏᴄᴋꜱ", type: bool}
+      background-default: {label: "&f&lDefault Background", type: bool}
+      background: {label: "&f&lBackground (#AARRGGBB)", type: color}
+      shadow: {label: "&f&lText Shadow", type: bool}
+      see-through: {label: "&f&lSee Through Blocks", type: bool}
       alignment:
-        label: "&fᴀʟɪɢɴᴍᴇɴᴛ"
+        label: "&f&lAlignment"
         type: choice
         options: {CENTER: "Center", LEFT: "Left", RIGHT: "Right"}
-      line-width: {label: "&fᴍᴀx ʟɪɴᴇ ᴡɪᴅᴛʜ", type: integer, min: 20, max: 1000, step: 10}
-      opacity: {label: "&fᴛᴇxᴛ ᴏᴘᴀᴄɪᴛʏ", type: integer, min: 30, max: 255, step: 5}
-      glow: {label: "&fɢʟᴏᴡ ᴏᴜᴛʟɪɴᴇ", type: bool}
-      glow-color: {label: "&fɢʟᴏᴡ ᴄᴏʟᴏʀ", type: color}
-      brightness: {label: "&fʙʀɪɢʜᴛɴᴇꜱꜱ (-1 = world)", type: integer, min: -1, max: 15, step: 1}
+      line-width: {label: "&f&lMax Line Width", type: integer, min: 20, max: 1000, step: 10}
+      opacity: {label: "&f&lText Opacity", type: integer, min: 30, max: 255, step: 5}
+      glow: {label: "&f&lGlow Outline", type: bool}
+      glow-color: {label: "&f&lGlow Color", type: color}
+      brightness: {label: "&f&lBrightness (-1 = world)", type: integer, min: -1, max: 15, step: 1}
 
   npc:
     sections:
       identity:
-        title: "&#6293F0&lɪᴅᴇɴᴛɪᴛʏ"
+        title: "&#6293F0&lIdentity"
         properties: [entity-type, name, name-visible, description]
       skin:
-        title: "&#6293F0&lꜱᴋɪɴ"
+        title: "&#6293F0&lSkin"
         properties: [skin-name, skin-value, skin-signature]
       appearance:
-        title: "&#6293F0&lᴀᴘᴘᴇᴀʀᴀɴᴄᴇ"
+        title: "&#6293F0&lAppearance"
         properties: [pose, glow, glow-color, scale]
       behaviour:
-        title: "&#6293F0&lʙᴇʜᴀᴠɪᴏᴜʀ"
+        title: "&#6293F0&lBehaviour"
         properties: [look-at, look-range, spin-speed, path-speed, view-range]
       animations:
-        title: "&#6293F0&lᴀɴɪᴍᴀᴛɪᴏɴꜱ"
+        title: "&#6293F0&lAnimations"
         properties: [swing-interval, sneak-interval, hurt-interval]
       animation:
-        title: "&#6293F0&lᴀɴɪᴍᴀᴛɪᴏɴ ᴘʀᴇꜱᴇᴛ"
+        title: "&#6293F0&lAnimation Preset"
         properties: [animation, animation-speed, keyframes]
       pose:
-        title: "&#6293F0&lᴘᴏꜱᴇ (ꜱᴋɪɴɴᴇᴅ ᴍᴏᴅᴇʟ)"
+        title: "&#6293F0&lPose (Skinned Model)"
         properties: [pose-head, pose-body, pose-right-arm, pose-left-arm, pose-right-leg, pose-left-leg]
       triggers:
-        title: "&#6293F0&lᴛʀɪɢɢᴇʀꜱ & ᴇꜰꜰᴇᴄᴛꜱ"
+        title: "&#6293F0&lTriggers & Effects"
         properties: [triggers, look-trigger-range, approach-range]
       nameplate:
-        title: "&#6293F0&lɴᴀᴍᴇᴘʟᴀᴛᴇ ʜᴏʟᴏɢʀᴀᴍ"
+        title: "&#6293F0&lNameplate Hologram"
         properties: [nameplate, nameplate-height]
       interaction:
-        title: "&#6293F0&lɪɴᴛᴇʀᴀᴄᴛɪᴏɴ"
+        title: "&#6293F0&lInteraction"
         properties: [actions, click-type, cooldown]
       particles:
-        title: "&#6293F0&lᴘᴀʀᴛɪᴄʟᴇꜱ"
+        title: "&#6293F0&lParticles"
         properties: [particle, particle-count, particle-radius, particle-interval]
     properties:
       entity-type:
-        label: "&fᴇɴᴛɪᴛʏ ᴛʏᴘᴇ"
+        label: "&f&lEntity Type"
         type: choice
         options:
           MANNEQUIN: "Player (skin)"
@@ -252,19 +252,19 @@ kinds:
           CHICKEN: "Chicken"
           HORSE: "Horse"
           ARMOR_STAND: "Armor Stand"
-      name: {label: "&fɴᴀᴍᴇ", type: text, max: 256}
-      name-visible: {label: "&fꜱʜᴏᴡ ɴᴀᴍᴇ", type: bool}
-      description: {label: "&fᴅᴇꜱᴄʀɪᴘᴛɪᴏɴ (player type)", type: text, max: 256}
-      skin-name: {label: "&fꜱᴋɪɴ ᴘʟᴀʏᴇʀ ɴᴀᴍᴇ", type: text, max: 16}
-      skin-value: {label: "&fꜱᴋɪɴ ᴛᴇxᴛᴜʀᴇ ᴠᴀʟᴜᴇ", type: text, max: 4096}
-      skin-signature: {label: "&fꜱᴋɪɴ ꜱɪɢɴᴀᴛᴜʀᴇ", type: text, max: 4096}
+      name: {label: "&f&lName", type: text, max: 256}
+      name-visible: {label: "&f&lShow Name", type: bool}
+      description: {label: "&f&lDescription (player type)", type: text, max: 256}
+      skin-name: {label: "&f&lSkin Player Name", type: text, max: 16}
+      skin-value: {label: "&f&lSkin Texture Value", type: text, max: 4096}
+      skin-signature: {label: "&f&lSkin Signature", type: text, max: 4096}
       pose:
-        label: "&fᴘᴏꜱᴇ"
+        label: "&f&lPose"
         type: choice
         options: {STANDING: "Standing", SNEAKING: "Sneaking", SLEEPING: "Sleeping", SWIMMING: "Swimming", FALL_FLYING: "Gliding", SPIN_ATTACK: "Riptide", SITTING: "Sitting"}
-      glow: {label: "&fɢʟᴏᴡ", type: bool}
+      glow: {label: "&f&lGlow", type: bool}
       glow-color:
-        label: "&fɢʟᴏᴡ ᴄᴏʟᴏʀ"
+        label: "&f&lGlow Color"
         type: choice
         options:
           white: "White"
@@ -283,38 +283,38 @@ kinds:
           dark_blue: "Dark Blue"
           light_purple: "Pink"
           dark_purple: "Purple"
-      scale: {label: "&fꜱᴄᴀʟᴇ", type: number, min: 0.1, max: 5, step: 0.05}
-      look-at: {label: "&fʟᴏᴏᴋ ᴀᴛ ᴘʟᴀʏᴇʀꜱ", type: bool}
-      look-range: {label: "&fʟᴏᴏᴋ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
-      spin-speed: {label: "&fꜱᴘɪɴ ꜱᴘᴇᴇᴅ (°/s)", type: number, min: -720, max: 720, step: 5}
-      path-speed: {label: "&fᴡᴀʟᴋ ꜱᴘᴇᴇᴅ (blocks/s)", type: number, min: 0, max: 20, step: 0.1}
-      view-range: {label: "&fᴠɪᴇᴡ ʀᴀɴɢᴇ", type: number, min: 4, max: 160, step: 1}
-      swing-interval: {label: "&fꜱᴡɪɴɢ ᴀʀᴍ ᴇᴠᴇʀʏ (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
-      sneak-interval: {label: "&fᴛᴏɢɢʟᴇ ꜱɴᴇᴀᴋ ᴇᴠᴇʀʏ (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
-      hurt-interval: {label: "&fʜᴜʀᴛ ꜰʟᴀꜱʜ ᴇᴠᴇʀʏ (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
-      actions: {label: "&fᴄʟɪᴄᴋ ᴀᴄᴛɪᴏɴꜱ ([player] /shop, [console], [message] ...)", type: multiline, max: 2048}
+      scale: {label: "&f&lScale", type: number, min: 0.1, max: 5, step: 0.05}
+      look-at: {label: "&f&lLook At Players", type: bool}
+      look-range: {label: "&f&lLook Range", type: number, min: 1, max: 32, step: 0.5}
+      spin-speed: {label: "&f&lSpin Speed (°/s)", type: number, min: -720, max: 720, step: 5}
+      path-speed: {label: "&f&lWalk Speed (blocks/s)", type: number, min: 0, max: 20, step: 0.1}
+      view-range: {label: "&f&lView Range", type: number, min: 4, max: 160, step: 1}
+      swing-interval: {label: "&f&lSwing Arm Every (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
+      sneak-interval: {label: "&f&lToggle Sneak Every (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
+      hurt-interval: {label: "&f&lHurt Flash Every (ticks, 0 = off)", type: integer, min: 0, max: 1200, step: 1}
+      actions: {label: "&f&lClick Actions ([player] /shop, [console], [message] ...)", type: multiline, max: 2048}
       click-type:
-        label: "&fᴄʟɪᴄᴋ ᴛʏᴘᴇ"
+        label: "&f&lClick Type"
         type: choice
         options: {ANY: "Any", RIGHT: "Right click", LEFT: "Left click"}
-      cooldown: {label: "&fᴄᴏᴏʟᴅᴏᴡɴ (ticks)", type: integer, min: 0, max: 12000, step: 1}
-      animation-speed: {label: "&fᴀɴɪᴍᴀᴛɪᴏɴ ꜱᴘᴇᴇᴅ", type: number, min: 0.1, max: 5, step: 0.1}
-      pose-head: {label: "&fʜᴇᴀᴅ (x,y,z °)", type: text, max: 32}
-      pose-body: {label: "&fʙᴏᴅʏ (x,y,z °)", type: text, max: 32}
-      pose-right-arm: {label: "&fʀɪɢʜᴛ ᴀʀᴍ (x,y,z °)", type: text, max: 32}
-      pose-left-arm: {label: "&fʟᴇꜰᴛ ᴀʀᴍ (x,y,z °)", type: text, max: 32}
-      pose-right-leg: {label: "&fʀɪɢʜᴛ ʟᴇɢ (x,y,z °)", type: text, max: 32}
-      pose-left-leg: {label: "&fʟᴇꜰᴛ ʟᴇɢ (x,y,z °)", type: text, max: 32}
+      cooldown: {label: "&f&lCooldown (ticks)", type: integer, min: 0, max: 12000, step: 1}
+      animation-speed: {label: "&f&lAnimation Speed", type: number, min: 0.1, max: 5, step: 0.1}
+      pose-head: {label: "&f&lHead (x,y,z °)", type: text, max: 32}
+      pose-body: {label: "&f&lBody (x,y,z °)", type: text, max: 32}
+      pose-right-arm: {label: "&f&lRight Arm (x,y,z °)", type: text, max: 32}
+      pose-left-arm: {label: "&f&lLeft Arm (x,y,z °)", type: text, max: 32}
+      pose-right-leg: {label: "&f&lRight Leg (x,y,z °)", type: text, max: 32}
+      pose-left-leg: {label: "&f&lLeft Leg (x,y,z °)", type: text, max: 32}
       animation:
-        label: "&fᴀɴɪᴍᴀᴛɪᴏɴ"
+        label: "&f&lAnimation"
         type: choice
         options: {NONE: "None", CUSTOM: "Custom keyframes", WAVE: "Wave", NOD: "Nod", LOOK_AROUND: "Look around", CHEER: "Cheer", CROUCH_DANCE: "Crouch dance", ARCHER: "Archer", CROSSBOW: "Crossbow", TRIDENT: "Trident throw", CAST: "Spell cast", SPYGLASS: "Spyglass scout", HORN: "Horn call", SHIELD: "Shield guard", GUARD: "Sword guard", FEAST: "Feast", POTION: "Potion drink", SWIMMER: "Swimmer", RIPTIDE: "Riptide spin", SLEEPY: "Sleepy", WALK: "Walk (model)", SALUTE: "Salute (model)", POINT: "Point (model)", BOW: "Bow (model)", DAB: "Dab (model)", ZOMBIE: "Zombie arms (model)", DANCE: "Dance (model)"}
-      keyframes: {label: "&fᴋᴇʏꜰʀᴀᴍᴇꜱ (ticks limb=x,y,z per line)", type: multiline, max: 8192}
-      triggers: {label: "&fᴛʀɪɢɢᴇʀꜱ (event -> action; action)", type: multiline, max: 8192}
-      look-trigger-range: {label: "&fʟᴏᴏᴋ ᴛʀɪɢɢᴇʀ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
-      approach-range: {label: "&fᴀᴘᴘʀᴏᴀᴄʜ ʀᴀɴɢᴇ", type: number, min: 1, max: 32, step: 0.5}
-      nameplate: {label: "&fᴜꜱᴇ ʜᴏʟᴏɢʀᴀᴍ ɴᴀᴍᴇᴘʟᴀᴛᴇ", type: bool}
-      nameplate-height: {label: "&fɴᴀᴍᴇᴘʟᴀᴛᴇ ʜᴇɪɢʜᴛ", type: number, min: -1, max: 5, step: 0.05}
+      keyframes: {label: "&f&lKeyframes (ticks limb=x,y,z per line)", type: multiline, max: 8192}
+      triggers: {label: "&f&lTriggers (event -> action; action)", type: multiline, max: 8192}
+      look-trigger-range: {label: "&f&lLook Trigger Range", type: number, min: 1, max: 32, step: 0.5}
+      approach-range: {label: "&f&lApproach Range", type: number, min: 1, max: 32, step: 0.5}
+      nameplate: {label: "&f&lUse Hologram Nameplate", type: bool}
+      nameplate-height: {label: "&f&lNameplate Height", type: number, min: -1, max: 5, step: 0.05}
       particle: *particles
       particle-count: *particle-count
       particle-radius: *particle-radius

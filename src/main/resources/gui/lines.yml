@@ -1,4 +1,4 @@
-title: "&#6293F0&lʟɪɴᴇꜱ &8» &7{id}"
+title: "&#6293F0&lLines &8» &7{id}"
 size: 54
 slots:
   - "0-44"
@@ -10,7 +10,7 @@ icons:
   SHAPE: "AMETHYST_SHARD"
 
 entry:
-  name: "&#6293F0ʟɪɴᴇ #{number}"
+  name: "&#6293F0&lLine #{number}"
   lore:
     - "&8Description:"
     - ""
@@ -31,7 +31,7 @@ items:
   add-text:
     slot: 48
     material: "OAK_SIGN"
-    name: "&#00FF5Aᴀᴅᴅ ᴛᴇxᴛ ʟɪɴᴇ"
+    name: "&#00FF5A&lAdd Text Line"
     lore:
       - "&8Description:"
       - ""
@@ -41,7 +41,7 @@ items:
   add-item:
     slot: 49
     material: "ITEM_FRAME"
-    name: "&#00FF5Aᴀᴅᴅ ʜᴇʟᴅ ɪᴛᴇᴍ"
+    name: "&#00FF5A&lAdd Held Item"
     lore:
       - "&8Description:"
       - ""
@@ -51,7 +51,7 @@ items:
   add-block:
     slot: 50
     material: "GRASS_BLOCK"
-    name: "&#00FF5Aᴀᴅᴅ ʜᴇʟᴅ ʙʟᴏᴄᴋ"
+    name: "&#00FF5A&lAdd Held Block"
     lore:
       - "&8Description:"
       - ""
@@ -61,7 +61,7 @@ items:
   add-shape:
     slot: 51
     material: "AMETHYST_SHARD"
-    name: "&#00FF5Aᴀᴅᴅ ꜱʜᴀᴘᴇ"
+    name: "&#00FF5A&lAdd Shape"
     lore:
       - "&8Description:"
       - ""
@@ -72,7 +72,7 @@ items:
   info:
     slot: 53
     material: "KNOWLEDGE_BOOK"
-    name: "&#6293F0ʟɪɴᴇꜱ"
+    name: "&#6293F0&lLines"
     lore:
       - "&8Description:"
       - ""

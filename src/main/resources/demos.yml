@@ -16,11 +16,11 @@ objects:
       particle-interval: 6
     lines:
       - {type: "TEXT", text: "&lNEXORA", effect: "RAINBOW", effect-speed: 2, scale: 2.2, offset-y: 0.35, background-default: false}
-      - {type: "TEXT", text: "&lᴘᴀᴄᴋᴇᴛ ʜᴏʟᴏɢʀᴀᴍꜱ & ɴᴘᴄꜱ", effect: "WAVE", effect-speed: 2, color-a: "#6293F0", color-b: "#FFFFFF", scale: 1.1, offset-y: 0.1, background-default: false}
+      - {type: "TEXT", text: "&lPacket Holograms & Npcs", effect: "WAVE", effect-speed: 2, color-a: "#6293F0", color-b: "#FFFFFF", scale: 1.1, offset-y: 0.1, background-default: false}
       - {type: "TEXT", text: "&7Typing out text one letter at a time...", effect: "TYPEWRITER", effect-speed: 2}
       - {type: "TEXT", text: "&#FFD700Scrolling marquee with {online} players online   ", effect: "SCROLL", effect-speed: 2, scroll-width: 28}
-      - {type: "TEXT", text: "&aᴏɴʟɪɴᴇ &f{online}||&eᴍᴀx &f{max}||&bᴛɪᴍᴇ &f{time}", frame-interval: 30}
-      - {type: "TEXT", text: "&#FF0000&l● ʟɪᴠᴇ", effect: "BLINK", effect-speed: 10}
+      - {type: "TEXT", text: "&a&lOnline &f{online}||&e&lMax &f{max}||&b&lTime &f{time}", frame-interval: 30}
+      - {type: "TEXT", text: "&#FF0000&l● Live", effect: "BLINK", effect-speed: 10}
       - {type: "TEXT", text: "&7{online}&8/&7{max} &8• &7{time}"}
   wizard:
     kind: npc
@@ -29,7 +29,7 @@ objects:
       animation-speed: 1
       animation: "CAST"
       entity-type: "MANNEQUIN"
-      name: "&#B455F0&lᴀʀᴄᴀɴᴇ ᴡɪᴢᴀʀᴅ"
+      name: "&#B455F0&lArcane Wizard"
       description: "&7Levitating blocks"
       view-range: 64
       skin-name: ""
@@ -44,7 +44,7 @@ objects:
       particle-count: 8
       particle-radius: 0.8
       particle-interval: 4
-      actions: "[sound] block.enchantment_table.use\n[message] &#B455F0&lᴡɪᴢᴀʀᴅ &7» &fBehold my levitating blocks, &#B455F0{player}&f!"
+      actions: "[sound] block.enchantment_table.use\n[message] &#B455F0&lWizard &7» &fBehold my levitating blocks, &#B455F0{player}&f!"
       look-trigger-range: 10
       triggers: "look -> particle WITCH 12 head 0.4; sound block.amethyst_block.chime 1 1.4\nholding trident every 2 -> particle! DUST_TRANSITION:#B455F0:#40CEFC:1.2 3 hand 0.15\nuse -> particle! ENCHANT 30 hand 0.5; sound! entity.illusioner.cast_spell\nswing -> particle! END_ROD 8 hand 0.3 0.05\nclick -> particle! TOTEM_OF_UNDYING 25 body 0.7\nsignal demo.cast -> animation CAST; sound! entity.illusioner.cast_spell; particle! DUST_TRANSITION:#B455F0:#40CEFC:1.4 40 hand 0 0 to holo:demo-link-orb:center"
       nameplate: true
@@ -145,8 +145,8 @@ objects:
       line-spacing: 0.3
       view-range: 64
     lines:
-      - {type: "TEXT", text: "&lꜱᴏʟᴀʀ ꜱʏꜱᴛᴇᴍ", effect: "WAVE", effect-speed: 2, color-a: "#FFB020", color-b: "#FFFFFF", scale: 1.2, background-default: false}
-      - {type: "TEXT", text: "&7ᴏʀʙɪᴛꜱ ɪɴ ᴏᴘᴘᴏꜱɪᴛᴇ ᴅɪʀᴇᴄᴛɪᴏɴꜱ", background-default: false}
+      - {type: "TEXT", text: "&lSolar System", effect: "WAVE", effect-speed: 2, color-a: "#FFB020", color-b: "#FFFFFF", scale: 1.2, background-default: false}
+      - {type: "TEXT", text: "&7&lOrbits In Opposite Directions", background-default: false}
   globe:
     kind: hologram
     offset: {forward: 8, right: 0, up: 3.8, yaw: 180}
@@ -203,8 +203,8 @@ objects:
       line-spacing: 0.3
       view-range: 64
     lines:
-      - {type: "TEXT", text: "&lꜰᴇʀʀɪꜱ ᴡʜᴇᴇʟ", effect: "RAINBOW", effect-speed: 2, background-default: false}
-      - {type: "TEXT", text: "&7ᴡʜᴇᴇʟ ʟᴀʏᴏᴜᴛ ꜰᴀᴄɪɴɢ ʏᴏᴜ", background-default: false}
+      - {type: "TEXT", text: "&lFerris Wheel", effect: "RAINBOW", effect-speed: 2, background-default: false}
+      - {type: "TEXT", text: "&7&lWheel Layout Facing You", background-default: false}
   tornado:
     kind: hologram
     offset: {forward: 13.8, right: 4.5, up: 0.3, yaw: 180}
@@ -244,7 +244,7 @@ objects:
       animation-speed: 1
       animation: "ARCHER"
       entity-type: "MANNEQUIN"
-      name: "&#6293F0&lʏᴏᴜʀ ᴄʟᴏɴᴇ"
+      name: "&#6293F0&lYour Clone"
       description: "&7Right-click me"
       view-range: 64
       glow: true
@@ -258,7 +258,7 @@ objects:
       particle-count: 2
       particle-radius: 0.5
       particle-interval: 10
-      actions: "[sound] entity.player.levelup\n[message] &#6293F0&lɴᴇxᴏʀᴀ &7» &fNPC clicks work, &#6293F0{player}&f!\n[actionbar] &#6293F0Click registered &7» &f{player}"
+      actions: "[sound] entity.player.levelup\n[message] &#6293F0&lNexora &7» &fNPC clicks work, &#6293F0{player}&f!\n[actionbar] &#6293F0Click registered &7» &f{player}"
     equipment:
       HAND: "DIAMOND_SWORD"
       HEAD: "GOLDEN_HELMET"
@@ -268,7 +268,7 @@ objects:
     path-radius: 2
     props:
       entity-type: "MANNEQUIN"
-      name: "&#00FF5A&lᴘᴀᴛʀᴏʟ"
+      name: "&#00FF5A&lPatrol"
       description: "&7Walking a square path"
       view-range: 64
       look-at: false
@@ -285,7 +285,7 @@ objects:
     offset: {forward: 9.5, right: 5, up: 0, yaw: 180}
     props:
       entity-type: "IRON_GOLEM"
-      name: "&#FF3B3B&lᴛɪᴛᴀɴ"
+      name: "&#FF3B3B&lTitan"
       scale: 2
       view-range: 64
       glow: true
@@ -297,10 +297,10 @@ objects:
       particle-count: 5
       particle-radius: 1.8
       particle-interval: 6
-      actions: "[sound] entity.iron_golem.hurt\n[message] &#FF3B3B&lᴛɪᴛᴀɴ &7» &fAny entity type, any scale."
+      actions: "[sound] entity.iron_golem.hurt\n[message] &#FF3B3B&lTitan &7» &fAny entity type, any scale."
       approach-range: 6
       look-trigger-range: 14
-      triggers: "approach cooldown 100 -> sound! entity.ravager.roar 1 0.7; particle! LARGE_SMOKE 25 body 1.2; title &#FF3B3B&lᴛʜᴇ ᴛɪᴛᴀɴ|&7has noticed you\nlook -> particle DUST:#FF2020:2 6 head 0.3\nleave -> actionbar &7The titan lets you go..."
+      triggers: "approach cooldown 100 -> sound! entity.ravager.roar 1 0.7; particle! LARGE_SMOKE 25 body 1.2; title &#FF3B3B&lThe Titan|&7has noticed you\nlook -> particle DUST:#FF2020:2 6 head 0.3\nleave -> actionbar &7The titan lets you go..."
       nameplate: true
       nameplate-height: 0.6
   puppet:
@@ -309,7 +309,7 @@ objects:
     copy-skin: true
     props:
       entity-type: "MODEL"
-      name: "&#FF66CC&lᴅᴀɴᴄᴇʀ"
+      name: "&#FF66CC&lDancer"
       name-visible: true
       look-at: false
       glow: true
@@ -334,8 +334,8 @@ objects:
       particle-radius: 0.8
       particle-interval: 10
     lines:
-      - {type: "TEXT", text: "&lᴡᴇʟᴄᴏᴍᴇ", effect: "FLICKER", effect-speed: 2, color-a: "#40CEFC", color-b: "#B266FF", scale: 1.6, billboard: "FIXED", rot-x: -90, background-default: false, background: "#00000000", offset-z: 0.9}
-      - {type: "TEXT", text: "ɴᴇᴏɴ ꜰʟᴏᴏʀ ᴛᴇxᴛ", effect: "FADE", effect-speed: 1, color-a: "#6293F0", color-b: "#FFFFFF", billboard: "FIXED", rot-x: -90, background-default: false, background: "#00000000", offset-z: 0.3}
+      - {type: "TEXT", text: "&lWelcome", effect: "FLICKER", effect-speed: 2, color-a: "#40CEFC", color-b: "#B266FF", scale: 1.6, billboard: "FIXED", rot-x: -90, background-default: false, background: "#00000000", offset-z: 0.9}
+      - {type: "TEXT", text: "Neon Floor Text", effect: "FADE", effect-speed: 1, color-a: "#6293F0", color-b: "#FFFFFF", billboard: "FIXED", rot-x: -90, background-default: false, background: "#00000000", offset-z: 0.3}
   link-orb:
     kind: hologram
     offset: {forward: 6.2, right: -6.8, up: 1.3, yaw: 180}
@@ -353,7 +353,7 @@ objects:
       proximity-scale: 0.4
       proximity-range: 5
     lines:
-      - {type: "TEXT", text: "&#40CEFC&lᴄʟɪᴄᴋ ᴍᴇ", effect: "FADE", effect-speed: 1, color-a: "#40CEFC", color-b: "#B455F0"}
+      - {type: "TEXT", text: "&#40CEFC&lClick Me", effect: "FADE", effect-speed: 1, color-a: "#40CEFC", color-b: "#B455F0"}
       - {type: "ITEM", material: "NETHER_STAR", scale: 0.9, billboard: "FIXED", glow: true, glow-color: "#40CEFC"}
   triangle:
     kind: hologram
@@ -392,7 +392,7 @@ objects:
       bob-height: 0.08
       bob-speed: 0.6
     lines:
-      - {type: "TEXT", text: "&#6293F0&lɪ'ᴍ ꜰᴏʟʟᴏᴡɪɴɢ ʏᴏᴜ", effect: "WAVE", effect-speed: 1, color-a: "#6293F0", color-b: "#FFFFFF"}
+      - {type: "TEXT", text: "&#6293F0&lI'm Following You", effect: "WAVE", effect-speed: 1, color-a: "#6293F0", color-b: "#FFFFFF"}
       - {type: "TEXT", text: "&7walk around and I tag along", scale: 0.7}
   shape-star:
     kind: hologram
